@@ -27,6 +27,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useCartStore, useCartTotals } from "@/store/cart-store";
 import { createClient } from "@/lib/supabase/client";
+import { createOrder, type CheckoutResult } from "./actions";
 import Link from "next/link";
 
 /** Campos del formulario de datos del cliente */
@@ -119,7 +120,7 @@ export default function CheckoutPage() {
     );
   };
 
-  /** Enviar pedido a Supabase */
+  /** Enviar pedido vía Server Action (validación de precios en servidor) */
   const handleSubmit = async () => {
     if (!isFormValid()) return;
 
@@ -127,79 +128,32 @@ export default function CheckoutPage() {
     setErrorMessage("");
 
     try {
-      const supabase = createClient();
+      const result: CheckoutResult = await createOrder({
+        customer: {
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+        },
+        address: {
+          street: address.street,
+          city: address.city,
+          province: address.province,
+          postal_code: address.postal_code,
+          country: address.country,
+        },
+        items: items.map((item) => ({
+          product: item.product,
+          quantity: item.quantity,
+        })),
+      });
 
-      // Obtener usuario actual (puede ser null para invitados)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      // 1. Crear el pedido en la tabla `orders`
-      const { data: orderData, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user?.id ?? null,
-          status: "pending",
-          total: total,
-          customer_name: customer.name,
-          customer_email: customer.email,
-          customer_phone: customer.phone,
-          shipping_address: {
-            street: address.street,
-            city: address.city,
-            province: address.province,
-            postal_code: address.postal_code,
-            country: address.country,
-          },
-        })
-        .select("id")
-        .single();
-
-      if (orderError) {
-        throw new Error(orderError.message);
+      if (!result.success) {
+        setErrorMessage(result.error ?? "Error desconocido al procesar tu pedido.");
+        setStep("error");
+        return;
       }
 
-      // 2. Crear las líneas de pedido en `order_items`
-      if (orderData?.id) {
-        // Buscar los productos en Supabase por slug para obtener sus UUIDs
-        const slugs = items.map((i) => i.product.slug);
-        const { data: dbProducts } = await supabase
-          .from("products")
-          .select("id, slug")
-          .in("slug", slugs);
-
-        // Mapeo slug → uuid
-        const slugToUuid = new Map<string, string>();
-        if (dbProducts) {
-          for (const p of dbProducts) {
-            slugToUuid.set(p.slug, p.id);
-          }
-        }
-
-        // Preparar las líneas de pedido
-        const orderItems = items
-          .filter((item) => slugToUuid.has(item.product.slug))
-          .map((item) => ({
-            order_id: orderData.id,
-            product_id: slugToUuid.get(item.product.slug)!,
-            quantity: item.quantity,
-            unit_price: item.product.price,
-            total: item.product.price * item.quantity,
-          }));
-
-        if (orderItems.length > 0) {
-          const { error: itemsError } = await supabase
-            .from("order_items")
-            .insert(orderItems);
-
-          if (itemsError) {
-            console.error("Error al crear líneas de pedido:", itemsError);
-            // No lanzamos error: el pedido principal ya se creó
-          }
-        }
-      }
-
-      // 3. Vaciar carrito y mostrar éxito
+      // Vaciar carrito y mostrar éxito
       clearCart();
       setStep("success");
     } catch (err) {

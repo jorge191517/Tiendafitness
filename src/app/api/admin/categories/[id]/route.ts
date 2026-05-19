@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, verifyAdmin } from "@/lib/supabase/server";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // ⛔ Verificar que el usuario es admin
+    const admin = await verifyAdmin();
+    if (!admin) {
+      return NextResponse.json(
+        { error: "Acceso denegado. Se requiere rol de administrador." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const supabase = await createAdminClient();
     const body = await request.json();
@@ -44,6 +53,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // ⛔ Verificar que el usuario es admin
+    const admin = await verifyAdmin();
+    if (!admin) {
+      return NextResponse.json(
+        { error: "Acceso denegado. Se requiere rol de administrador." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const supabase = await createAdminClient();
 
