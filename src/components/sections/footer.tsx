@@ -11,29 +11,17 @@ import {
   Mail,
   ArrowUp,
 } from "lucide-react";
+import { siteConfig } from "@/config/site";
+import { footerNavigationLinks, footerLegalLinks } from "@/config/navigation";
+import { categories } from "@/data/categories";
+import { fadeInUpShort } from "@/lib/animations";
 
-const footerLinks = {
-  navigation: [
-    { name: "Inicio", href: "#" },
-    { name: "Productos", href: "#products" },
-    { name: "Categorías", href: "#categories" },
-    { name: "Ofertas", href: "#offers" },
-    { name: "Contacto", href: "#contact" },
-  ],
-  categories: [
-    { name: "Fitness y Gym", href: "#" },
-    { name: "Pádel", href: "#" },
-    { name: "Ropa Deportiva", href: "#" },
-    { name: "Accesorios", href: "#" },
-    { name: "Suplementos", href: "#" },
-  ],
-  socials: [
-    { name: "Instagram", icon: Instagram, href: "#" },
-    { name: "Twitter", icon: Twitter, href: "#" },
-    { name: "Facebook", icon: Facebook, href: "#" },
-    { name: "YouTube", icon: Youtube, href: "#" },
-  ],
-};
+const socialLinks = [
+  { name: "Instagram", icon: Instagram, href: siteConfig.socials.instagram },
+  { name: "Twitter", icon: Twitter, href: siteConfig.socials.twitter },
+  { name: "Facebook", icon: Facebook, href: siteConfig.socials.facebook },
+  { name: "YouTube", icon: Youtube, href: siteConfig.socials.youtube },
+];
 
 export default function Footer() {
   const scrollToTop = () => {
@@ -50,15 +38,15 @@ export default function Footer() {
         <div className="py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-8">
           {/* Brand column */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            variants={fadeInUpShort}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
             className="lg:col-span-1"
           >
             <div className="flex items-center gap-2 mb-4">
               <div className="w-9 h-9 bg-electric rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(0,153,255,0.3)]">
-                <span className="text-white font-black text-sm">TF</span>
+                <span className="text-white font-black text-sm">{siteConfig.brandShort}</span>
               </div>
               <div>
                 <span className="text-white font-bold text-lg tracking-tight">
@@ -71,7 +59,7 @@ export default function Footer() {
               suplementos. Eleva tu rendimiento con las mejores marcas.
             </p>
             <div className="flex items-center gap-3">
-              {footerLinks.socials.map((social) => {
+              {socialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
                   <a
@@ -99,13 +87,13 @@ export default function Footer() {
               Navegación
             </h3>
             <ul className="space-y-2.5">
-              {footerLinks.navigation.map((link) => (
-                <li key={link.name}>
+              {footerNavigationLinks.map((link) => (
+                <li key={link.label}>
                   <a
                     href={link.href}
                     className="text-white/40 hover:text-white text-sm transition-colors duration-300 hover:pl-1"
                   >
-                    {link.name}
+                    {link.label}
                   </a>
                 </li>
               ))}
@@ -124,13 +112,13 @@ export default function Footer() {
               Categorías
             </h3>
             <ul className="space-y-2.5">
-              {footerLinks.categories.map((link) => (
-                <li key={link.name}>
+              {categories.map((cat) => (
+                <li key={cat.slug}>
                   <a
-                    href={link.href}
+                    href={`/productos?categoria=${cat.slug}`}
                     className="text-white/40 hover:text-white text-sm transition-colors duration-300 hover:pl-1"
                   >
-                    {link.name}
+                    {cat.name}
                   </a>
                 </li>
               ))}
@@ -151,19 +139,15 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin className="h-4 w-4 text-electric mt-0.5 flex-shrink-0" />
-                <span className="text-white/40 text-sm">
-                  Av. del Deporte 123, Madrid, España
-                </span>
+                <span className="text-white/40 text-sm">{siteConfig.address}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="h-4 w-4 text-electric mt-0.5 flex-shrink-0" />
-                <span className="text-white/40 text-sm">+34 900 123 456</span>
+                <span className="text-white/40 text-sm">{siteConfig.phone}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="h-4 w-4 text-electric mt-0.5 flex-shrink-0" />
-                <span className="text-white/40 text-sm">
-                  info@tiendafitnesspro.com
-                </span>
+                <span className="text-white/40 text-sm">{siteConfig.email}</span>
               </li>
             </ul>
           </motion.div>
@@ -172,19 +156,15 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="py-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/30 text-xs md:text-sm text-center md:text-left">
-            &copy; {new Date().getFullYear()} TiendaFitnessPro. Todos los derechos
+            &copy; {new Date().getFullYear()} {siteConfig.name}. Todos los derechos
             reservados.
           </p>
           <div className="flex items-center gap-4 text-xs text-white/30">
-            <a href="#" className="hover:text-white/60 transition-colors">
-              Política de Privacidad
-            </a>
-            <a href="#" className="hover:text-white/60 transition-colors">
-              Términos de Servicio
-            </a>
-            <a href="#" className="hover:text-white/60 transition-colors">
-              Cookies
-            </a>
+            {footerLegalLinks.map((link) => (
+              <a key={link.label} href={link.href} className="hover:text-white/60 transition-colors">
+                {link.label}
+              </a>
+            ))}
           </div>
           <button
             onClick={scrollToTop}

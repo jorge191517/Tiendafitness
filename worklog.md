@@ -83,3 +83,52 @@ Stage Summary:
 - products/index.ts ofrece API de consulta: allProducts, featuredProducts, productsByCategory, getProductsByCategory(), getProductBySlug()
 - Componentes actualizados sin cambios visuales ni de contenido
 - Archivo antiguo products.ts eliminado sin duplicidad
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Refactorización avanzada para ecommerce escalable
+
+Work Log:
+- Creado src/components/layout/page-shell.tsx: server component que ensambla todas las secciones
+- Simplificado app/page.tsx a 3 líneas: importa PageShell
+- Creada capa config/ completa:
+  - site.ts: nombre, dominio, contacto, redes sociales, moneda, locale
+  - navigation.ts: navLinks para header, footer, legales (tipado NavLink)
+  - branding.ts: colores, slogans (hero/promo/products/brands/features), CTA textos
+  - seo.ts: Metadata centralizada consumida por layout.tsx
+- Creado src/lib/animations.ts: presets reutilizables (fadeInUp, fadeInUpShort, staggerContainer, slideLeft, slideRight, scaleOnHover, glowHover, tapShrink, headerEntry, mobileMenuVariants, mobileMenuItemVariants)
+- Creado src/lib/slugify.ts: función slugify() para generar slugs automáticamente
+- Creado src/store/ con Zustand:
+  - cart-store.ts: addItem, removeItem, updateQuantity, clearCart, itemCount, total
+  - wishlist-store.ts: addItem, removeItem, toggleItem, isInWishlist, clearWishlist
+  - ui-store.ts: mobileMenuOpen, searchOpen, cartSidebarOpen
+- Creadas rutas ecommerce:
+  - app/productos/page.tsx: página catálogo con grid, filtros por categoría, metadata SEO
+  - app/productos/product-grid.tsx: client component con grid animado
+  - app/productos/[slug]/page.tsx: página detalle con generateStaticParams + generateMetadata
+  - app/productos/[slug]/product-detail.tsx: client component con imagen, precio, badge, stock, CTA
+- Actualizado layout.tsx: consume seoConfig de config/seo.ts
+- Actualizado header.tsx: consume navigationLinks, siteConfig, brandingConfig, animations
+- Actualizado hero.tsx: consume brandingConfig, staggerContainer/fadeInUp de animations
+- Actualizado category-bar.tsx: consume fadeInUpShort/glowHover/tapShrink de animations
+- Actualizado featured-products.tsx: consume brandingConfig, fadeInUpShort de animations
+- Actualizado promo-banner.tsx: consume brandingConfig, slideLeft de animations
+- Actualizado brands.tsx: consume brandingConfig, fadeInUpShort/scaleOnHover de animations
+- Actualizado footer.tsx: consume siteConfig, footerNavigationLinks, footerLegalLinks, categories, fadeInUpShort
+- Organizado public/: imagen hero movida a public/images/hero/hero-bg.png
+- Todas las rutas internas de imagen actualizadas
+- page-shell.tsx es server component (sin "use client")
+- Lint: 0 errores
+- Todas las rutas 200 OK: /, /productos, /productos/[slug]
+
+Stage Summary:
+- Arquitectura completamente desacoplada: config, data, lib, store, components
+- Textos/configuración centralizados en config/ (cero hardcoding en componentes)
+- Animaciones centralizadas en lib/animations.ts (cero duplicación)
+- SEO centralizado en config/seo.ts con template de títulos
+- Stores Zustand preparados para ecommerce real (carrito, favoritos, UI)
+- Rutas de productos con SSG (generateStaticParams) y metadata dinámica
+- slugify() preparado para generar slugs automáticamente
+- Assets organizados en public/images/ con subcarpetas
+- page-shell es server component — solo los componentes interactivos son client

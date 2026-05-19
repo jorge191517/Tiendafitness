@@ -3,8 +3,12 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { brandingConfig } from "@/config/branding";
+import { fadeInUp, slideLeft } from "@/lib/animations";
 
 export default function PromoBanner() {
+  const { slogans, cta } = brandingConfig;
+
   return (
     <section id="offers" className="relative py-16 md:py-24 bg-deep overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,55 +59,58 @@ export default function PromoBanner() {
           {/* Content */}
           <div className="relative z-10 px-6 md:px-12 lg:px-16 py-10 md:py-16 max-w-2xl">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              variants={slideLeft}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              custom={0.2}
               className="flex items-center gap-2 mb-4 md:mb-6"
             >
               <Zap className="h-5 w-5 md:h-6 md:w-6 text-lime fill-lime" />
               <span className="text-lime font-bold text-xs md:text-sm uppercase tracking-widest">
-                Oferta por Tiempo Limitado
+                {slogans.promo.eyebrow}
               </span>
             </motion.div>
 
             <motion.h2
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              variants={slideLeft}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              custom={0.3}
               className="text-3xl md:text-4xl lg:text-6xl font-black text-white uppercase leading-tight mb-4 md:mb-6"
             >
-              Entrena Como un
+              {slogans.promo.headline.line1}
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-electric to-lime">
-                Profesional
+                {slogans.promo.headline.line2}
               </span>
             </motion.h2>
 
             <motion.p
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              variants={slideLeft}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              custom={0.4}
               className="text-white/50 text-sm md:text-lg mb-6 md:mb-8 max-w-md"
             >
-              Hasta un 40% de descuento en equipamiento profesional. Eleva tu
-              entrenamiento con material de confianza para campeones.
+              {slogans.promo.description}
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              variants={slideLeft}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+              custom={0.5}
             >
               <Button
                 asChild
                 className="bg-gradient-to-r from-electric to-electric/80 hover:from-electric/90 hover:to-electric/70 text-white font-bold px-6 md:px-8 py-5 md:py-6 text-sm md:text-base rounded-xl shadow-[0_0_30px_rgba(0,153,255,0.4)] hover:shadow-[0_0_50px_rgba(0,153,255,0.6)] transition-all duration-300 uppercase tracking-wider group"
               >
                 <a href="#products">
-                  Comprar Ahora
+                  {cta.shopNow}
                   <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </a>
               </Button>

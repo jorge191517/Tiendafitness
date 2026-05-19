@@ -5,6 +5,8 @@ import { Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { featuredProducts } from "@/data/products";
 import type { ProductBadge } from "@/data/products";
+import { brandingConfig } from "@/config/branding";
+import { fadeInUpShort } from "@/lib/animations";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -40,6 +42,8 @@ function getBadgeColor(badge: ProductBadge | string) {
 }
 
 export default function FeaturedProducts() {
+  const { slogans, cta } = brandingConfig;
+
   return (
     <section id="products" className="relative py-16 md:py-24 bg-deep">
       {/* Section background accents */}
@@ -49,20 +53,20 @@ export default function FeaturedProducts() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          variants={fadeInUpShort}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
           className="text-center mb-10 md:mb-16"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-electric/10 border border-electric/30 text-electric text-xs md:text-sm font-semibold tracking-wider uppercase mb-4">
-            Productos Destacados
+            {slogans.products.eyebrow}
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight">
             Lo Mejor <span className="text-electric">de</span> la Semana
           </h2>
           <p className="mt-3 text-white/40 max-w-md mx-auto text-sm md:text-base">
-            Selección curada del mejor equipamiento deportivo y suplementos para un rendimiento máximo.
+            {slogans.products.description}
           </p>
         </motion.div>
 
@@ -104,7 +108,7 @@ export default function FeaturedProducts() {
                     className="bg-electric hover:bg-electric/90 text-white rounded-full shadow-[0_0_20px_rgba(0,153,255,0.4)] font-bold uppercase tracking-wider text-xs"
                   >
                     <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
-                    Añadir al Carrito
+                    {cta.addToCart}
                   </Button>
                 </div>
               </div>

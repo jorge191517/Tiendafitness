@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { seoConfig } from "@/config/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,30 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "TiendaFitnessPro - Tu Mejor Versión Empieza Aquí",
-  description:
-    "Tienda premium de deporte. Productos deportivos de alta calidad para cada entrenamiento, cada partido y cada objetivo. Equipamiento de fitness, ropa deportiva, suplementos y accesorios.",
-  keywords: [
-    "tienda de deporte",
-    "fitness",
-    "equipamiento de gimnasio",
-    "pádel",
-    "ropa deportiva",
-    "suplementos",
-    "TiendaFitnessPro",
-  ],
-  authors: [{ name: "TiendaFitnessPro" }],
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
-  },
-  openGraph: {
-    title: "TiendaFitnessPro - Tu Mejor Versión Empieza Aquí",
-    description:
-      "Tienda premium de deporte. Productos deportivos de alta calidad para cada entrenamiento, cada partido y cada objetivo.",
-    type: "website",
-  },
-};
+export const metadata: Metadata = seoConfig;
 
 export default function RootLayout({
   children,
