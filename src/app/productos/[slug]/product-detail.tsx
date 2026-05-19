@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Star, ShoppingCart, ArrowLeft, ShieldCheck, Truck, Check, Heart } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import WhatsAppButton from "@/components/ui/whatsapp-button";
 import type { Product } from "@/data/types";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 import { useCartStore } from "@/store/cart-store";
@@ -134,8 +135,8 @@ export default function ProductDetail({ product }: { product: Product }) {
               )}
             </div>
 
-            {/* Add to cart */}
-            <div className="flex gap-4 mb-8">
+            {/* Add to cart + WhatsApp */}
+            <div className="flex flex-wrap gap-4 mb-8">
               <Button
                 onClick={handleAddToCart}
                 disabled={product.stock === "out_of_stock"}
@@ -157,6 +158,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                   </>
                 )}
               </Button>
+              <WhatsAppButton
+                message={`Hola, estoy interesado en este producto: ${product.name}`}
+                label="Consultar"
+                variant="outline"
+                className="py-6 px-6 text-base rounded-xl uppercase tracking-wider"
+              />
             </div>
 
             {/* Features */}

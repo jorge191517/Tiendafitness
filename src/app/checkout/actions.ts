@@ -7,12 +7,17 @@
  * - Garantizar integridad de los datos
  *
  * NUNCA confiar en los precios enviados desde el cliente.
+ *
+ * Tras crear el pedido correctamente, se envían emails de notificación
+ * tanto al cliente como al admin. Si el envío de email falla,
+ * NO se interrumpe el flujo del pedido (se registra el error en servidor).
  */
 
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
 import type { CartProduct } from "@/store/cart-store";
+import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from "@/lib/email/send-order-email";
 
 export interface CheckoutItem {
   product: CartProduct;
@@ -49,6 +54,7 @@ export interface CheckoutResult {
  * 2. Valida los precios contra la base de datos (anti-manipulación)
  * 3. Crea el pedido en la tabla `orders`
  * 4. Crea las líneas de pedido en `order_items`
+ * 5. Envía emails de confirmación (cliente + admin) — no bloqueante
  */
 export async function createOrder(payload: CheckoutPayload): Promise<CheckoutResult> {
   try {
@@ -91,6 +97,14 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       total: number;
     }[] = [];
 
+    // Datos para emails (con nombres de producto)
+    const emailItems: {
+      name: string;
+      quantity: number;
+      unit_price: number;
+      total: number;
+    }[] = [];
+
     for (const item of payload.items) {
       const dbProduct = productMap.get(item.product.slug);
 
@@ -114,6 +128,13 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
 
       orderItems.push({
         product_id: dbProduct.id,
+        quantity: item.quantity,
+        unit_price: serverPrice,
+        total: lineTotal,
+      });
+
+      emailItems.push({
+        name: item.product.name,
         quantity: item.quantity,
         unit_price: serverPrice,
         total: lineTotal,
@@ -161,6 +182,31 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         console.error("Error creando líneas de pedido:", itemsError);
         // El pedido principal ya se creó, no lanzamos error
       }
+    }
+
+    // 6. Enviar emails de notificación (no bloqueante)
+    // Si falla el envío de email, NO debe romper la creación del pedido.
+    if (orderData?.id) {
+      const orderIdShort = orderData.id.substring(0, 8).toUpperCase();
+
+      const emailPayload = {
+        orderId: orderIdShort,
+        customerName: payload.customer.name,
+        customerEmail: payload.customer.email,
+        customerPhone: payload.customer.phone,
+        items: emailItems,
+        total: serverTotal,
+        shippingAddress: payload.address,
+      };
+
+      // Ejecutar en paralelo sin await para no bloquear la respuesta
+      // (fire-and-forget con catch interno)
+      Promise.all([
+        sendOrderConfirmationEmail(emailPayload),
+        sendNewOrderAdminEmail(emailPayload),
+      ]).catch((err) => {
+        console.error("[Checkout] Error en envío de emails de notificación:", err);
+      });
     }
 
     return { success: true, orderId: orderData.id };

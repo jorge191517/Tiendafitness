@@ -14,7 +14,7 @@ export const navigationLinks: NavLink[] = [
   { label: "Productos", href: "/productos" },
   { label: "Categorías", href: "/#categories" },
   { label: "Ofertas", href: "/#offers" },
-  { label: "Contacto", href: "/#contact" },
+  { label: "Contacto", href: "/contacto" },
 ];
 
 /** Links del footer — navegación */
@@ -23,7 +23,7 @@ export const footerNavigationLinks: NavLink[] = [
   { label: "Productos", href: "/productos" },
   { label: "Categorías", href: "/#categories" },
   { label: "Ofertas", href: "/#offers" },
-  { label: "Contacto", href: "/#contact" },
+  { label: "Contacto", href: "/contacto" },
 ];
 
 /** Links del footer — legales */

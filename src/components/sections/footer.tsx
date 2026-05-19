@@ -6,15 +6,17 @@ import {
   Twitter,
   Facebook,
   Youtube,
-  MapPin,
   Phone,
   Mail,
   ArrowUp,
+  MessageCircle,
+  Globe,
 } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { footerNavigationLinks, footerLegalLinks } from "@/config/navigation";
 import { categories } from "@/data/categories";
 import { fadeInUpShort } from "@/lib/animations";
+import { getWhatsAppLink } from "@/lib/whatsapp";
 
 const socialLinks = [
   { name: "Instagram", icon: Instagram, href: siteConfig.socials.instagram },
@@ -54,10 +56,14 @@ export default function Footer() {
                 </span>
               </div>
             </div>
-            <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs">
+            <p className="text-white/40 text-sm leading-relaxed mb-4 max-w-xs">
               Tu destino premium para equipamiento deportivo, ropa y
               suplementos. Eleva tu rendimiento con las mejores marcas.
             </p>
+            <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-lime/5 border border-lime/20">
+              <Globe className="h-4 w-4 text-lime shrink-0" />
+              <span className="text-lime text-sm font-semibold">Atención Online</span>
+            </div>
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => {
                 const Icon = social.icon;
@@ -137,17 +143,44 @@ export default function Footer() {
               Contacto
             </h3>
             <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <MapPin className="h-4 w-4 text-electric mt-0.5 flex-shrink-0" />
-                <span className="text-white/40 text-sm">{siteConfig.address}</span>
+              <li>
+                <a
+                  href={getWhatsAppLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-3 group"
+                >
+                  <MessageCircle className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0 group-hover:text-green-300 transition-colors" />
+                  <div>
+                    <span className="text-white/60 text-sm group-hover:text-white/80 transition-colors">WhatsApp</span>
+                    <span className="block text-white/40 text-xs">{siteConfig.phone}</span>
+                  </div>
+                </a>
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="h-4 w-4 text-electric mt-0.5 flex-shrink-0" />
                 <span className="text-white/40 text-sm">{siteConfig.phone}</span>
               </li>
-              <li className="flex items-start gap-3">
-                <Mail className="h-4 w-4 text-electric mt-0.5 flex-shrink-0" />
-                <span className="text-white/40 text-sm">{siteConfig.email}</span>
+              <li>
+                <a
+                  href={`mailto:${siteConfig.contactEmail}`}
+                  className="flex items-start gap-3 group"
+                >
+                  <Mail className="h-4 w-4 text-electric mt-0.5 flex-shrink-0 group-hover:text-electric/70 transition-colors" />
+                  <span className="text-white/40 text-sm group-hover:text-white/60 transition-colors">{siteConfig.contactEmail}</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${siteConfig.ordersEmail}`}
+                  className="flex items-start gap-3 group"
+                >
+                  <Mail className="h-4 w-4 text-lime mt-0.5 flex-shrink-0 group-hover:text-lime/70 transition-colors" />
+                  <div>
+                    <span className="text-white/60 text-sm group-hover:text-white/80 transition-colors">Pedidos</span>
+                    <span className="block text-white/40 text-xs group-hover:text-white/60 transition-colors">{siteConfig.ordersEmail}</span>
+                  </div>
+                </a>
               </li>
             </ul>
           </motion.div>

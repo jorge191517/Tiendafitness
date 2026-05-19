@@ -212,3 +212,42 @@ Stage Summary:
 - Servicios con fallback a datos locales (funciona sin Supabase configurado)
 - Sin cambios en la apariencia visual de la home
 - 30+ archivos nuevos, 10+ archivos modificados
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Integrar datos reales de contacto y flujo de emails del ecommerce
+
+Work Log:
+- Actualizado src/config/site.ts: reemplazado email fake (info@tiendafitnesspro.com → contacto@tiendafitnesspro.es), teléfono fake (+34 900 123 456 → 633 184 354), añadido contactEmail, ordersEmail, whatsappNumberInternational, businessModel. Eliminado campo address.
+- Actualizado src/config/navigation.ts: Contacto ahora apunta a /contacto en vez de /#contact
+- Eliminada dirección física falsa ("Av. del Deporte 123, Madrid, España") de todo el proyecto
+- Creado src/lib/whatsapp.ts: getWhatsAppLink(), getProductWhatsAppLink(), getOrderHelpWhatsAppLink()
+- Creado src/components/ui/whatsapp-button.tsx: componente con variantes default/outline/ghost, abre en nueva pestaña
+- Creado src/components/ui/textarea.tsx: componente Textarea de shadcn/ui
+- Actualizado src/components/sections/footer.tsx: eliminado MapPin/address, añadido WhatsApp click-to-chat, emails reales (contacto@ + pedidos@), badge "Atención Online", sin dirección física
+- Actualizado src/app/productos/[slug]/product-detail.tsx: añadido botón WhatsApp "Consultar" junto a "Añadir al Carrito"
+- Actualizado src/app/checkout/page.tsx: añadido WhatsApp en pantalla de éxito y en resumen lateral
+- Instalado paquete resend (v6.12.3)
+- Creado src/lib/email/resend.ts: cliente Resend singleton, sendEmail(), getEmailFrom(), getContactEmailTo(), getOrdersEmailTo()
+- Creado src/lib/email/templates/order-confirmation.tsx: template React para email de confirmación al cliente
+- Creado src/lib/email/templates/new-order-admin.tsx: template React para notificación de pedido al admin
+- Creado src/lib/email/templates/contact-message.tsx: template React para mensajes de contacto
+- Creado src/lib/email/send-order-email.ts: sendOrderConfirmationEmail(), sendNewOrderAdminEmail() (no bloquean el pedido si fallan)
+- Creado src/lib/email/send-contact-email.ts: sendContactEmail() (propaga error para reintento)
+- Actualizado src/app/checkout/actions.ts: integrado envío de emails tras creación de pedido (fire-and-forget, no bloqueante)
+- Creado src/app/contacto/page.tsx: formulario de contacto completo con WhatsApp, emails, teléfono, badge online
+- Creado src/app/contacto/actions.ts: Server Action con validación Zod (nombre, email, teléfono opcional, mensaje)
+- Actualizado .env.example: añadidas variables RESEND_API_KEY, EMAIL_FROM, EMAIL_CONTACT_TO, EMAIL_ORDERS_TO
+- Lint: 0 errores
+- Build: compilación exitosa, 25 rutas generadas (incluida /contacto)
+
+Stage Summary:
+- Dirección física falsa eliminada completamente del proyecto
+- Datos de contacto reales configurados: WhatsApp 633184354, contacto@tiendafitnesspro.es, pedidos@tiendafitnesspro.es
+- WhatsApp click-to-chat integrado en: footer, producto, checkout, contacto
+- Infraestructura de email con Resend lista para producción
+- Emails de pedido (cliente + admin) integrados en checkout sin bloquear el flujo
+- Página /contacto funcional con formulario validado y Zod
+- Si RESEND_API_KEY no está configurada, los emails no rompen nada (warn en consola)
+- 11 archivos creados, 7 archivos modificados

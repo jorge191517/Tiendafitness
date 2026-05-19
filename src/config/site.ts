@@ -15,12 +15,18 @@ export const siteConfig = {
   /** Descripción general del sitio */
   description:
     "Tienda premium de deporte. Productos deportivos de alta calidad para cada entrenamiento, cada partido y cada objetivo. Equipamiento de fitness, ropa deportiva, suplementos y accesorios.",
-  /** Email de contacto */
-  email: "info@tiendafitnesspro.com",
-  /** Teléfono de contacto */
-  phone: "+34 900 123 456",
-  /** Dirección física */
-  address: "Av. del Deporte 123, Madrid, España",
+  /** Email de contacto general */
+  contactEmail: "contacto@tiendafitnesspro.es",
+  /** Email para pedidos */
+  ordersEmail: "pedidos@tiendafitnesspro.es",
+  /** Email legado (compatibilidad) */
+  email: "contacto@tiendafitnesspro.es",
+  /** Teléfono de contacto (WhatsApp) */
+  phone: "633 184 354",
+  /** Número WhatsApp en formato internacional (sin +) */
+  whatsappNumberInternational: "34633184354",
+  /** Modelo de negocio (sin tienda física) */
+  businessModel: "Tienda online" as const,
   /** Redes sociales */
   socials: {
     instagram: "https://instagram.com/tiendafitnesspro",
