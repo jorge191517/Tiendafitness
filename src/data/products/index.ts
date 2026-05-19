@@ -6,7 +6,7 @@
  * no necesiten conocer la estructura interna de carpetas.
  *
  * USO:
- *   import { featuredProducts, getProductsByCategory } from "@/data/products";
+ *   import { featuredProducts, getProductsByCategory, getProductVariants } from "@/data/products";
  */
 
 import type { Product } from "@/data/types";
@@ -71,6 +71,21 @@ export function getUniqueSubcategories(categorySlug?: string): { slug: string; n
       name: p.subcategoryName!,
       parentCategory: p.category,
     }));
+}
+
+/**
+ * Devuelve las variantes de color de un producto.
+ * Un producto tiene variantes si su `variantGroup` coincide con otros productos.
+ * No incluye al propio producto en el resultado.
+ *
+ * Ejemplo: "Conjunto Deportivo Dama Mocha" (variantGroup: "conjunto-deportivo-dama")
+ * devuelve los otros 3 colores: Negro, Sage, Terracota.
+ */
+export function getProductVariants(product: Product): Product[] {
+  if (!product.variantGroup) return [];
+  return allProducts.filter(
+    (p) => p.variantGroup === product.variantGroup && p.id !== product.id
+  );
 }
 
 // ─── Re-export de tipos (comodidad) ─────────────────────────────────────────

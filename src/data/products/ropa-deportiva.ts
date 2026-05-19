@@ -7,6 +7,10 @@ import type { Product } from "@/data/types";
  *   - Conjuntos deportivos dama (tallas S, M, L)
  *   - Shorts deportivos caballero (tallas S, M, L, XL)
  *
+ * Variantes de color agrupadas por variantGroup:
+ *   - "conjunto-deportivo-dama": Mocha, Negro, Sage, Terracota
+ *   - "short-deportivo-caballero": Gris, Mocha, Navy, Negro, Olive
+ *
  * Para añadir productos nuevos, simplemente agrégalos a este array.
  * Los precios son provisionales y editables.
  */
@@ -21,6 +25,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "conjuntos-deportivos-dama",
     subcategoryName: "Conjuntos Deportivos Dama",
+    variantGroup: "conjunto-deportivo-dama",
     description:
       "Conjunto deportivo de dama en tono mocha. Tejido suave y elástico que se adapta a tu cuerpo para máxima comodidad durante el entrenamiento. Diseño moderno y favorecedor, ideal para gym, yoga o uso casual deportivo.",
     price: 39.99,
@@ -42,6 +47,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "conjuntos-deportivos-dama",
     subcategoryName: "Conjuntos Deportivos Dama",
+    variantGroup: "conjunto-deportivo-dama",
     description:
       "Conjunto deportivo de dama en negro clásico. Corte ergonómico con cintura alta y costuras planas que evitan roces. Tela transpirable de secado rápido para un rendimiento óptimo en cada sesión.",
     price: 39.99,
@@ -63,6 +69,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "conjuntos-deportivos-dama",
     subcategoryName: "Conjuntos Deportivos Dama",
+    variantGroup: "conjunto-deportivo-dama",
     description:
       "Conjunto deportivo de dama en elegante verde sage. Combinación de estilo y funcionalidad con tejido de compresión ligera que moldea y soporta. Perfecto para entrenamiento intenso o actividades de bajo impacto.",
     price: 39.99,
@@ -84,6 +91,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "conjuntos-deportivos-dama",
     subcategoryName: "Conjuntos Deportivos Dama",
+    variantGroup: "conjunto-deportivo-dama",
     description:
       "Conjunto deportivo de dama en cálido tono terracota. Diseño atemporal con ajuste perfecto y libertad de movimiento total. Tejido premium que absorbe la humedad y mantiene tu piel seca durante el ejercicio.",
     price: 39.99,
@@ -108,6 +116,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "shorts-deportivos-caballero",
     subcategoryName: "Shorts Deportivos Caballero",
+    variantGroup: "short-deportivo-caballero",
     description:
       "Short deportivo de caballero en gris versátil. Confeccionado en tela ligera y transpirable con cintura elástica ajustable. Ideal para running, gym y entrenamiento funcional con máxima movilidad.",
     price: 24.99,
@@ -129,6 +138,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "shorts-deportivos-caballero",
     subcategoryName: "Shorts Deportivos Caballero",
+    variantGroup: "short-deportivo-caballero",
     description:
       "Short deportivo de caballero en tono mocha. Tejido técnico de secado rápido que elimina la humedad y mantiene el frescor. Diseño cómodo con bolsillos laterales y ajuste perfecto para cualquier actividad.",
     price: 24.99,
@@ -150,6 +160,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "shorts-deportivos-caballero",
     subcategoryName: "Shorts Deportivos Caballero",
+    variantGroup: "short-deportivo-caballero",
     description:
       "Short deportivo de caballero en azul navy clásico. Elegancia deportiva con tela de alta calidad que ofrece compresión suave y transpirabilidad superior. Perfecto para entrenamiento y uso diario.",
     price: 24.99,
@@ -171,6 +182,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "shorts-deportivos-caballero",
     subcategoryName: "Shorts Deportivos Caballero",
+    variantGroup: "short-deportivo-caballero",
     description:
       "Short deportivo de caballero en negro intemporal. Corte atlético con cintura elástica y cordón ajustable. Tela resistente y cómoda que no pierde forma, ideal para tus sesiones más exigentes.",
     price: 24.99,
@@ -192,6 +204,7 @@ export const ropaDeportivaProducts: Product[] = [
     categoryName: "Ropa Deportiva",
     subcategory: "shorts-deportivos-caballero",
     subcategoryName: "Shorts Deportivos Caballero",
+    variantGroup: "short-deportivo-caballero",
     description:
       "Short deportivo de caballero en verde olive moderno. Comodidad y estilo en una prenda versátil con tejido de rendimiento que absorbe el sudor. Diseño con detalles funcionales para un look deportivo actual.",
     price: 24.99,

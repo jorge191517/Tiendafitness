@@ -52,10 +52,17 @@ export interface Product {
   stock?: ProductStock;
   /** Tallas disponibles (ej. ["S", "M", "L", "XL"]) */
   sizes?: string[];
-  /** Color principal del producto (valor CSS o nombre, ej. "Mocha") */
+  /** Color principal del producto (valor CSS, ej. "#A0785A") */
   color?: string;
   /** Nombre legible del color (ej. "Verde Sage") */
   colorName?: string;
+  /**
+   * Grupo de variantes: productos con el mismo variantGroup son
+   * variaciones de color del mismo producto base.
+   * Ej: "conjunto-deportivo-dama" agrupa todas las colores de conjuntos dama.
+   * Permite navegar entre colores desde la ficha de producto.
+   */
+  variantGroup?: string;
 }
 
 /** Categoría de productos */
