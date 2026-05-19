@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { featuredProducts } from "@/data/products";
+import type { ProductBadge } from "@/data/products";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -23,7 +24,7 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-function getBadgeColor(badge: string) {
+function getBadgeColor(badge: ProductBadge | string) {
   switch (badge) {
     case "OFERTA":
       return "bg-red-500 text-white";
@@ -121,9 +122,9 @@ export default function FeaturedProducts() {
                   <span className="text-sm md:text-lg font-black text-white">
                     {product.price.toFixed(2)} €
                   </span>
-                  {product.originalPrice && (
+                  {product.oldPrice && (
                     <span className="text-xs md:text-sm text-white/30 line-through">
-                      {product.originalPrice.toFixed(2)} €
+                      {product.oldPrice.toFixed(2)} €
                     </span>
                   )}
                 </div>

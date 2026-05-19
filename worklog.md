@@ -55,3 +55,31 @@ Stage Summary:
 - SEO metadata in Spanish
 - html lang attribute set to "es"
 - No robotic translations; natural, commercial Spanish tone throughout
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Reorganizar estructura de datos de productos y categorías para mayor mantenibilidad
+
+Work Log:
+- Creado src/data/types.ts con interfaces compartidas: Product, ProductCategory, ProductBadge, ProductStock
+- Actualizado src/data/categories.ts: ahora usa ProductCategory del types.ts, icon se guarda como string, añadido categoryIcons map para resolver iconos en cliente, añadido campo description opcional
+- Creado src/data/products/fitness-gym.ts con 2 productos (Bandas de Resistencia, Mancuernas Ajustables)
+- Creado src/data/products/padel.ts con 1 producto (Pala de Pádel de Carbono)
+- Creado src/data/products/ropa-deportiva.ts con 2 productos (Zapatillas Running, Pantalones Compresión)
+- Creado src/data/products/accesorios.ts con 1 producto (Reloj Fitness Inteligente)
+- Creado src/data/products/suplementos.ts con 2 productos (Proteína Whey, BCAA)
+- Creado src/data/products/index.ts con: allProducts, featuredProducts, productsByCategory, getProductsByCategory(), getProductBySlug(), re-exports de tipos
+- Actualizado featured-products.tsx: importa desde @/data/products, usa ProductBadge tipo, usa oldPrice en vez de originalPrice
+- Actualizado category-bar.tsx: importa categories + categoryIcons, resuelve icono desde el mapa
+- Eliminado src/data/products.ts (archivo antiguo)
+- Lint check: 0 errores
+- Dev server: compila y sirve 200 OK
+
+Stage Summary:
+- Estructura de datos completamente modular y escalable
+- Cada categoría tiene su propio archivo de productos
+- Tipos centralizados en types.ts con campos completos (slug, description, oldPrice, featured, stock)
+- products/index.ts ofrece API de consulta: allProducts, featuredProducts, productsByCategory, getProductsByCategory(), getProductBySlug()
+- Componentes actualizados sin cambios visuales ni de contenido
+- Archivo antiguo products.ts eliminado sin duplicidad
