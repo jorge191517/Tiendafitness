@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Dumbbell, ArrowLeft } from "lucide-react";
+import { Package, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WhatsAppButton from "@/components/ui/whatsapp-button";
 import { fadeInUp } from "@/lib/animations";
@@ -28,15 +28,16 @@ interface EmptyStateProps {
  *
  * Se usa cuando no hay productos, categorías o contenido.
  * Diseño premium con glassmorphism, animaciones suaves y CTAs útiles.
+ * Solo debe mostrarse cuando products.length === 0.
  */
 export default function EmptyState({
-  title = "Catálogo en Preparación",
-  description = "Estamos cargando los primeros productos de TiendaFitnessPro. Muy pronto podrás explorar artículos deportivos seleccionados para entrenamiento, pádel, accesorios y más.",
+  title = "Sin Resultados",
+  description = "No se encontraron productos en esta sección. Explora otras categorías o contáctanos para encontrar lo que buscas.",
   primaryAction = "Volver al Inicio",
   primaryHref = "/",
   showWhatsApp = true,
-  whatsappMessage = "Hola, me gustaría saber cuándo estarán disponibles los productos en TiendaFitnessPro.",
-  whatsAppLabel = "Contactar por WhatsApp",
+  whatsappMessage = "Hola, estoy buscando un producto que no aparece en la tienda. ¿Podéis ayudarme?",
+  whatsAppLabel = "Consultar por WhatsApp",
 }: EmptyStateProps) {
   return (
     <motion.div
@@ -48,7 +49,7 @@ export default function EmptyState({
       <div className="max-w-md w-full text-center rounded-2xl border border-electric/20 bg-electric/[0.03] backdrop-blur-sm p-8 md:p-10">
         {/* Icon */}
         <div className="w-16 h-16 rounded-2xl bg-electric/10 flex items-center justify-center mx-auto mb-6">
-          <Dumbbell className="h-8 w-8 text-electric" />
+          <Package className="h-8 w-8 text-electric" />
         </div>
 
         {/* Title */}

@@ -17,6 +17,9 @@ export interface CartProduct {
   oldPrice?: number;
   image: string;
   category: string;
+  sizes?: string[];
+  color?: string;
+  colorName?: string;
 }
 
 /** Elemento del carrito */
@@ -49,8 +52,8 @@ interface CartState {
 function toCartProduct(product: Product | CartProduct): CartProduct {
   // Si ya es un CartProduct (no tiene 'description', 'rating', etc.), lo devolvemos tal cual
   if ("description" in product) {
-    const { id, name, slug, price, oldPrice, image, category } = product;
-    return { id, name, slug, price, oldPrice, image, category };
+    const { id, name, slug, price, oldPrice, image, category, sizes, color, colorName } = product;
+    return { id, name, slug, price, oldPrice, image, category, sizes, color, colorName };
   }
   return product as CartProduct;
 }

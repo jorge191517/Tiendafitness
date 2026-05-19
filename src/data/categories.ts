@@ -6,12 +6,12 @@ import {
   Pill,
   type LucideIcon,
 } from "lucide-react";
-import type { ProductCategory } from "@/data/types";
+import type { ProductCategory, ProductSubcategory } from "@/data/types";
 
 /**
  * Mapa de slug de categoría → componente icono de Lucide.
  * Se mantiene separado para que las categorías sean serializables
- * y los iconos se resuelvan solo en el cliente.
+ * y los iconos se resuelven solo en el cliente.
  */
 export const categoryIcons: Record<string, LucideIcon> = {
   "fitness-gym": Dumbbell,
@@ -49,7 +49,7 @@ export const categories: ProductCategory[] = [
     slug: "ropa-deportiva",
     icon: "Shirt",
     description:
-      "Ropa técnica y calzado para correr, entrenar y competir.",
+      "Ropa técnica y conjuntos deportivos seleccionados para entrenar con estilo y comodidad.",
   },
   {
     id: 4,
@@ -68,3 +68,25 @@ export const categories: ProductCategory[] = [
       "Proteínas, BCAAs, vitaminas y suplementos para maximizar tu rendimiento.",
   },
 ];
+
+/**
+ * Subcategorías de productos.
+ * Cada subcategoría pertenece a una categoría padre.
+ */
+export const subcategories: ProductSubcategory[] = [
+  {
+    slug: "conjuntos-deportivos-dama",
+    name: "Conjuntos Deportivos Dama",
+    parentCategory: "ropa-deportiva",
+  },
+  {
+    slug: "shorts-deportivos-caballero",
+    name: "Shorts Deportivos Caballero",
+    parentCategory: "ropa-deportiva",
+  },
+];
+
+/** Devuelve las subcategorías de una categoría padre */
+export function getSubcategories(categorySlug: string): ProductSubcategory[] {
+  return subcategories.filter((s) => s.parentCategory === categorySlug);
+}

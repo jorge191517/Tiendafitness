@@ -5,12 +5,15 @@ import FeaturedProductsWrapper from "@/components/sections/featured-products-wra
 import PromoBanner from "@/components/sections/promo-banner";
 import PrivateLabel from "@/components/sections/private-label";
 import WhyChooseUs from "@/components/sections/why-choose-us";
-import ComingSoon from "@/components/sections/coming-soon";
 import Footer from "@/components/sections/footer";
 
 /**
  * Ensambla todas las secciones de la página principal.
  * Server component — no usa estado ni efectos.
+ *
+ * NOTA: La sección ComingSoon se ha eliminado porque ya existen
+ * productos reales en el catálogo. Si en el futuro se necesita
+ * de nuevo, importar desde "@/components/sections/coming-soon".
  */
 export function PageShell() {
   return (
@@ -23,7 +26,6 @@ export function PageShell() {
         <PromoBanner />
         <PrivateLabel />
         <WhyChooseUs />
-        <ComingSoon />
       </main>
       <Footer />
     </div>

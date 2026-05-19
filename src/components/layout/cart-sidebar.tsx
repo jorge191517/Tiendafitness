@@ -89,9 +89,23 @@ export default function CartSidebar() {
                     <p className="text-sm font-semibold text-white/90 truncate">
                       {item.product.name}
                     </p>
-                    <p className="text-xs text-electric/60 uppercase tracking-wider mt-0.5">
-                      {item.product.category}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <p className="text-xs text-electric/60 uppercase tracking-wider">
+                        {item.product.category}
+                      </p>
+                      {item.product.colorName && (
+                        <>
+                          <span className="text-white/20 text-xs">·</span>
+                          <div className="flex items-center gap-1">
+                            <div
+                              className="w-2.5 h-2.5 rounded-full border border-white/20"
+                              style={{ backgroundColor: item.product.color }}
+                            />
+                            <span className="text-xs text-white/40">{item.product.colorName}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-sm font-bold text-white">
                         {item.product.price.toFixed(2)} €

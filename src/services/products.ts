@@ -6,7 +6,7 @@
 import { createClient } from '@/lib/supabase/server';
 import type { ProductDB } from '@/lib/supabase/types';
 import type { Product } from '@/data/types';
-import { allProducts as localAllProducts, featuredProducts as localFeatured, getProductsByCategory as localGetByCategory, getProductBySlug as localGetBySlug } from '@/data/products';
+import { allProducts as localAllProducts, featuredProducts as localFeatured, getProductsByCategory as localGetByCategory, getProductsBySubcategory as localGetBySubcategory, getProductBySlug as localGetBySlug } from '@/data/products';
 
 /** Convierte un ProductDB de Supabase al tipo Product local */
 function dbProductToLocal(p: ProductDB): Product {
@@ -15,6 +15,7 @@ function dbProductToLocal(p: ProductDB): Product {
     name: p.name,
     slug: p.slug,
     category: p.category?.slug ?? '',
+    categoryName: p.category?.name ?? undefined,
     description: p.description ?? '',
     price: Number(p.price),
     oldPrice: p.old_price ? Number(p.old_price) : undefined,
@@ -24,6 +25,11 @@ function dbProductToLocal(p: ProductDB): Product {
     badge: p.badge ?? undefined,
     featured: p.featured,
     stock: p.stock_status as Product['stock'],
+    sizes: (p as Record<string, unknown>).sizes as string[] | undefined,
+    color: (p as Record<string, unknown>).color as string | undefined,
+    colorName: (p as Record<string, unknown>).color_name as string | undefined,
+    subcategory: (p as Record<string, unknown>).subcategory as string | undefined,
+    subcategoryName: (p as Record<string, unknown>).subcategory_name as string | undefined,
   };
 }
 
@@ -115,6 +121,26 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
     return data.map(dbProductToLocal);
   } catch {
     return localGetByCategory(categorySlug);
+  }
+}
+
+/** Obtiene productos por subcategoría (slug de subcategoría) */
+export async function getProductsBySubcategory(subcategorySlug: string): Promise<Product[]> {
+  if (!isSupabaseConfigured()) return localGetBySubcategory(subcategorySlug);
+  
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, category:categories(slug, name)')
+      .eq('active', true)
+      .eq('subcategory', subcategorySlug)
+      .order('created_at', { ascending: false });
+    
+    if (error || !data) return localGetBySubcategory(subcategorySlug);
+    return data.map(dbProductToLocal);
+  } catch {
+    return localGetBySubcategory(subcategorySlug);
   }
 }
 

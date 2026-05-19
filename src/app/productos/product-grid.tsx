@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star, ShoppingCart, Check } from "lucide-react";
+import { Star, ShoppingCart, Check, Eye } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
@@ -76,7 +76,7 @@ function AddToCartButton({ product }: { product: Product }) {
       ) : (
         <>
           <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
-          {inCart ? "En el Carrito" : "Añadir al Carrito"}
+          {inCart ? "En el Carrito" : "Añadir"}
         </>
       )}
     </Button>
@@ -87,12 +87,12 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   if (!products || products.length === 0) {
     return (
       <EmptyState
-        title="Catálogo en Preparación"
-        description="Estamos cargando los primeros productos de TiendaFitnessPro. Muy pronto podrás explorar artículos deportivos seleccionados para entrenamiento, pádel, accesorios y más."
+        title="Sin Resultados"
+        description="No se encontraron productos en esta sección. Explora otras categorías o contáctanos para encontrar lo que buscas."
         primaryAction="Volver al Inicio"
         primaryHref="/"
-        whatsAppLabel="Solicitar un Producto"
-        whatsappMessage="Hola, me gustaría saber cuándo estarán disponibles los productos en TiendaFitnessPro."
+        whatsAppLabel="Consultar por WhatsApp"
+        whatsappMessage="Hola, estoy buscando un producto que no aparece en la tienda. ¿Podéis ayudarme?"
       />
     );
   }
@@ -100,18 +100,20 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
       {products.map((product, i) => (
-        <motion.a
+        <motion.div
           key={product.id}
-          href={`/productos/${product.slug}`}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5, delay: i * 0.05 }}
           whileHover={{ y: -8 }}
-          className="group relative rounded-2xl bg-mid-gray border border-white/5 hover:border-electric/30 transition-all duration-500 overflow-hidden block"
+          className="group relative rounded-2xl bg-mid-gray border border-white/5 hover:border-electric/30 transition-all duration-500 overflow-hidden"
         >
           {/* Product Image */}
-          <div className="relative aspect-square overflow-hidden bg-dark-gray">
+          <a
+            href={`/productos/${product.slug}`}
+            className="block relative aspect-square overflow-hidden bg-dark-gray"
+          >
             <img
               src={product.image}
               alt={product.name}
@@ -126,19 +128,55 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                 {product.badge}
               </span>
             )}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
+
+            {/* Color swatch */}
+            {product.color && (
+              <div className="absolute top-2 right-2 md:top-3 md:right-3">
+                <div
+                  className="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 border-white/30 shadow-md"
+                  style={{ backgroundColor: product.color }}
+                  title={product.colorName ?? product.color}
+                />
+              </div>
+            )}
+
+            {/* Hover overlay with action buttons */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end pb-4 gap-2 z-10">
+              <a
+                href={`/productos/${product.slug}`}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-black text-xs font-bold uppercase tracking-wider hover:bg-white/90 transition-colors shadow-lg"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                Ver Producto
+              </a>
               <AddToCartButton product={product} />
             </div>
-          </div>
+          </a>
 
           {/* Product Info */}
           <div className="p-3 md:p-4">
+            {/* Subcategory / Category */}
             <p className="text-[10px] md:text-xs text-electric/60 font-semibold uppercase tracking-wider mb-1">
-              {product.category}
+              {product.subcategoryName ?? product.categoryName ?? product.category}
             </p>
-            <h3 className="text-xs md:text-sm font-bold text-white/90 group-hover:text-white transition-colors line-clamp-2 mb-2 leading-tight">
+            <h3 className="text-xs md:text-sm font-bold text-white/90 group-hover:text-white transition-colors line-clamp-2 mb-1.5 leading-tight">
               {product.name}
             </h3>
+
+            {/* Sizes preview */}
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="flex gap-1 mb-2">
+                {product.sizes.map((size) => (
+                  <span
+                    key={size}
+                    className="inline-flex items-center justify-center w-5 h-5 md:w-6 md:h-6 text-[8px] md:text-[10px] font-semibold text-white/40 border border-white/10 rounded"
+                  >
+                    {size}
+                  </span>
+                ))}
+              </div>
+            )}
+
             <StarRating rating={product.rating} />
             <div className="flex items-center gap-2 mt-2">
               <span className="text-sm md:text-lg font-black text-white">
@@ -151,7 +189,10 @@ export default function ProductGrid({ products }: { products: Product[] }) {
               )}
             </div>
           </div>
-        </motion.a>
+
+          {/* Hover glow effect */}
+          <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none shadow-[inset_0_0_30px_rgba(0,153,255,0.05)]" />
+        </motion.div>
       ))}
     </div>
   );

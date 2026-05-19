@@ -42,9 +42,35 @@ export function getProductsByCategory(categorySlug: string): Product[] {
   return productsByCategory[categorySlug] ?? [];
 }
 
+/** Devuelve los productos de una subcategoría por su slug */
+export function getProductsBySubcategory(subcategorySlug: string): Product[] {
+  return allProducts.filter((p) => p.subcategory === subcategorySlug);
+}
+
 /** Busca un producto por su slug (devuelve undefined si no existe) */
 export function getProductBySlug(slug: string): Product | undefined {
   return allProducts.find((p) => p.slug === slug);
+}
+
+/** Devuelve todas las subcategorías únicas presentes en los productos */
+export function getUniqueSubcategories(categorySlug?: string): { slug: string; name: string; parentCategory: string }[] {
+  const source = categorySlug
+    ? allProducts.filter((p) => p.category === categorySlug)
+    : allProducts;
+
+  const seen = new Set<string>();
+  return source
+    .filter((p) => p.subcategory && p.subcategoryName)
+    .filter((p) => {
+      if (seen.has(p.subcategory!)) return false;
+      seen.add(p.subcategory!);
+      return true;
+    })
+    .map((p) => ({
+      slug: p.subcategory!,
+      name: p.subcategoryName!,
+      parentCategory: p.category,
+    }));
 }
 
 // ─── Re-export de tipos (comodidad) ─────────────────────────────────────────

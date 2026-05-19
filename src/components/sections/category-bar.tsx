@@ -18,8 +18,9 @@ export default function CategoryBar() {
           {categories.map((category, i) => {
             const Icon = categoryIcons[category.slug];
             return (
-              <motion.button
+              <motion.a
                 key={category.id}
+                href={`/productos?categoria=${category.slug}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -30,7 +31,7 @@ export default function CategoryBar() {
               >
                 {Icon && <Icon className="h-4 w-4 md:h-5 md:w-5" />}
                 {category.name}
-              </motion.button>
+              </motion.a>
             );
           })}
         </motion.div>

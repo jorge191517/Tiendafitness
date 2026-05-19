@@ -26,6 +26,12 @@ export interface Product {
   slug: string;
   /** Slug de la categoría a la que pertenece (ej. "fitness-gym") */
   category: string;
+  /** Nombre legible de la categoría (ej. "Ropa Deportiva") */
+  categoryName?: string;
+  /** Slug de la subcategoría (ej. "conjuntos-deportivos-dama") */
+  subcategory?: string;
+  /** Nombre legible de la subcategoría (ej. "Conjuntos Deportivos Dama") */
+  subcategoryName?: string;
   /** Descripción breve del producto */
   description: string;
   /** Precio actual en euros */
@@ -44,6 +50,12 @@ export interface Product {
   featured?: boolean;
   /** Estado de stock del producto */
   stock?: ProductStock;
+  /** Tallas disponibles (ej. ["S", "M", "L", "XL"]) */
+  sizes?: string[];
+  /** Color principal del producto (valor CSS o nombre, ej. "Mocha") */
+  color?: string;
+  /** Nombre legible del color (ej. "Verde Sage") */
+  colorName?: string;
 }
 
 /** Categoría de productos */
@@ -58,4 +70,14 @@ export interface ProductCategory {
   icon: string;
   /** Descripción breve de la categoría */
   description?: string;
+}
+
+/** Subcategoría de productos */
+export interface ProductSubcategory {
+  /** Slug de la subcategoría */
+  slug: string;
+  /** Nombre legible */
+  name: string;
+  /** Slug de la categoría padre */
+  parentCategory: string;
 }

@@ -7,11 +7,11 @@ import ProductGrid from "./product-grid";
 export const metadata: Metadata = {
   title: "Productos",
   description:
-    "Explora nuestro catálogo completo de productos deportivos. Fitness, pádel, ropa deportiva, accesorios y suplementos.",
+    "Explora nuestro catálogo de productos deportivos seleccionados. Ropa deportiva, conjuntos, shorts y más.",
 };
 
 interface Props {
-  searchParams: Promise<{ categoria?: string }>;
+  searchParams: Promise<{ categoria?: string; subcategoria?: string }>;
 }
 
 export default async function ProductosPage({ searchParams }: Props) {
@@ -22,6 +22,25 @@ export default async function ProductosPage({ searchParams }: Props) {
   ]);
 
   const activeCategory = params.categoria ?? null;
+
+  // Filter by subcategory if specified (client-side filtering on server data)
+  let displayProducts = products;
+  if (params.subcategoria) {
+    displayProducts = products.filter(
+      (p) => p.subcategory === params.subcategoria
+    );
+  }
+
+  // Get subcategories for active category
+  const subcategories = activeCategory
+    ? Array.from(
+        new Map(
+          products
+            .filter((p) => p.subcategory && p.subcategoryName)
+            .map((p) => [p.subcategory, { slug: p.subcategory!, name: p.subcategoryName! }])
+        ).values()
+      )
+    : [];
 
   return (
     <div className="min-h-screen bg-deep">
@@ -44,6 +63,14 @@ export default async function ProductosPage({ searchParams }: Props) {
               </span>
             </>
           )}
+          {params.subcategoria && (
+            <>
+              <span>/</span>
+              <span className="text-electric">
+                {subcategories.find((s) => s.slug === params.subcategoria)?.name ?? params.subcategoria}
+              </span>
+            </>
+          )}
         </nav>
       </div>
 
@@ -54,13 +81,13 @@ export default async function ProductosPage({ searchParams }: Props) {
             Nuestros <span className="text-electric">Productos</span>
           </h1>
           <p className="text-white/50 max-w-xl text-sm md:text-base">
-            Explora nuestro catálogo completo. Equipamiento deportivo seleccionado para cada disciplina y nivel.
+            Explora nuestro catálogo. Productos deportivos seleccionados para cada disciplina y nivel.
           </p>
         </div>
       </section>
 
       {/* Category filter pills */}
-      <section className="pb-8">
+      <section className="pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-3">
             <a
@@ -90,10 +117,43 @@ export default async function ProductosPage({ searchParams }: Props) {
         </div>
       </section>
 
+      {/* Subcategory filter pills (only when a category is active and has subcategories) */}
+      {activeCategory && subcategories.length > 0 && (
+        <section className="pb-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={`/productos?categoria=${activeCategory}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all duration-300 ${
+                  !params.subcategoria
+                    ? "bg-electric/10 border border-electric/30 text-electric"
+                    : "bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-electric/30"
+                }`}
+              >
+                Todos
+              </a>
+              {subcategories.map((sub) => (
+                <a
+                  key={sub.slug}
+                  href={`/productos?categoria=${activeCategory}&subcategoria=${sub.slug}`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all duration-300 ${
+                    params.subcategoria === sub.slug
+                      ? "bg-electric/10 border border-electric/30 text-electric"
+                      : "bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-electric/30"
+                  }`}
+                >
+                  {sub.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Product grid */}
       <section className="pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ProductGrid products={products} />
+          <ProductGrid products={displayProducts} />
         </div>
       </section>
     </div>
