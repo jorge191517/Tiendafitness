@@ -1,12 +1,55 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star, ShoppingCart } from "lucide-react";
+import { Star, ShoppingCart, Check } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { featuredProducts } from "@/data/products";
-import type { ProductBadge } from "@/data/products";
+import type { Product, ProductBadge } from "@/data/types";
 import { brandingConfig } from "@/config/branding";
 import { fadeInUpShort } from "@/lib/animations";
+import { useCartStore } from "@/store/cart-store";
+
+/** Botón de añadir al carrito con feedback visual */
+function AddToCartButton({ product }: { product: Product }) {
+  const addItem = useCartStore((s) => s.addItem);
+  const isInCart = useCartStore((s) => s.isInCart);
+  const [justAdded, setJustAdded] = useState(false);
+  const inCart = isInCart(product.id);
+
+  const handleAdd = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
+  };
+
+  return (
+    <Button
+      size="sm"
+      onClick={handleAdd}
+      className={`rounded-full font-bold uppercase tracking-wider text-xs transition-all duration-300 ${
+        justAdded
+          ? "bg-lime text-black shadow-[0_0_20px_rgba(170,255,0,0.4)]"
+          : inCart
+          ? "bg-electric/80 text-white shadow-[0_0_20px_rgba(0,153,255,0.3)]"
+          : "bg-electric hover:bg-electric/90 text-white shadow-[0_0_20px_rgba(0,153,255,0.4)]"
+      }`}
+    >
+      {justAdded ? (
+        <>
+          <Check className="h-3.5 w-3.5 mr-1.5" />
+          Añadido
+        </>
+      ) : (
+        <>
+          <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
+          {inCart ? "En el Carrito" : "Añadir al Carrito"}
+        </>
+      )}
+    </Button>
+  );
+}
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -41,7 +84,7 @@ function getBadgeColor(badge: ProductBadge | string) {
   }
 }
 
-export default function FeaturedProducts() {
+export default function FeaturedProductsClient({ products }: { products: Product[] }) {
   const { slogans, cta } = brandingConfig;
 
   return (
@@ -72,7 +115,7 @@ export default function FeaturedProducts() {
 
         {/* Products Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-          {featuredProducts.map((product, i) => (
+          {products.map((product, i) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 30 }}
@@ -102,14 +145,8 @@ export default function FeaturedProducts() {
                 )}
 
                 {/* Quick add overlay */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <Button
-                    size="sm"
-                    className="bg-electric hover:bg-electric/90 text-white rounded-full shadow-[0_0_20px_rgba(0,153,255,0.4)] font-bold uppercase tracking-wider text-xs"
-                  >
-                    <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
-                    {cta.addToCart}
-                  </Button>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
+                  <AddToCartButton product={product} />
                 </div>
               </div>
 

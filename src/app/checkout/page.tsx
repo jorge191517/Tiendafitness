@@ -1,0 +1,679 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ShoppingCart,
+  ArrowLeft,
+  Trash2,
+  Minus,
+  Plus,
+  Truck,
+  ShieldCheck,
+  CreditCard,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { useCartStore, useCartTotals } from "@/store/cart-store";
+import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+
+/** Campos del formulario de datos del cliente */
+interface CustomerForm {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+/** Campos del formulario de dirección de envío */
+interface AddressForm {
+  street: string;
+  city: string;
+  province: string;
+  postal_code: string;
+  country: string;
+}
+
+/** Estado del proceso de checkout */
+type CheckoutStep = "form" | "loading" | "success" | "error";
+
+export default function CheckoutPage() {
+  const router = useRouter();
+  const items = useCartStore((s) => s.items);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const clearCart = useCartStore((s) => s.clearCart);
+  const { totalItems, total } = useCartTotals();
+
+  const [step, setStep] = useState<CheckoutStep>("form");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  // Datos del cliente
+  const [customer, setCustomer] = useState<CustomerForm>({
+    name: "",
+    email: "",
+    phone: "",
+  });
+
+  // Dirección de envío
+  const [address, setAddress] = useState<AddressForm>({
+    street: "",
+    city: "",
+    province: "",
+    postal_code: "",
+    country: "España",
+  });
+
+  // Comprobar autenticación al montar
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAuthenticated(!!data.user);
+      if (data.user) {
+        setCustomer((prev) => ({
+          ...prev,
+          email: data.user?.email ?? "",
+          name:
+            data.user?.user_metadata?.full_name ??
+            data.user?.email?.split("@")[0] ??
+            "",
+        }));
+      }
+    });
+  }, []);
+
+  /** Actualizar campo del cliente */
+  const handleCustomerChange = (field: keyof CustomerForm, value: string) => {
+    setCustomer((prev) => ({ ...prev, [field]: value }));
+  };
+
+  /** Actualizar campo de dirección */
+  const handleAddressChange = (field: keyof AddressForm, value: string) => {
+    setAddress((prev) => ({ ...prev, [field]: value }));
+  };
+
+  /** Validar formulario */
+  const isFormValid = (): boolean => {
+    return (
+      customer.name.trim() !== "" &&
+      customer.email.trim() !== "" &&
+      customer.phone.trim() !== "" &&
+      address.street.trim() !== "" &&
+      address.city.trim() !== "" &&
+      address.province.trim() !== "" &&
+      address.postal_code.trim() !== "" &&
+      address.country.trim() !== "" &&
+      items.length > 0
+    );
+  };
+
+  /** Enviar pedido a Supabase */
+  const handleSubmit = async () => {
+    if (!isFormValid()) return;
+
+    setStep("loading");
+    setErrorMessage("");
+
+    try {
+      const supabase = createClient();
+
+      // Obtener usuario actual (puede ser null para invitados)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      // 1. Crear el pedido en la tabla `orders`
+      const { data: orderData, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user?.id ?? null,
+          status: "pending",
+          total: total,
+          customer_name: customer.name,
+          customer_email: customer.email,
+          customer_phone: customer.phone,
+          shipping_address: {
+            street: address.street,
+            city: address.city,
+            province: address.province,
+            postal_code: address.postal_code,
+            country: address.country,
+          },
+        })
+        .select("id")
+        .single();
+
+      if (orderError) {
+        throw new Error(orderError.message);
+      }
+
+      // 2. Crear las líneas de pedido en `order_items`
+      if (orderData?.id) {
+        // Buscar los productos en Supabase por slug para obtener sus UUIDs
+        const slugs = items.map((i) => i.product.slug);
+        const { data: dbProducts } = await supabase
+          .from("products")
+          .select("id, slug")
+          .in("slug", slugs);
+
+        // Mapeo slug → uuid
+        const slugToUuid = new Map<string, string>();
+        if (dbProducts) {
+          for (const p of dbProducts) {
+            slugToUuid.set(p.slug, p.id);
+          }
+        }
+
+        // Preparar las líneas de pedido
+        const orderItems = items
+          .filter((item) => slugToUuid.has(item.product.slug))
+          .map((item) => ({
+            order_id: orderData.id,
+            product_id: slugToUuid.get(item.product.slug)!,
+            quantity: item.quantity,
+            unit_price: item.product.price,
+            total: item.product.price * item.quantity,
+          }));
+
+        if (orderItems.length > 0) {
+          const { error: itemsError } = await supabase
+            .from("order_items")
+            .insert(orderItems);
+
+          if (itemsError) {
+            console.error("Error al crear líneas de pedido:", itemsError);
+            // No lanzamos error: el pedido principal ya se creó
+          }
+        }
+      }
+
+      // 3. Vaciar carrito y mostrar éxito
+      clearCart();
+      setStep("success");
+    } catch (err) {
+      console.error("Error al procesar el pedido:", err);
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Ha ocurrido un error al procesar tu pedido. Inténtalo de nuevo."
+      );
+      setStep("error");
+    }
+  };
+
+  // ─── Pantalla de éxito ────────────────────────────────────────
+  if (step === "success") {
+    return (
+      <div className="min-h-screen bg-deep flex items-center justify-center px-4">
+        <Card className="w-full max-w-lg bg-mid-gray border-white/5">
+          <CardContent className="p-8 text-center">
+            <div className="w-20 h-20 bg-electric/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="h-10 w-10 text-electric" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-3">
+              ¡Pedido Recibido!
+            </h2>
+            <p className="text-white/60 mb-2">
+              Tu pedido ha sido procesado correctamente. Recibirás un correo de
+              confirmación en breve.
+            </p>
+            <p className="text-sm text-white/40 mb-8">
+              Número de pedido: #{Date.now().toString(36).toUpperCase()}
+            </p>
+            <Button
+              onClick={() => router.push("/")}
+              className="bg-electric hover:bg-electric/90 text-white font-bold uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,153,255,0.3)]"
+            >
+              Volver a la Tienda
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // ─── Carrito vacío ────────────────────────────────────────────
+  if (items.length === 0 && step !== "success") {
+    return (
+      <div className="min-h-screen bg-deep flex items-center justify-center px-4">
+        <Card className="w-full max-w-lg bg-mid-gray border-white/5">
+          <CardContent className="p-8 text-center">
+            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShoppingCart className="h-10 w-10 text-white/30" />
+            </div>
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-3">
+              Tu Carrito está Vacío
+            </h2>
+            <p className="text-white/60 mb-8">
+              Añade productos a tu carrito para realizar un pedido.
+            </p>
+            <Button
+              asChild
+              className="bg-electric hover:bg-electric/90 text-white font-bold uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,153,255,0.3)]"
+            >
+              <Link href="/productos">Ver Productos</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // ─── Formulario de checkout ───────────────────────────────────
+  return (
+    <div className="min-h-screen bg-deep">
+      {/* Espaciador del header */}
+      <div className="h-20" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* Cabecera */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white/50 hover:text-white hover:bg-white/10 rounded-full"
+            asChild
+          >
+            <Link href="/productos">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">
+              Finalizar <span className="text-electric">Pedido</span>
+            </h1>
+            <p className="text-sm text-white/40">
+              {totalItems} {totalItems === 1 ? "producto" : "productos"} en tu
+              carrito
+            </p>
+          </div>
+        </div>
+
+        {/* Aviso de invitado */}
+        {isAuthenticated === false && (
+          <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-electric/5 border border-electric/20">
+            <AlertCircle className="h-5 w-5 text-electric shrink-0" />
+            <p className="text-sm text-white/70">
+              No has iniciado sesión. Puedes continuar como invitado, pero{" "}
+              <Link
+                href="/auth/login"
+                className="text-electric hover:underline font-semibold"
+              >
+                inicia sesión
+              </Link>{" "}
+              para hacer seguimiento de tus pedidos.
+            </p>
+          </div>
+        )}
+
+        {/* Error */}
+        {step === "error" && errorMessage && (
+          <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+            <AlertCircle className="h-5 w-5 text-red-400 shrink-0" />
+            <p className="text-sm text-red-300">{errorMessage}</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* ─── Columna izquierda: Formularios ─── */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Datos del cliente */}
+            <Card className="bg-mid-gray border-white/5">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-white text-lg">
+                  <CreditCard className="h-5 w-5 text-electric" />
+                  Datos del Cliente
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="name" className="text-white/70 text-sm">
+                      Nombre completo *
+                    </Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Tu nombre"
+                      value={customer.name}
+                      onChange={(e) =>
+                        handleCustomerChange("name", e.target.value)
+                      }
+                      className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-white/70 text-sm">
+                      Email *
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={customer.email}
+                      onChange={(e) =>
+                        handleCustomerChange("email", e.target.value)
+                      }
+                      className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-white/70 text-sm">
+                      Teléfono *
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+34 600 000 000"
+                      value={customer.phone}
+                      onChange={(e) =>
+                        handleCustomerChange("phone", e.target.value)
+                      }
+                      className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Dirección de envío */}
+            <Card className="bg-mid-gray border-white/5">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-white text-lg">
+                  <Truck className="h-5 w-5 text-electric" />
+                  Dirección de Envío
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="street" className="text-white/70 text-sm">
+                    Calle y número *
+                  </Label>
+                  <Input
+                    id="street"
+                    type="text"
+                    placeholder="Calle Mayor 10, 3ºA"
+                    value={address.street}
+                    onChange={(e) =>
+                      handleAddressChange("street", e.target.value)
+                    }
+                    className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-white/70 text-sm">
+                      Ciudad *
+                    </Label>
+                    <Input
+                      id="city"
+                      type="text"
+                      placeholder="Madrid"
+                      value={address.city}
+                      onChange={(e) =>
+                        handleAddressChange("city", e.target.value)
+                      }
+                      className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="province"
+                      className="text-white/70 text-sm"
+                    >
+                      Provincia *
+                    </Label>
+                    <Input
+                      id="province"
+                      type="text"
+                      placeholder="Madrid"
+                      value={address.province}
+                      onChange={(e) =>
+                        handleAddressChange("province", e.target.value)
+                      }
+                      className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="postal_code"
+                      className="text-white/70 text-sm"
+                    >
+                      Código Postal *
+                    </Label>
+                    <Input
+                      id="postal_code"
+                      type="text"
+                      placeholder="28001"
+                      value={address.postal_code}
+                      onChange={(e) =>
+                        handleAddressChange("postal_code", e.target.value)
+                      }
+                      className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country" className="text-white/70 text-sm">
+                      País *
+                    </Label>
+                    <Input
+                      id="country"
+                      type="text"
+                      placeholder="España"
+                      value={address.country}
+                      onChange={(e) =>
+                        handleAddressChange("country", e.target.value)
+                      }
+                      className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Productos en el carrito (vista móvil) */}
+            <Card className="bg-mid-gray border-white/5 lg:hidden">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-white text-lg">
+                  <ShoppingCart className="h-5 w-5 text-electric" />
+                  Tu Carrito ({totalItems})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {items.map((item) => (
+                  <CartItemRow
+                    key={String(item.product.id)}
+                    item={item}
+                    onUpdateQuantity={updateQuantity}
+                    onRemove={removeItem}
+                  />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* ─── Columna derecha: Resumen del pedido ─── */}
+          <div className="space-y-6">
+            {/* Resumen */}
+            <Card className="bg-mid-gray border-white/5 sticky top-24">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-white text-lg">
+                  Resumen del Pedido
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Lista de productos (solo desktop) */}
+                <div className="hidden lg:block space-y-3 max-h-72 overflow-y-auto pr-1">
+                  {items.map((item) => (
+                    <div
+                      key={String(item.product.id)}
+                      className="flex items-center gap-3"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-dark-gray overflow-hidden shrink-0">
+                        <img
+                          src={item.product.image}
+                          alt={item.product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white/90 truncate">
+                          {item.product.name}
+                        </p>
+                        <p className="text-xs text-white/40">
+                          {item.quantity} × {item.product.price.toFixed(2)} €
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-white shrink-0">
+                        {(item.product.price * item.quantity).toFixed(2)} €
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Separator className="bg-white/10" />
+
+                {/* Desglose */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/50">Subtotal</span>
+                    <span className="text-white">{total.toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/50">Envío</span>
+                    <span className="text-lime font-semibold">Gratis</span>
+                  </div>
+                </div>
+
+                <Separator className="bg-white/10" />
+
+                {/* Total */}
+                <div className="flex justify-between items-baseline">
+                  <span className="text-white font-bold text-lg">Total</span>
+                  <span className="text-2xl font-black text-white">
+                    {total.toFixed(2)} €
+                  </span>
+                </div>
+
+                {/* Botón de enviar pedido */}
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!isFormValid() || step === "loading"}
+                  className="w-full bg-electric hover:bg-electric/90 text-white font-bold py-6 text-base rounded-xl shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.5)] transition-all duration-300 uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                >
+                  {step === "loading" ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="h-5 w-5 mr-2" />
+                      Finalizar Pedido
+                    </>
+                  )}
+                </Button>
+
+                {/* Seguridad */}
+                <div className="flex items-center justify-center gap-2 text-white/30 text-xs pt-2">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span>Pago seguro y datos protegidos</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Fila de producto en el carrito (usada en vista móvil) */
+function CartItemRow({
+  item,
+  onUpdateQuantity,
+  onRemove,
+}: {
+  item: { product: { id: number | string; name: string; image: string; price: number; oldPrice?: number }; quantity: number };
+  onUpdateQuantity: (id: number | string, qty: number) => void;
+  onRemove: (id: number | string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-dark-gray border border-white/5">
+      <div className="w-16 h-16 rounded-lg bg-mid-gray overflow-hidden shrink-0">
+        <img
+          src={item.product.image}
+          alt={item.product.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-white/90 truncate">
+          {item.product.name}
+        </p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-sm font-bold text-white">
+            {item.product.price.toFixed(2)} €
+          </span>
+          {item.product.oldPrice && (
+            <span className="text-xs text-white/30 line-through">
+              {item.product.oldPrice.toFixed(2)} €
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
+            onClick={() =>
+              onUpdateQuantity(item.product.id, item.quantity - 1)
+            }
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </Button>
+          <span className="text-sm font-bold text-white w-6 text-center">
+            {item.quantity}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
+            onClick={() =>
+              onUpdateQuantity(item.product.id, item.quantity + 1)
+            }
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10 rounded-md"
+          onClick={() => onRemove(item.product.id)}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+        <span className="text-sm font-black text-white">
+          {(item.product.price * item.quantity).toFixed(2)} €
+        </span>
+      </div>
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { allProducts } from "@/data/products";
-import { categories } from "@/data/categories";
+import { getProducts, getProductsByCategory } from "@/services/products";
+import { getCategories } from "@/services/categories";
 import ProductGrid from "./product-grid";
 
 export const metadata: Metadata = {
@@ -9,7 +9,19 @@ export const metadata: Metadata = {
     "Explora nuestro catálogo completo de productos deportivos. Fitness, pádel, ropa deportiva, accesorios y suplementos.",
 };
 
-export default function ProductosPage() {
+interface Props {
+  searchParams: Promise<{ categoria?: string }>;
+}
+
+export default async function ProductosPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const [products, categories] = await Promise.all([
+    params.categoria ? getProductsByCategory(params.categoria) : getProducts(),
+    getCategories(),
+  ]);
+
+  const activeCategory = params.categoria ?? null;
+
   return (
     <div className="min-h-screen bg-deep">
       {/* Header spacer */}
@@ -31,16 +43,28 @@ export default function ProductosPage() {
       <section className="pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-3">
-            <span className="px-4 py-2 rounded-full bg-electric/10 border border-electric/40 text-electric text-sm font-semibold cursor-pointer">
+            <a
+              href="/productos"
+              className={`px-4 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-300 ${
+                !activeCategory
+                  ? "bg-electric/10 border border-electric/40 text-electric"
+                  : "bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-electric/40 hover:bg-electric/5"
+              }`}
+            >
               Todos
-            </span>
+            </a>
             {categories.map((cat) => (
-              <span
+              <a
                 key={cat.slug}
-                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-electric/40 hover:bg-electric/5 transition-all duration-300 text-sm font-medium cursor-pointer"
+                href={`/productos?categoria=${cat.slug}`}
+                className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 ${
+                  activeCategory === cat.slug
+                    ? "bg-electric/10 border border-electric/40 text-electric"
+                    : "bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-electric/40 hover:bg-electric/5"
+                }`}
               >
                 {cat.name}
-              </span>
+              </a>
             ))}
           </div>
         </div>
@@ -49,7 +73,7 @@ export default function ProductosPage() {
       {/* Product grid */}
       <section className="pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ProductGrid products={allProducts} />
+          <ProductGrid products={products} />
         </div>
       </section>
     </div>

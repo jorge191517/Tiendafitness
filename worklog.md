@@ -132,3 +132,83 @@ Stage Summary:
 - slugify() preparado para generar slugs automáticamente
 - Assets organizados en public/images/ con subcarpetas
 - page-shell es server component — solo los componentes interactivos son client
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Migrar proyecto a ecommerce real con Supabase, auth, admin, checkout
+
+Work Log:
+- Instalado @supabase/supabase-js y @supabase/ssr
+- Creada capa de integración Supabase:
+  - src/lib/supabase/client.ts: cliente browser
+  - src/lib/supabase/server.ts: cliente server + admin client
+  - src/lib/supabase/middleware.ts: helper para refrescar sesión + proteger rutas admin
+  - src/lib/supabase/types.ts: tipos DB (Profile, Category, ProductDB, Order, OrderItem, CartItemDB)
+- Creado src/middleware.ts: protege /admin (solo role=admin), redirige auth
+- Creadas páginas de autenticación:
+  - src/app/auth/login/page.tsx: login con email/password
+  - src/app/auth/register/page.tsx: registro con validación
+  - src/app/auth/forgot-password/page.tsx: recuperación de contraseña
+  - src/app/auth/callback/route.ts: callback de Supabase Auth
+- Creado esquema de base de datos:
+  - supabase/schema.sql: 6 tablas (profiles, categories, products, orders, order_items, cart_items) con índices, triggers, y auto-creación de perfil
+  - supabase/rls.sql: Row Level Security en todas las tablas con políticas completas
+  - supabase/seed.sql: 5 categorías iniciales
+- Creados scripts de datos:
+  - src/scripts/seed-products.ts: migra productos locales a Supabase (upsert por slug)
+  - src/scripts/import-products-csv.ts: importa productos masivamente desde CSV
+- Creada capa de servicios:
+  - src/services/products.ts: getProducts, getFeaturedProducts, getProductBySlug, getProductsByCategory, getAllProductSlugs (con fallback a datos locales)
+  - src/services/categories.ts: getCategories (con fallback a datos locales)
+  - src/services/storage.ts: uploadProductImage, getPublicImageUrl, deleteProductImage
+- Actualizadas páginas de productos para leer desde Supabase:
+  - src/app/productos/page.tsx: usa servicios async + filtros por categoría funcionales
+  - src/app/productos/[slug]/page.tsx: usa servicios async
+  - src/components/sections/featured-products-wrapper.tsx: wrapper server component
+  - src/components/sections/featured-products.tsx: acepta products como prop
+- Creado panel admin:
+  - src/app/admin/page.tsx: dashboard con estadísticas
+  - src/app/admin/productos/page.tsx + product-table.tsx: lista de productos
+  - src/app/admin/productos/new/page.tsx: crear producto con react-hook-form + zod
+  - src/app/admin/productos/[id]/edit/page.tsx: editar/eliminar producto
+  - src/app/admin/categorias/page.tsx: gestión de categorías
+  - src/app/api/admin/products/route.ts: API POST crear producto
+  - src/app/api/admin/products/[id]/route.ts: API GET/PATCH/DELETE producto
+  - src/app/api/admin/categories/route.ts: API GET/POST categorías
+  - src/app/api/admin/categories/[id]/route.ts: API PATCH/DELETE categoría
+- Actualizado carrito Zustand:
+  - persist middleware con localStorage
+  - IDs compatibles (number | string)
+  - CartProduct simplificado
+  - isInCart, toggleItem, useCartTotals hook
+- Creado CartSidebar: src/components/layout/cart-sidebar.tsx (sheet deslizante)
+- Creado checkout: src/app/checkout/page.tsx (formulario + creación de pedido en Supabase)
+- Conectados botones de añadir al carrito en:
+  - featured-products.tsx: AddToCartButton con feedback visual (Añadido/En el Carrito)
+  - product-grid.tsx: AddToCartButton con feedback visual
+  - product-detail.tsx: botón funcional + wishlist toggle
+- Actualizado header.tsx:
+  - Auth-aware: muestra menú usuario si autenticado, login si no
+  - Dropdown con: Mis Pedidos, Panel Admin, Cerrar Sesión
+  - Carrito con count real desde useCartTotals
+  - CartSidebar integrado en layout.tsx
+- Creados archivos de soporte:
+  - .env.example: plantilla de variables de entorno
+  - docs/PRODUCT_UPLOAD.md: guía completa de subida de productos
+  - docs/products-template.csv: plantilla CSV con productos de ejemplo
+- Lint: 0 errores
+- Build: compilación exitosa, todas las rutas generadas
+
+Stage Summary:
+- Proyecto migrado de landing estático a ecommerce real con Supabase
+- Autenticación completa (login, registro, recuperación, callback)
+- 6 tablas SQL con RLS policies
+- Panel admin funcional (CRUD productos y categorías)
+- Carrito persistente con localStorage + sidebar visual
+- Checkout con creación de pedidos en Supabase
+- Importación masiva CSV de productos
+- Seed script para migrar datos locales a Supabase
+- Servicios con fallback a datos locales (funciona sin Supabase configurado)
+- Sin cambios en la apariencia visual de la home
+- 30+ archivos nuevos, 10+ archivos modificados

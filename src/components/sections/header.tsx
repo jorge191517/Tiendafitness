@@ -8,6 +8,9 @@ import {
   User,
   Menu,
   X,
+  LogOut,
+  Settings,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { navigationLinks } from "@/config/navigation";
@@ -19,10 +22,18 @@ import {
   mobileMenuTransition,
   mobileMenuItemVariants,
 } from "@/lib/animations";
+import { useCartStore, useCartTotals } from "@/store/cart-store";
+import { useUIStore } from "@/store/ui-store";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { totalItems } = useCartTotals();
+  const setCartSidebarOpen = useUIStore((s) => s.setCartSidebarOpen);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +42,30 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Escuchar cambios en la sesión de Supabase
+  useEffect(() => {
+    const supabase = createClient();
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setShowUserMenu(false);
+  };
 
   return (
     <motion.header
@@ -90,19 +125,84 @@ export default function Header() {
               variant="ghost"
               size="icon"
               className="relative text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 rounded-full"
+              onClick={() => setCartSidebarOpen(true)}
             >
               <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 md:w-5 md:h-5 bg-electric rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-[0_0_10px_rgba(0,153,255,0.5)]">
-                3
-              </span>
+              {totalItems > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 md:w-5 md:h-5 bg-electric rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-[0_0_10px_rgba(0,153,255,0.5)]">
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden md:flex text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 rounded-full"
-            >
-              <User className="h-5 w-5" />
-            </Button>
+
+            {/* User menu / Auth */}
+            <div className="relative hidden md:block">
+              {user ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 rounded-full"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                >
+                  <User className="h-5 w-5" />
+                </Button>
+              ) : (
+                <a href="/auth/login">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 rounded-full"
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                </a>
+              )}
+
+              {/* Dropdown del usuario */}
+              <AnimatePresence>
+                {showUserMenu && user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-mid-gray border border-white/10 shadow-xl shadow-black/50 overflow-hidden z-50"
+                  >
+                    <div className="px-4 py-3 border-b border-white/10">
+                      <p className="text-sm font-medium text-white truncate">
+                        {user.user_metadata?.full_name || user.email}
+                      </p>
+                      <p className="text-xs text-white/40 truncate">{user.email}</p>
+                    </div>
+                    <div className="py-1">
+                      <a
+                        href="/productos"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <Package className="h-4 w-4" />
+                        Mis Pedidos
+                      </a>
+                      <a
+                        href="/admin"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <Settings className="h-4 w-4" />
+                        Panel Admin
+                      </a>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Mobile menu button */}
             <Button
@@ -148,13 +248,50 @@ export default function Header() {
                 </motion.a>
               ))}
               <div className="pt-2 border-t border-white/10 mt-2">
-                <a
-                  href="#"
-                  className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
-                >
-                  <User className="h-5 w-5" />
-                  {brandingConfig.cta.login}
-                </a>
+                {user ? (
+                  <>
+                    <div className="px-4 py-2">
+                      <p className="text-sm font-medium text-white truncate">
+                        {user.user_metadata?.full_name || user.email}
+                      </p>
+                    </div>
+                    <a
+                      href="/productos"
+                      className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Package className="h-5 w-5" />
+                      Mis Pedidos
+                    </a>
+                    <a
+                      href="/admin"
+                      className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Settings className="h-5 w-5" />
+                      Panel Admin
+                    </a>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      Cerrar Sesión
+                    </button>
+                  </>
+                ) : (
+                  <a
+                    href="/auth/login"
+                    className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="h-5 w-5" />
+                    {brandingConfig.cta.login}
+                  </a>
+                )}
               </div>
             </div>
           </motion.div>

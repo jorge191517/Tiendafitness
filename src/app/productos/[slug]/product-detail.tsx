@@ -1,10 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star, ShoppingCart, ArrowLeft, ShieldCheck, Truck } from "lucide-react";
+import { Star, ShoppingCart, ArrowLeft, ShieldCheck, Truck, Check, Heart } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { Product } from "@/data/types";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
+import { useCartStore } from "@/store/cart-store";
+import { useWishlistStore } from "@/store/wishlist-store";
 import Link from "next/link";
 
 function StarRating({ rating }: { rating: number }) {
@@ -28,6 +31,20 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function ProductDetail({ product }: { product: Product }) {
+  const addItem = useCartStore((s) => s.addItem);
+  const isInCart = useCartStore((s) => s.isInCart);
+  const toggleWishlist = useWishlistStore((s) => s.toggleItem);
+  const isInWishlist = useWishlistStore((s) => s.isInWishlist);
+  const [justAdded, setJustAdded] = useState(false);
+  const inCart = isInCart(product.id);
+  const inWishlist = isInWishlist(product.id);
+
+  const handleAddToCart = () => {
+    addItem(product);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
+  };
+
   return (
     <div className="min-h-screen bg-deep">
       {/* Header spacer */}
@@ -65,9 +82,19 @@ export default function ProductDetail({ product }: { product: Product }) {
 
           {/* Product Info */}
           <motion.div variants={fadeInUp} className="flex flex-col justify-center">
-            <p className="text-sm text-electric font-semibold uppercase tracking-wider mb-2">
-              {product.category}
-            </p>
+            <div className="flex items-start justify-between gap-4">
+              <p className="text-sm text-electric font-semibold uppercase tracking-wider mb-2">
+                {product.category}
+              </p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => toggleWishlist(product)}
+                className="text-white/40 hover:text-red-400 transition-colors shrink-0"
+              >
+                <Heart className={`h-5 w-5 ${inWishlist ? "fill-red-400 text-red-400" : ""}`} />
+              </Button>
+            </div>
             <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tight mb-4">
               {product.name}
             </h1>
@@ -110,10 +137,25 @@ export default function ProductDetail({ product }: { product: Product }) {
             {/* Add to cart */}
             <div className="flex gap-4 mb-8">
               <Button
-                className="bg-electric hover:bg-electric/90 text-white font-bold px-8 py-6 text-base rounded-xl shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.5)] transition-all duration-300 uppercase tracking-wider"
+                onClick={handleAddToCart}
+                disabled={product.stock === "out_of_stock"}
+                className={`font-bold px-8 py-6 text-base rounded-xl transition-all duration-300 uppercase tracking-wider ${
+                  justAdded
+                    ? "bg-lime hover:bg-lime/90 text-black shadow-[0_0_30px_rgba(170,255,0,0.3)]"
+                    : "bg-electric hover:bg-electric/90 text-white shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.5)]"
+                }`}
               >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Añadir al Carrito
+                {justAdded ? (
+                  <>
+                    <Check className="h-5 w-5 mr-2" />
+                    Añadido al Carrito
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    {inCart ? "Añadir Más" : "Añadir al Carrito"}
+                  </>
+                )}
               </Button>
             </div>
 
