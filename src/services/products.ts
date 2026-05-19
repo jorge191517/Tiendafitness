@@ -9,8 +9,8 @@
  *   - Si Supabase devuelve array vacío → datos locales
  *   - Si Supabase devuelve productos → datos de Supabase
  *
- * Esto garantiza que la web siempre muestre productos reales
- * aunque Supabase esté vacío (fase inicial sin seed).
+ * Los productos locales usan estructura base+variantes.
+ * Un producto base tiene variants[] con las diferentes opciones de color.
  */
 
 import { createClient } from '@/lib/supabase/server';
@@ -19,10 +19,10 @@ import type { Product } from '@/data/types';
 import {
   allProducts as localAllProducts,
   featuredProducts as localFeatured,
+  activeCategories as localActiveCategories,
   getProductsByCategory as localGetByCategory,
   getProductsBySubcategory as localGetBySubcategory,
   getProductBySlug as localGetBySlug,
-  getProductVariants as localGetVariants,
 } from '@/data/products';
 
 /** Convierte un ProductDB de Supabase al tipo Product local */
@@ -48,6 +48,7 @@ function dbProductToLocal(p: ProductDB & Record<string, unknown>): Product {
     subcategory: p.subcategory as string | undefined,
     subcategoryName: p.subcategory_name as string | undefined,
     variantGroup: p.variant_group as string | undefined,
+    variants: undefined,
   };
 }
 
@@ -101,8 +102,6 @@ export async function getFeaturedProducts(): Promise<Product[]> {
       .order('rating', { ascending: false });
 
     if (error) return localFeatured;
-    // Si Supabase no tiene featured, devolver todos los locales destacados
-    // o los primeros 8 si no hay featured
     if (!data || data.length === 0) return localFeatured;
     return data.map(dbProductToLocal);
   } catch {
@@ -172,30 +171,6 @@ export async function getProductsBySubcategory(subcategorySlug: string): Promise
     return withFallback(data, localGetBySubcategory(subcategorySlug));
   } catch {
     return localGetBySubcategory(subcategorySlug);
-  }
-}
-
-/** Obtiene las variantes de color de un producto (mismo variantGroup) */
-export async function getProductVariants(product: Product): Promise<Product[]> {
-  if (!product.variantGroup) return [];
-
-  if (!isSupabaseConfigured()) {
-    return localGetVariants(product);
-  }
-
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('products')
-      .select('*, category:categories(slug, name)')
-      .eq('active', true)
-      .eq('variant_group', product.variantGroup)
-      .order('color_name');
-
-    if (error || !data || data.length <= 1) return localGetVariants(product);
-    return data.map(dbProductToLocal);
-  } catch {
-    return localGetVariants(product);
   }
 }
 

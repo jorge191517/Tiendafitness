@@ -72,7 +72,7 @@ export default function CartSidebar() {
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
               {items.map((item) => (
                 <div
-                  key={String(item.product.id)}
+                  key={item.product.cartKey}
                   className="flex items-center gap-3 p-3 rounded-xl bg-mid-gray border border-white/5"
                 >
                   {/* Imagen */}
@@ -89,21 +89,26 @@ export default function CartSidebar() {
                     <p className="text-sm font-semibold text-white/90 truncate">
                       {item.product.name}
                     </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <p className="text-xs text-electric/60 uppercase tracking-wider">
-                        {item.product.category}
-                      </p>
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                       {item.product.colorName && (
+                        <div className="flex items-center gap-1">
+                          <div
+                            className="w-2.5 h-2.5 rounded-full border border-white/20"
+                            style={{ backgroundColor: item.product.color }}
+                          />
+                          <span className="text-xs text-white/40">{item.product.colorName}</span>
+                        </div>
+                      )}
+                      {item.product.selectedSize && (
                         <>
-                          <span className="text-white/20 text-xs">·</span>
-                          <div className="flex items-center gap-1">
-                            <div
-                              className="w-2.5 h-2.5 rounded-full border border-white/20"
-                              style={{ backgroundColor: item.product.color }}
-                            />
-                            <span className="text-xs text-white/40">{item.product.colorName}</span>
-                          </div>
+                          {item.product.colorName && <span className="text-white/20 text-xs">·</span>}
+                          <span className="text-xs text-white/40">Talla {item.product.selectedSize}</span>
                         </>
+                      )}
+                      {!item.product.colorName && !item.product.selectedSize && (
+                        <p className="text-xs text-electric/60 uppercase tracking-wider">
+                          {item.product.category}
+                        </p>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
@@ -124,7 +129,7 @@ export default function CartSidebar() {
                         size="icon"
                         className="h-6 w-6 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
                         onClick={() =>
-                          updateQuantity(item.product.id, item.quantity - 1)
+                          updateQuantity(item.product.cartKey, item.quantity - 1)
                         }
                       >
                         <Minus className="h-3 w-3" />
@@ -137,7 +142,7 @@ export default function CartSidebar() {
                         size="icon"
                         className="h-6 w-6 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
                         onClick={() =>
-                          updateQuantity(item.product.id, item.quantity + 1)
+                          updateQuantity(item.product.cartKey, item.quantity + 1)
                         }
                       >
                         <Plus className="h-3 w-3" />
@@ -151,7 +156,7 @@ export default function CartSidebar() {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-md"
-                      onClick={() => removeItem(item.product.id)}
+                      onClick={() => removeItem(item.product.cartKey)}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>

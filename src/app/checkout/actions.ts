@@ -134,7 +134,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       });
 
       emailItems.push({
-        name: item.product.name,
+        name: `${item.product.name}${item.product.colorName ? ` - ${item.product.colorName}` : ""}${item.product.selectedSize ? ` (Talla ${item.product.selectedSize})` : ""}`,
         quantity: item.quantity,
         unit_price: serverPrice,
         total: lineTotal,

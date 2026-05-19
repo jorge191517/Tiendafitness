@@ -459,7 +459,7 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4">
                 {items.map((item) => (
                   <CartItemRow
-                    key={String(item.product.id)}
+                    key={item.product.cartKey}
                     item={item}
                     onUpdateQuantity={updateQuantity}
                     onRemove={removeItem}
@@ -483,7 +483,7 @@ export default function CheckoutPage() {
                 <div className="hidden lg:block space-y-3 max-h-72 overflow-y-auto pr-1">
                   {items.map((item) => (
                     <div
-                      key={String(item.product.id)}
+                      key={item.product.cartKey}
                       className="flex items-center gap-3"
                     >
                       <div className="w-12 h-12 rounded-lg bg-dark-gray overflow-hidden shrink-0">
@@ -579,9 +579,9 @@ function CartItemRow({
   onUpdateQuantity,
   onRemove,
 }: {
-  item: { product: { id: number | string; name: string; image: string; price: number; oldPrice?: number }; quantity: number };
-  onUpdateQuantity: (id: number | string, qty: number) => void;
-  onRemove: (id: number | string) => void;
+  item: { product: { cartKey: string; id: number | string; name: string; image: string; price: number; oldPrice?: number; colorName?: string; selectedSize?: string }; quantity: number };
+  onUpdateQuantity: (cartKey: string, qty: number) => void;
+  onRemove: (cartKey: string) => void;
 }) {
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl bg-dark-gray border border-white/5">
@@ -596,6 +596,17 @@ function CartItemRow({
         <p className="text-sm font-semibold text-white/90 truncate">
           {item.product.name}
         </p>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          {item.product.colorName && (
+            <span className="text-xs text-white/40">{item.product.colorName}</span>
+          )}
+          {item.product.selectedSize && (
+            <>
+              {item.product.colorName && <span className="text-white/20 text-xs">·</span>}
+              <span className="text-xs text-white/40">Talla {item.product.selectedSize}</span>
+            </>
+          )}
+        </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-sm font-bold text-white">
             {item.product.price.toFixed(2)} €
@@ -612,7 +623,7 @@ function CartItemRow({
             size="icon"
             className="h-7 w-7 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
             onClick={() =>
-              onUpdateQuantity(item.product.id, item.quantity - 1)
+              onUpdateQuantity(item.product.cartKey, item.quantity - 1)
             }
           >
             <Minus className="h-3.5 w-3.5" />
@@ -625,7 +636,7 @@ function CartItemRow({
             size="icon"
             className="h-7 w-7 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
             onClick={() =>
-              onUpdateQuantity(item.product.id, item.quantity + 1)
+              onUpdateQuantity(item.product.cartKey, item.quantity + 1)
             }
           >
             <Plus className="h-3.5 w-3.5" />
@@ -637,7 +648,7 @@ function CartItemRow({
           variant="ghost"
           size="icon"
           className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10 rounded-md"
-          onClick={() => onRemove(item.product.id)}
+          onClick={() => onRemove(item.product.cartKey)}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>

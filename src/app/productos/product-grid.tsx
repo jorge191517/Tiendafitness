@@ -1,12 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star, ShoppingCart, Check, Eye } from "lucide-react";
-import { useState } from "react";
+import { Star, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import type { Product, ProductBadge } from "@/data/types";
-import { useCartStore } from "@/store/cart-store";
 
 function getBadgeColor(badge: ProductBadge | string) {
   switch (badge) {
@@ -38,48 +36,6 @@ function StarRating({ rating }: { rating: number }) {
       ))}
       <span className="text-xs text-white/40 ml-1">({rating})</span>
     </div>
-  );
-}
-
-/** Botón de añadir al carrito con feedback visual */
-function AddToCartButton({ product }: { product: Product }) {
-  const addItem = useCartStore((s) => s.addItem);
-  const isInCart = useCartStore((s) => s.isInCart);
-  const [justAdded, setJustAdded] = useState(false);
-  const inCart = isInCart(product.id);
-
-  const handleAdd = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addItem(product);
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1500);
-  };
-
-  return (
-    <Button
-      size="sm"
-      onClick={handleAdd}
-      className={`rounded-full font-bold uppercase tracking-wider text-xs transition-all duration-300 ${
-        justAdded
-          ? "bg-lime text-black shadow-[0_0_20px_rgba(170,255,0,0.4)]"
-          : inCart
-          ? "bg-electric/80 text-white shadow-[0_0_20px_rgba(0,153,255,0.3)]"
-          : "bg-electric hover:bg-electric/90 text-white shadow-[0_0_20px_rgba(0,153,255,0.4)]"
-      }`}
-    >
-      {justAdded ? (
-        <>
-          <Check className="h-3.5 w-3.5 mr-1.5" />
-          Añadido
-        </>
-      ) : (
-        <>
-          <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
-          {inCart ? "En el Carrito" : "Añadir"}
-        </>
-      )}
-    </Button>
   );
 }
 
@@ -129,18 +85,16 @@ export default function ProductGrid({ products }: { products: Product[] }) {
               </span>
             )}
 
-            {/* Color swatch */}
-            {product.color && (
+            {/* Color variant count badge */}
+            {product.variants && product.variants.length > 1 && (
               <div className="absolute top-2 right-2 md:top-3 md:right-3">
-                <div
-                  className="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 border-white/30 shadow-md"
-                  style={{ backgroundColor: product.color }}
-                  title={product.colorName ?? product.color}
-                />
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-black/60 text-[9px] md:text-[10px] font-semibold text-white/80 border border-white/10">
+                  {product.variants.length} colores
+                </span>
               </div>
             )}
 
-            {/* Hover overlay with action buttons */}
+            {/* Hover overlay with action button */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end pb-4 gap-2 z-10">
               <a
                 href={`/productos/${product.slug}`}
@@ -149,7 +103,12 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                 <Eye className="h-3.5 w-3.5" />
                 Ver Producto
               </a>
-              <AddToCartButton product={product} />
+              <a
+                href={`/productos/${product.slug}`}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-electric text-white text-xs font-bold uppercase tracking-wider hover:bg-electric/90 transition-colors shadow-lg"
+              >
+                Elegir Opciones
+              </a>
             </div>
           </a>
 
@@ -162,6 +121,20 @@ export default function ProductGrid({ products }: { products: Product[] }) {
             <h3 className="text-xs md:text-sm font-bold text-white/90 group-hover:text-white transition-colors line-clamp-2 mb-1.5 leading-tight">
               {product.name}
             </h3>
+
+            {/* Color variant swatches */}
+            {product.variants && product.variants.length > 0 && (
+              <div className="flex items-center gap-1 mb-2">
+                {product.variants.map((variant) => (
+                  <div
+                    key={variant.id}
+                    className="w-4 h-4 md:w-5 md:h-5 rounded-full border border-white/15 shadow-sm"
+                    style={{ backgroundColor: variant.color }}
+                    title={variant.colorName}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Sizes preview */}
             {product.sizes && product.sizes.length > 0 && (

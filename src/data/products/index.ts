@@ -6,7 +6,7 @@
  * no necesiten conocer la estructura interna de carpetas.
  *
  * USO:
- *   import { featuredProducts, getProductsByCategory, getProductVariants } from "@/data/products";
+ *   import { allProducts, featuredProducts, getProductBySlug } from "@/data/products";
  */
 
 import type { Product } from "@/data/types";
@@ -34,6 +34,11 @@ export const allProducts: Product[] = Object.values(productsByCategory).flat();
 export const featuredProducts: Product[] = allProducts.filter(
   (p) => p.featured === true
 );
+
+/** Categorías que tienen al menos 1 producto */
+export const activeCategories: string[] = Object.entries(productsByCategory)
+  .filter(([, products]) => products.length > 0)
+  .map(([slug]) => slug);
 
 // ─── Utilidades de consulta ─────────────────────────────────────────────────
 
@@ -74,20 +79,13 @@ export function getUniqueSubcategories(categorySlug?: string): { slug: string; n
 }
 
 /**
- * Devuelve las variantes de color de un producto.
- * Un producto tiene variantes si su `variantGroup` coincide con otros productos.
- * No incluye al propio producto en el resultado.
- *
- * Ejemplo: "Conjunto Deportivo Dama Mocha" (variantGroup: "conjunto-deportivo-dama")
- * devuelve los otros 3 colores: Negro, Sage, Terracota.
+ * Busca una variante específica de un producto por su variant ID.
+ * Devuelve la variante o undefined si no existe.
  */
-export function getProductVariants(product: Product): Product[] {
-  if (!product.variantGroup) return [];
-  return allProducts.filter(
-    (p) => p.variantGroup === product.variantGroup && p.id !== product.id
-  );
+export function getVariantById(product: Product, variantId: number): Product["variants"] extends (infer V)[] ? V : never | undefined {
+  return product.variants?.find((v) => v.id === variantId) as any;
 }
 
 // ─── Re-export de tipos (comodidad) ─────────────────────────────────────────
 
-export type { Product, ProductBadge, ProductStock } from "@/data/types";
+export type { Product, ProductVariant, ProductBadge, ProductStock } from "@/data/types";

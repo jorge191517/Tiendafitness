@@ -16,15 +16,31 @@ export type ProductBadge =
 /** Estado de stock del producto */
 export type ProductStock = "in_stock" | "low_stock" | "out_of_stock";
 
-/** Producto del catálogo */
-export interface Product {
-  /** Identificador único */
+/** Variante de color de un producto base */
+export interface ProductVariant {
+  /** Identificador único de la variante */
   id: number;
-  /** Nombre visible del producto */
+  /** Color CSS de la variante (ej. "#A0785A") */
+  color: string;
+  /** Nombre legible del color (ej. "Mocha") */
+  colorName: string;
+  /** URL de la imagen de esta variante */
+  image: string;
+  /** Tallas disponibles para esta variante (si difieren de las del producto base) */
+  sizes?: string[];
+  /** Estado de stock de esta variante */
+  stock?: ProductStock;
+}
+
+/** Producto del catálogo (producto base con variantes de color) */
+export interface Product {
+  /** Identificador único del producto base */
+  id: number;
+  /** Nombre visible del producto base (sin color) */
   name: string;
-  /** Slug URL-friendly (ej. "set-bandas-resistencia-pro") */
+  /** Slug URL-friendly (ej. "conjunto-deportivo-dama") */
   slug: string;
-  /** Slug de la categoría a la que pertenece (ej. "fitness-gym") */
+  /** Slug de la categoría a la que pertenece (ej. "ropa-deportiva") */
   category: string;
   /** Nombre legible de la categoría (ej. "Ropa Deportiva") */
   categoryName?: string;
@@ -32,13 +48,13 @@ export interface Product {
   subcategory?: string;
   /** Nombre legible de la subcategoría (ej. "Conjuntos Deportivos Dama") */
   subcategoryName?: string;
-  /** Descripción breve del producto */
+  /** Descripción del producto */
   description: string;
   /** Precio actual en euros */
   price: number;
   /** Precio anterior (tachado) si hay descuento */
   oldPrice?: number;
-  /** URL de la imagen principal */
+  /** URL de la imagen principal (por defecto la primera variante) */
   image: string;
   /** Valoración media (0-5) */
   rating: number;
@@ -48,21 +64,22 @@ export interface Product {
   badge?: ProductBadge;
   /** Si el producto debe aparecer como destacado */
   featured?: boolean;
-  /** Estado de stock del producto */
+  /** Estado de stock general del producto */
   stock?: ProductStock;
-  /** Tallas disponibles (ej. ["S", "M", "L", "XL"]) */
+  /** Tallas disponibles (unión de todas las variantes) */
   sizes?: string[];
-  /** Color principal del producto (valor CSS, ej. "#A0785A") */
+  /** Color principal (de la variante por defecto, para compatibilidad) */
   color?: string;
-  /** Nombre legible del color (ej. "Verde Sage") */
+  /** Nombre del color principal (para compatibilidad) */
   colorName?: string;
   /**
-   * Grupo de variantes: productos con el mismo variantGroup son
-   * variaciones de color del mismo producto base.
-   * Ej: "conjunto-deportivo-dama" agrupa todas las colores de conjuntos dama.
-   * Permite navegar entre colores desde la ficha de producto.
+   * Grupo de variantes: identificador compartido por productos
+   * que son variaciones de color del mismo modelo.
+   * Mantenido para compatibilidad con Supabase.
    */
   variantGroup?: string;
+  /** Variantes de color disponibles para este producto */
+  variants?: ProductVariant[];
 }
 
 /** Categoría de productos */
@@ -71,7 +88,7 @@ export interface ProductCategory {
   id: number;
   /** Nombre visible de la categoría */
   name: string;
-  /** Slug URL-friendly (ej. "fitness-gym") */
+  /** Slug URL-friendly (ej. "ropa-deportiva") */
   slug: string;
   /** Nombre del componente icono de Lucide (se resuelve en el cliente) */
   icon: string;

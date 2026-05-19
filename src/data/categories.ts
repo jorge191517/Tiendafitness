@@ -1,8 +1,8 @@
 import {
-  Dumbbell,
-  CircleDot,
   Shirt,
   Watch,
+  Dumbbell,
+  CircleDot,
   Pill,
   type LucideIcon,
 } from "lucide-react";
@@ -14,37 +14,22 @@ import type { ProductCategory, ProductSubcategory } from "@/data/types";
  * y los iconos se resuelven solo en el cliente.
  */
 export const categoryIcons: Record<string, LucideIcon> = {
-  "fitness-gym": Dumbbell,
-  padel: CircleDot,
   "ropa-deportiva": Shirt,
   accesorios: Watch,
+  "fitness-gym": Dumbbell,
+  padel: CircleDot,
   suplementos: Pill,
 };
 
 /**
  * Datos de categorías. NO contiene productos.
- * Para añadir una categoría nueva, basta con agregar un objeto aquí
- * y registrar su icono en `categoryIcons`.
+ * Solo se muestran las categorías que tienen productos reales.
+ * Las categorías vacías se incluyen para navegación pero se
+ * ocultan en el frontend si no hay productos.
  */
 export const categories: ProductCategory[] = [
   {
     id: 1,
-    name: "Fitness y Gym",
-    slug: "fitness-gym",
-    icon: "Dumbbell",
-    description:
-      "Equipamiento profesional para tu gimnasio: pesas, bandas, máquinas y más.",
-  },
-  {
-    id: 2,
-    name: "Pádel",
-    slug: "padel",
-    icon: "CircleDot",
-    description:
-      "Palas, bolas y accesorios de pádel seleccionados para todos los niveles.",
-  },
-  {
-    id: 3,
     name: "Ropa Deportiva",
     slug: "ropa-deportiva",
     icon: "Shirt",
@@ -52,12 +37,28 @@ export const categories: ProductCategory[] = [
       "Ropa técnica y conjuntos deportivos seleccionados para entrenar con estilo y comodidad.",
   },
   {
-    id: 4,
+    id: 2,
     name: "Accesorios",
     slug: "accesorios",
     icon: "Watch",
     description:
-      "Relojes inteligentes, pulsómetros y complementos deportivos.",
+      "Shakers, complementos y accesorios deportivos para tu día a día.",
+  },
+  {
+    id: 3,
+    name: "Fitness y Gym",
+    slug: "fitness-gym",
+    icon: "Dumbbell",
+    description:
+      "Equipamiento profesional para tu gimnasio: pesas, bandas, máquinas y más.",
+  },
+  {
+    id: 4,
+    name: "Pádel",
+    slug: "padel",
+    icon: "CircleDot",
+    description:
+      "Palas, bolas y accesorios de pádel seleccionados para todos los niveles.",
   },
   {
     id: 5,
@@ -83,6 +84,16 @@ export const subcategories: ProductSubcategory[] = [
     slug: "shorts-deportivos-caballero",
     name: "Shorts Deportivos Caballero",
     parentCategory: "ropa-deportiva",
+  },
+  {
+    slug: "franelas-deportivas-caballero",
+    name: "Franelas Deportivas Caballero",
+    parentCategory: "ropa-deportiva",
+  },
+  {
+    slug: "shakers-deportivos",
+    name: "Shakers Deportivos",
+    parentCategory: "accesorios",
   },
 ];
 

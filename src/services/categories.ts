@@ -13,10 +13,10 @@ function isSupabaseConfigured(): boolean {
 }
 
 const iconMap: Record<string, string> = {
-  'fitness-gym': 'Dumbbell',
-  'padel': 'CircleDot',
   'ropa-deportiva': 'Shirt',
   'accesorios': 'Watch',
+  'fitness-gym': 'Dumbbell',
+  'padel': 'CircleDot',
   'suplementos': 'Pill',
 };
 

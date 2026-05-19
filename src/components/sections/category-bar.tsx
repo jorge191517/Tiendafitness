@@ -2,9 +2,17 @@
 
 import { motion } from "framer-motion";
 import { categories, categoryIcons } from "@/data/categories";
+import { activeCategories } from "@/data/products";
 import { fadeInUpShort, glowHover, tapShrink } from "@/lib/animations";
 
 export default function CategoryBar() {
+  // Only show categories that have products
+  const visibleCategories = categories.filter((cat) =>
+    activeCategories.includes(cat.slug)
+  );
+
+  if (visibleCategories.length <= 1) return null;
+
   return (
     <section id="categories" className="relative py-8 md:py-12 bg-deep">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,7 +23,7 @@ export default function CategoryBar() {
           viewport={{ once: true, margin: "-100px" }}
           className="flex flex-wrap items-center justify-center gap-3 md:gap-4"
         >
-          {categories.map((category, i) => {
+          {visibleCategories.map((category, i) => {
             const Icon = categoryIcons[category.slug];
             return (
               <motion.a

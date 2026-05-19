@@ -2,6 +2,10 @@
  * Store del carrito con Zustand + persistencia en localStorage.
  * Compatible con IDs numéricos (datos estáticos) y UUID de Supabase.
  * Almacena productos simplificados para reducir el tamaño en localStorage.
+ *
+ * Cada item del carrito se identifica por `cartKey`, que combina
+ * producto + variante + talla, permitiendo el mismo producto en
+ * diferentes colores/tallas como items separados.
  */
 
 import { create } from "zustand";
@@ -11,6 +15,8 @@ import type { Product } from "@/data/types";
 /** Producto simplificado para almacenar en el carrito (reduce tamaño en localStorage) */
 export interface CartProduct {
   id: number | string;
+  /** Clave única: `${id}-${variantId}-${size}` para diferenciar mismo producto en distinto color/talla */
+  cartKey: string;
   name: string;
   slug: string;
   price: number;
@@ -20,6 +26,10 @@ export interface CartProduct {
   sizes?: string[];
   color?: string;
   colorName?: string;
+  /** Talla seleccionada por el usuario */
+  selectedSize?: string;
+  /** ID de la variante seleccionada */
+  variantId?: number;
 }
 
 /** Elemento del carrito */
@@ -32,28 +42,50 @@ interface CartState {
   items: CartItem[];
   /** Añadir un producto al carrito (cantidad por defecto = 1) */
   addItem: (product: Product | CartProduct, quantity?: number) => void;
-  /** Eliminar un producto del carrito por su ID */
-  removeItem: (productId: number | string) => void;
+  /** Eliminar un producto del carrito por su cartKey */
+  removeItem: (cartKey: string) => void;
   /** Actualizar la cantidad de un producto en el carrito */
-  updateQuantity: (productId: number | string, quantity: number) => void;
+  updateQuantity: (cartKey: string, quantity: number) => void;
   /** Vaciar el carrito por completo */
   clearCart: () => void;
   /** Número total de unidades en el carrito */
   totalItems: number;
   /** Importe total del carrito */
   total: number;
-  /** Comprobar si un producto ya está en el carrito */
-  isInCart: (productId: number | string) => boolean;
+  /** Comprobar si un item está en el carrito por su cartKey */
+  isInCart: (cartKey: string) => boolean;
   /** Alternar producto: lo añade si no está, lo elimina si ya está */
   toggleItem: (product: Product | CartProduct) => void;
 }
 
 /** Convierte un Product completo en un CartProduct simplificado */
 function toCartProduct(product: Product | CartProduct): CartProduct {
-  // Si ya es un CartProduct (no tiene 'description', 'rating', etc.), lo devolvemos tal cual
+  // Si ya es un CartProduct (tiene cartKey), lo devolvemos tal cual
+  if ("cartKey" in product && product.cartKey) {
+    return product as CartProduct;
+  }
+  // Si es un Product completo, generar cartKey si no tiene
   if ("description" in product) {
-    const { id, name, slug, price, oldPrice, image, category, sizes, color, colorName } = product;
-    return { id, name, slug, price, oldPrice, image, category, sizes, color, colorName };
+    const p = product as Product;
+    const variantId = (p as any).variantId ?? 0;
+    const selectedSize = (p as any).selectedSize ?? "no-size";
+    const cartKey = (p as any).cartKey ?? `${p.id}-${variantId}-${selectedSize}`;
+    const { id, name, slug, price, oldPrice, image, category, sizes, color, colorName } = p;
+    return {
+      id,
+      cartKey,
+      name,
+      slug,
+      price,
+      oldPrice,
+      image,
+      category,
+      sizes,
+      color,
+      colorName,
+      selectedSize: selectedSize === "no-size" ? undefined : selectedSize,
+      variantId: variantId === 0 ? undefined : variantId,
+    };
   }
   return product as CartProduct;
 }
@@ -67,12 +99,12 @@ export const useCartStore = create<CartState>()(
         const cartProduct = toCartProduct(product);
         set((state) => {
           const existing = state.items.find(
-            (i) => String(i.product.id) === String(cartProduct.id)
+            (i) => i.product.cartKey === cartProduct.cartKey
           );
           if (existing) {
             return {
               items: state.items.map((i) =>
-                String(i.product.id) === String(cartProduct.id)
+                i.product.cartKey === cartProduct.cartKey
                   ? { ...i, quantity: i.quantity + quantity }
                   : i
               ),
@@ -82,22 +114,22 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      removeItem: (productId) => {
+      removeItem: (cartKey) => {
         set((state) => ({
           items: state.items.filter(
-            (i) => String(i.product.id) !== String(productId)
+            (i) => i.product.cartKey !== cartKey
           ),
         }));
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (cartKey, quantity) => {
         if (quantity <= 0) {
-          get().removeItem(productId);
+          get().removeItem(cartKey);
           return;
         }
         set((state) => ({
           items: state.items.map((i) =>
-            String(i.product.id) === String(productId)
+            i.product.cartKey === cartKey
               ? { ...i, quantity }
               : i
           ),
@@ -110,24 +142,24 @@ export const useCartStore = create<CartState>()(
 
       total: 0,
 
-      isInCart: (productId) => {
+      isInCart: (cartKey) => {
         return get().items.some(
-          (i) => String(i.product.id) === String(productId)
+          (i) => i.product.cartKey === cartKey
         );
       },
 
       toggleItem: (product) => {
         const cartProduct = toCartProduct(product);
-        const inCart = get().isInCart(cartProduct.id);
+        const inCart = get().isInCart(cartProduct.cartKey);
         if (inCart) {
-          get().removeItem(cartProduct.id);
+          get().removeItem(cartProduct.cartKey);
         } else {
           get().addItem(cartProduct);
         }
       },
     }),
     {
-      name: "tiendafitnesspro-cart",
+      name: "tiendafitnesspro-cart-v2",
       /** Calculamos valores derivados tras la hidratación */
       onRehydrateStorage: () => (state) => {
         if (state) {
