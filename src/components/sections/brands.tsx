@@ -23,10 +23,10 @@ export default function Brands() {
           className="text-center mb-10 md:mb-14"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 text-xs md:text-sm font-semibold tracking-wider uppercase mb-4">
-            Trusted By The Best
+            La Confianza de los Mejores
           </span>
           <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">
-            Premium <span className="text-electric">Brands</span>
+            Marcas <span className="text-electric">Premium</span>
           </h2>
         </motion.div>
 

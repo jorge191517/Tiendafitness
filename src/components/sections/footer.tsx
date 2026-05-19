@@ -14,18 +14,18 @@ import {
 
 const footerLinks = {
   navigation: [
-    { name: "Home", href: "#" },
-    { name: "Products", href: "#products" },
-    { name: "Categories", href: "#categories" },
-    { name: "Offers", href: "#offers" },
-    { name: "Contact", href: "#contact" },
+    { name: "Inicio", href: "#" },
+    { name: "Productos", href: "#products" },
+    { name: "Categorías", href: "#categories" },
+    { name: "Ofertas", href: "#offers" },
+    { name: "Contacto", href: "#contact" },
   ],
   categories: [
-    { name: "Fitness & Gym", href: "#" },
-    { name: "Padel", href: "#" },
-    { name: "Sportswear", href: "#" },
-    { name: "Accessories", href: "#" },
-    { name: "Supplements", href: "#" },
+    { name: "Fitness y Gym", href: "#" },
+    { name: "Pádel", href: "#" },
+    { name: "Ropa Deportiva", href: "#" },
+    { name: "Accesorios", href: "#" },
+    { name: "Suplementos", href: "#" },
   ],
   socials: [
     { name: "Instagram", icon: Instagram, href: "#" },
@@ -67,8 +67,8 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs">
-              Your premium destination for sports equipment, apparel, and
-              supplements. Elevate your performance with the best brands.
+              Tu destino premium para equipamiento deportivo, ropa y
+              suplementos. Eleva tu rendimiento con las mejores marcas.
             </p>
             <div className="flex items-center gap-3">
               {footerLinks.socials.map((social) => {
@@ -96,7 +96,7 @@ export default function Footer() {
           >
             <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="w-4 h-0.5 bg-electric rounded-full" />
-              Navigation
+              Navegación
             </h3>
             <ul className="space-y-2.5">
               {footerLinks.navigation.map((link) => (
@@ -121,7 +121,7 @@ export default function Footer() {
           >
             <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="w-4 h-0.5 bg-lime rounded-full" />
-              Categories
+              Categorías
             </h3>
             <ul className="space-y-2.5">
               {footerLinks.categories.map((link) => (
@@ -146,13 +146,13 @@ export default function Footer() {
           >
             <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="w-4 h-0.5 bg-electric rounded-full" />
-              Contact
+              Contacto
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin className="h-4 w-4 text-electric mt-0.5 flex-shrink-0" />
                 <span className="text-white/40 text-sm">
-                  123 Sports Avenue, Madrid, Spain
+                  Av. del Deporte 123, Madrid, España
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -172,15 +172,15 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="py-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/30 text-xs md:text-sm text-center md:text-left">
-            &copy; {new Date().getFullYear()} TiendaFitnessPro. All rights
-            reserved.
+            &copy; {new Date().getFullYear()} TiendaFitnessPro. Todos los derechos
+            reservados.
           </p>
           <div className="flex items-center gap-4 text-xs text-white/30">
             <a href="#" className="hover:text-white/60 transition-colors">
-              Privacy Policy
+              Política de Privacidad
             </a>
             <a href="#" className="hover:text-white/60 transition-colors">
-              Terms of Service
+              Términos de Servicio
             </a>
             <a href="#" className="hover:text-white/60 transition-colors">
               Cookies

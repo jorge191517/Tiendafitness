@@ -63,7 +63,7 @@ export default function PromoBanner() {
             >
               <Zap className="h-5 w-5 md:h-6 md:w-6 text-lime fill-lime" />
               <span className="text-lime font-bold text-xs md:text-sm uppercase tracking-widest">
-                Limited Time Offer
+                Oferta por Tiempo Limitado
               </span>
             </motion.div>
 
@@ -74,10 +74,10 @@ export default function PromoBanner() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-3xl md:text-4xl lg:text-6xl font-black text-white uppercase leading-tight mb-4 md:mb-6"
             >
-              Train Like a
+              Entrena Como un
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-electric to-lime">
-                Professional
+                Profesional
               </span>
             </motion.h2>
 
@@ -88,8 +88,8 @@ export default function PromoBanner() {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="text-white/50 text-sm md:text-lg mb-6 md:mb-8 max-w-md"
             >
-              Get up to 40% off on professional-grade equipment. Elevate your
-              training with gear trusted by champions.
+              Hasta un 40% de descuento en equipamiento profesional. Eleva tu
+              entrenamiento con material de confianza para campeones.
             </motion.p>
 
             <motion.div
@@ -103,7 +103,7 @@ export default function PromoBanner() {
                 className="bg-gradient-to-r from-electric to-electric/80 hover:from-electric/90 hover:to-electric/70 text-white font-bold px-6 md:px-8 py-5 md:py-6 text-sm md:text-base rounded-xl shadow-[0_0_30px_rgba(0,153,255,0.4)] hover:shadow-[0_0_50px_rgba(0,153,255,0.6)] transition-all duration-300 uppercase tracking-wider group"
               >
                 <a href="#products">
-                  Shop Now
+                  Comprar Ahora
                   <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </a>
               </Button>

@@ -25,13 +25,13 @@ function StarRating({ rating }: { rating: number }) {
 
 function getBadgeColor(badge: string) {
   switch (badge) {
-    case "SALE":
+    case "OFERTA":
       return "bg-red-500 text-white";
-    case "NEW":
+    case "NUEVO":
       return "bg-electric text-white";
-    case "BESTSELLER":
+    case "MÁS VENDIDO":
       return "bg-lime text-black";
-    case "TOP RATED":
+    case "TOP VALORADO":
       return "bg-yellow-500 text-black";
     default:
       return "bg-white/20 text-white";
@@ -55,13 +55,13 @@ export default function FeaturedProducts() {
           className="text-center mb-10 md:mb-16"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-electric/10 border border-electric/30 text-electric text-xs md:text-sm font-semibold tracking-wider uppercase mb-4">
-            Featured Products
+            Productos Destacados
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight">
-            Top <span className="text-electric">Picks</span> This Week
+            Lo Mejor <span className="text-electric">de</span> la Semana
           </h2>
           <p className="mt-3 text-white/40 max-w-md mx-auto text-sm md:text-base">
-            Curated selection of the best sports gear and supplements for peak performance.
+            Selección curada del mejor equipamiento deportivo y suplementos para un rendimiento máximo.
           </p>
         </motion.div>
 
@@ -103,7 +103,7 @@ export default function FeaturedProducts() {
                     className="bg-electric hover:bg-electric/90 text-white rounded-full shadow-[0_0_20px_rgba(0,153,255,0.4)] font-bold uppercase tracking-wider text-xs"
                   >
                     <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
-                    Add to Cart
+                    Añadir al Carrito
                   </Button>
                 </div>
               </div>
@@ -119,11 +119,11 @@ export default function FeaturedProducts() {
                 <StarRating rating={product.rating} />
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-sm md:text-lg font-black text-white">
-                    ${product.price.toFixed(2)}
+                    {product.price.toFixed(2)} €
                   </span>
                   {product.originalPrice && (
                     <span className="text-xs md:text-sm text-white/30 line-through">
-                      ${product.originalPrice.toFixed(2)}
+                      {product.originalPrice.toFixed(2)} €
                     </span>
                   )}
                 </div>

@@ -12,11 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
-  { name: "Home", href: "#" },
-  { name: "Products", href: "#products" },
-  { name: "Categories", href: "#categories" },
-  { name: "Offers", href: "#offers" },
-  { name: "Contact", href: "#contact" },
+  { name: "Inicio", href: "#" },
+  { name: "Productos", href: "#products" },
+  { name: "Categorías", href: "#categories" },
+  { name: "Ofertas", href: "#offers" },
+  { name: "Contacto", href: "#contact" },
 ];
 
 export default function Header() {
@@ -57,7 +57,7 @@ export default function Header() {
                 <span className="text-electric">Pro</span>
               </span>
               <span className="text-[10px] md:text-xs text-white/40 tracking-widest uppercase">
-                Sports Store
+                Tienda Deportiva
               </span>
             </div>
           </a>
@@ -150,7 +150,7 @@ export default function Header() {
                   className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
                 >
                   <User className="h-5 w-5" />
-                  Login / Register
+                  Iniciar Sesión / Registrarse
                 </a>
               </div>
             </div>

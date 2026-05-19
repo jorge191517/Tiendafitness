@@ -29,3 +29,29 @@ Stage Summary:
 - Smooth animations using Framer Motion (fade-in, slide-up, hover glow, stagger)
 - Glassmorphism header with sticky scroll behavior
 - Image from user upload used as hero background
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Convert entire website to Spanish (es-ES) for Spanish-speaking audience
+
+Work Log:
+- Updated layout.tsx: lang="es", SEO title/description/keywords all in Spanish
+- Updated header.tsx: Navigation (Inicio, Productos, Categorías, Ofertas, Contacto), subtitle "Tienda Deportiva", login text "Iniciar Sesión / Registrarse"
+- Updated hero.tsx: Headline "TU MEJOR VERSIÓN EMPIEZA AQUÍ", subheadline, "Nueva Colección 2026", buttons "Comprar Ahora" / "Explorar Categorías", feature labels (Calidad Garantizada, Envío Rápido, Marcas Premium, Soporte Personalizado)
+- Updated data/categories.ts: Fitness y Gym, Pádel, Ropa Deportiva, Accesorios, Suplementos
+- Updated data/products.ts: All 8 product names in Spanish, badges (OFERTA, MÁS VENDIDO, NUEVO, TOP VALORADO), categories in Spanish, prices in €
+- Updated featured-products.tsx: Section titles, badge color mappings for Spanish badges, "Añadir al Carrito" button, euro pricing
+- Updated promo-banner.tsx: "Oferta por Tiempo Limitado", "Entrena Como un Profesional", Spanish marketing copy, "Comprar Ahora" button
+- Updated brands.tsx: "La Confianza de los Mejores", "Marcas Premium"
+- Updated footer.tsx: All columns (Navegación, Categorías, Contacto), Spanish address, legal links (Política de Privacidad, Términos de Servicio), copyright "Todos los derechos reservados"
+- Passed lint check with zero errors
+- Verified dev server compiles and serves 200 OK
+
+Stage Summary:
+- Entire website fully translated to professional, energetic, premium Spanish copywriting
+- All navigation, buttons, labels, product names, categories, and marketing copy in Spanish
+- Currency changed to € (euro) format
+- SEO metadata in Spanish
+- html lang attribute set to "es"
+- No robotic translations; natural, commercial Spanish tone throughout

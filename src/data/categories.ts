@@ -17,32 +17,32 @@ export interface Category {
 export const categories: Category[] = [
   {
     id: 1,
-    name: "Fitness & Gym",
+    name: "Fitness y Gym",
     icon: Dumbbell,
     slug: "fitness-gym",
   },
   {
     id: 2,
-    name: "Padel",
+    name: "Pádel",
     icon: CircleDot,
     slug: "padel",
   },
   {
     id: 3,
-    name: "Sportswear",
+    name: "Ropa Deportiva",
     icon: Shirt,
-    slug: "sportswear",
+    slug: "ropa-deportiva",
   },
   {
     id: 4,
-    name: "Accessories",
+    name: "Accesorios",
     icon: Watch,
-    slug: "accessories",
+    slug: "accesorios",
   },
   {
     id: 5,
-    name: "Supplements",
+    name: "Suplementos",
     icon: Pill,
-    slug: "supplements",
+    slug: "suplementos",
   },
 ];

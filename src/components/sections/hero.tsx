@@ -10,10 +10,10 @@ import {
 import { Button } from "@/components/ui/button";
 
 const features = [
-  { icon: ShieldCheck, label: "Guaranteed Quality" },
-  { icon: Truck, label: "Fast Shipping" },
-  { icon: Award, label: "Premium Brands" },
-  { icon: Headphones, label: "Personalized Support" },
+  { icon: ShieldCheck, label: "Calidad Garantizada" },
+  { icon: Truck, label: "Envío Rápido" },
+  { icon: Award, label: "Marcas Premium" },
+  { icon: Headphones, label: "Soporte Personalizado" },
 ];
 
 const containerVariants = {
@@ -64,7 +64,7 @@ export default function Hero() {
           <motion.div variants={itemVariants} className="mb-4 md:mb-6">
             <span className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-electric/10 border border-electric/30 text-electric text-xs md:text-sm font-semibold tracking-wider uppercase">
               <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-electric rounded-full animate-pulse" />
-              New Collection 2026
+              Nueva Colección 2026
             </span>
           </motion.div>
 
@@ -73,12 +73,12 @@ export default function Hero() {
             variants={itemVariants}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.9] tracking-tight mb-4 md:mb-6"
           >
-            <span className="text-white">YOUR BEST</span>
+            <span className="text-white">TU MEJOR</span>
             <br />
-            <span className="text-white">VERSION </span>
-            <span className="text-electric glow-blue-text">STARTS</span>
+            <span className="text-white">VERSIÓN </span>
+            <span className="text-electric glow-blue-text">EMPIEZA</span>
             <br />
-            <span className="text-lime glow-lime-text">HERE</span>
+            <span className="text-lime glow-lime-text">AQUÍ</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -86,8 +86,7 @@ export default function Hero() {
             variants={itemVariants}
             className="text-base md:text-lg lg:text-xl text-white/60 max-w-lg mb-6 md:mb-8 leading-relaxed"
           >
-            High-quality sports products for every workout, every match, and
-            every goal.
+            Productos deportivos de alta calidad para cada entrenamiento, cada partido y cada objetivo.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -100,7 +99,7 @@ export default function Hero() {
               className="bg-electric hover:bg-electric/90 text-white font-bold px-6 md:px-8 py-5 md:py-6 text-sm md:text-base rounded-xl shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.5)] transition-all duration-300 uppercase tracking-wider group"
             >
               <a href="#products">
-                Shop Now
+                Comprar Ahora
                 <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">
                   &rarr;
                 </span>
@@ -111,7 +110,7 @@ export default function Hero() {
               variant="outline"
               className="border-white/20 hover:border-lime/50 text-white hover:text-lime font-bold px-6 md:px-8 py-5 md:py-6 text-sm md:text-base rounded-xl bg-white/5 hover:bg-lime/5 transition-all duration-300 uppercase tracking-wider"
             >
-              <a href="#categories">Explore Categories</a>
+              <a href="#categories">Explorar Categorías</a>
             </Button>
           </motion.div>
 

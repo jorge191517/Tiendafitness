@@ -14,16 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TiendaFitnessPro - Your Best Version Starts Here",
+  title: "TiendaFitnessPro - Tu Mejor Versión Empieza Aquí",
   description:
-    "Premium sports store. High-quality sports products for every workout, every match, and every goal. Shop fitness equipment, sportswear, supplements, and accessories.",
+    "Tienda premium de deporte. Productos deportivos de alta calidad para cada entrenamiento, cada partido y cada objetivo. Equipamiento de fitness, ropa deportiva, suplementos y accesorios.",
   keywords: [
-    "sports store",
+    "tienda de deporte",
     "fitness",
-    "gym equipment",
-    "padel",
-    "sportswear",
-    "supplements",
+    "equipamiento de gimnasio",
+    "pádel",
+    "ropa deportiva",
+    "suplementos",
     "TiendaFitnessPro",
   ],
   authors: [{ name: "TiendaFitnessPro" }],
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
   openGraph: {
-    title: "TiendaFitnessPro - Your Best Version Starts Here",
+    title: "TiendaFitnessPro - Tu Mejor Versión Empieza Aquí",
     description:
-      "Premium sports store. High-quality sports products for every workout, every match, and every goal.",
+      "Tienda premium de deporte. Productos deportivos de alta calidad para cada entrenamiento, cada partido y cada objetivo.",
     type: "website",
   },
 };
@@ -44,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep text-foreground`}
       >
