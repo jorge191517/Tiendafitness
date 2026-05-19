@@ -114,19 +114,32 @@ export default function RegisterPage() {
               <CheckCircle2 className="h-8 w-8 text-lime" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">
-              ¡Cuenta creada!
+              ¡Cuenta Creada Correctamente!
             </h2>
-            <p className="text-white/60 text-sm leading-relaxed mb-6">
-              Revisa tu email para confirmar tu cuenta. Te hemos enviado un
-              enlace de confirmación a{" "}
+            <p className="text-white/60 text-sm leading-relaxed mb-3">
+              Te hemos enviado un enlace de confirmación a{" "}
               <span className="text-electric font-medium">{email}</span>.
             </p>
-            <Button
-              onClick={() => router.push("/auth/login")}
-              className="w-full h-11 bg-electric hover:bg-electric/90 text-white font-semibold shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.4)] transition-all duration-300 cursor-pointer"
-            >
-              Ir a Iniciar Sesión
-            </Button>
+            <p className="text-white/40 text-xs leading-relaxed mb-8">
+              Revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace
+              para verificar tu cuenta. Una vez confirmada, podrás iniciar sesión y
+              empezar a explorar el catálogo de TiendaFitnessPro.
+            </p>
+            <div className="space-y-3">
+              <Button
+                onClick={() => router.push("/auth/login")}
+                className="w-full h-11 bg-electric hover:bg-electric/90 text-white font-semibold shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.4)] transition-all duration-300 cursor-pointer"
+              >
+                Ir a Iniciar Sesión
+              </Button>
+              <Button
+                onClick={() => router.push("/")}
+                variant="outline"
+                className="w-full h-11 border-white/10 text-white/60 hover:text-white hover:bg-white/5 cursor-pointer"
+              >
+                Volver al Inicio
+              </Button>
+            </div>
           </div>
         </motion.div>
       </div>

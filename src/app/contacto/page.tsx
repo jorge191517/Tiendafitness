@@ -80,6 +80,17 @@ export default function ContactoPage() {
       {/* Header spacer */}
       <div className="h-20" />
 
+      {/* Breadcrumb */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <nav className="flex items-center gap-2 text-sm text-white/30">
+          <a href="/" className="hover:text-white/60 transition-colors">
+            Inicio
+          </a>
+          <span>/</span>
+          <span className="text-white/60">Contacto</span>
+        </nav>
+      </div>
+
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         {/* Page header */}
         <motion.div

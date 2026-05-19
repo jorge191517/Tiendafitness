@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getProducts, getProductsByCategory } from "@/services/products";
 import { getCategories } from "@/services/categories";
 import ProductGrid from "./product-grid";
@@ -27,14 +28,33 @@ export default async function ProductosPage({ searchParams }: Props) {
       {/* Header spacer */}
       <div className="h-20" />
 
+      {/* Breadcrumb */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <nav className="flex items-center gap-2 text-sm text-white/30">
+          <Link href="/" className="hover:text-white/60 transition-colors">
+            Inicio
+          </Link>
+          <span>/</span>
+          <span className="text-white/60">Productos</span>
+          {activeCategory && (
+            <>
+              <span>/</span>
+              <span className="text-electric">
+                {categories.find((c) => c.slug === activeCategory)?.name ?? activeCategory}
+              </span>
+            </>
+          )}
+        </nav>
+      </div>
+
       {/* Page header */}
-      <section className="py-12 md:py-20">
+      <section className="py-8 md:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight mb-4">
             Nuestros <span className="text-electric">Productos</span>
           </h1>
           <p className="text-white/50 max-w-xl text-sm md:text-base">
-            Explora nuestro catálogo completo. Equipamiento deportivo de alta calidad para cada disciplina y nivel.
+            Explora nuestro catálogo completo. Equipamiento deportivo seleccionado para cada disciplina y nivel.
           </p>
         </div>
       </section>

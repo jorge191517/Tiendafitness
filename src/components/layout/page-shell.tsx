@@ -3,7 +3,9 @@ import Hero from "@/components/sections/hero";
 import CategoryBar from "@/components/sections/category-bar";
 import FeaturedProductsWrapper from "@/components/sections/featured-products-wrapper";
 import PromoBanner from "@/components/sections/promo-banner";
-import Brands from "@/components/sections/brands";
+import PrivateLabel from "@/components/sections/private-label";
+import WhyChooseUs from "@/components/sections/why-choose-us";
+import ComingSoon from "@/components/sections/coming-soon";
 import Footer from "@/components/sections/footer";
 
 /**
@@ -19,7 +21,9 @@ export function PageShell() {
         <CategoryBar />
         <FeaturedProductsWrapper />
         <PromoBanner />
-        <Brands />
+        <PrivateLabel />
+        <WhyChooseUs />
+        <ComingSoon />
       </main>
       <Footer />
     </div>

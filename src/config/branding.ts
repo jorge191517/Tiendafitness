@@ -41,14 +41,10 @@ export const brandingConfig = {
       description:
         "Selección curada del mejor equipamiento deportivo y suplementos para un rendimiento máximo.",
     },
-    brands: {
-      eyebrow: "La Confianza de los Mejores",
-      title: "Marcas Premium",
-    },
     features: [
       { label: "Calidad Garantizada" },
       { label: "Envío Rápido" },
-      { label: "Marcas Premium" },
+      { label: "Precios Competitivos" },
       { label: "Soporte Personalizado" },
     ],
   },

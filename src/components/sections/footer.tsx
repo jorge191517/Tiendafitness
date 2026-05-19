@@ -58,7 +58,7 @@ export default function Footer() {
             </div>
             <p className="text-white/40 text-sm leading-relaxed mb-4 max-w-xs">
               Tu destino premium para equipamiento deportivo, ropa y
-              suplementos. Eleva tu rendimiento con las mejores marcas.
+              suplementos. Eleva tu rendimiento con productos seleccionados.
             </p>
             <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-lime/5 border border-lime/20">
               <Globe className="h-4 w-4 text-lime shrink-0" />

@@ -41,7 +41,7 @@ export const categories: ProductCategory[] = [
     slug: "padel",
     icon: "CircleDot",
     description:
-      "Palas, bolas y accesorios de pádel de las mejores marcas.",
+      "Palas, bolas y accesorios de pádel seleccionados para todos los niveles.",
   },
   {
     id: 3,

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Star, ShoppingCart, Check } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import EmptyState from "@/components/ui/empty-state";
 import type { Product, ProductBadge } from "@/data/types";
 import { useCartStore } from "@/store/cart-store";
 
@@ -83,6 +84,19 @@ function AddToCartButton({ product }: { product: Product }) {
 }
 
 export default function ProductGrid({ products }: { products: Product[] }) {
+  if (!products || products.length === 0) {
+    return (
+      <EmptyState
+        title="Catálogo en Preparación"
+        description="Estamos cargando los primeros productos de TiendaFitnessPro. Muy pronto podrás explorar artículos deportivos seleccionados para entrenamiento, pádel, accesorios y más."
+        primaryAction="Volver al Inicio"
+        primaryHref="/"
+        whatsAppLabel="Solicitar un Producto"
+        whatsappMessage="Hola, me gustaría saber cuándo estarán disponibles los productos en TiendaFitnessPro."
+      />
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
       {products.map((product, i) => (
