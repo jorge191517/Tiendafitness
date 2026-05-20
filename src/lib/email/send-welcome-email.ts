@@ -40,7 +40,7 @@ function renderWelcomeEmailHtml(userName: string): string {
       </h2>
       <p style="font-size: 15px; color: rgba(255,255,255,0.7); margin: 0 0 28px; line-height: 1.6;">
         Gracias por crear tu cuenta en <strong style="color: #0099FF;">Tienda Fitness Pro</strong>.
-        Estamos encantados de que formes parte de nuestra comunidad de deportistas comprometidos con su rendimiento y bienestar.
+        Ya puedes iniciar sesión con tu correo y contraseña, y explorar todo nuestro catálogo de ropa deportiva y accesorios premium.
       </p>
 
       <!-- Beneficios -->
@@ -109,14 +109,20 @@ function renderWelcomeEmailHtml(userName: string): string {
  * Fire-and-forget: si falla, no lanza excepción, solo registra un warning.
  */
 export async function sendWelcomeEmail(payload: WelcomeEmailPayload): Promise<void> {
+  console.log("[WELCOME_EMAIL] sendWelcomeEmail llamado para:", payload.userEmail);
   try {
-    await sendMail({
+    const result = await sendMail({
       to: payload.userEmail,
       subject: "Bienvenido a TiendaFitnessPro",
       html: renderWelcomeEmailHtml(payload.userName),
     });
+    if (result) {
+      console.log("[WELCOME_EMAIL] Email enviado correctamente a:", payload.userEmail);
+    } else {
+      console.warn("[WELCOME_EMAIL] sendMail devolvió false (SMTP no configurado o fallo) para:", payload.userEmail);
+    }
   } catch (err) {
-    console.warn("[Email] No se pudo enviar el email de bienvenida:", err);
+    console.warn("[WELCOME_EMAIL] No se pudo enviar el email de bienvenida:", err);
     // No lanzar — el registro ya se completó correctamente
   }
 }

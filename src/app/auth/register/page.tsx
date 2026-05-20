@@ -63,8 +63,10 @@ export default function RegisterPage() {
       });
 
       if (authError) {
+        console.warn("[REGISTER] Error de Supabase:", authError.message);
         const errorMessages: Record<string, string> = {
-          "User already registered": "Este correo electrónico ya está registrado",
+          "User already registered":
+            "Este correo electrónico ya está registrado. Inicia sesión o usa otro correo.",
           "Password should be at least 6 characters":
             "La contraseña debe tener al menos 6 caracteres",
           "Email not valid": "Correo electrónico no válido",
@@ -79,26 +81,24 @@ export default function RegisterPage() {
         return;
       }
 
+      // Registro exitoso
+      console.log("[REGISTER] Usuario creado:", email);
+
       // Enviar email de bienvenida (fire-and-forget, no bloquea el registro)
       if (data.user?.email) {
         sendWelcomeEmailAction(
           data.user.user_metadata?.full_name || fullName,
           data.user.email
-        ).catch(() => {
-          // Silenciar error — el email de bienvenida no debe romper el registro
+        ).catch((err) => {
+          console.warn("[REGISTER] Error enviando email de bienvenida:", err);
         });
       }
 
-      // Si el usuario tiene sesión (auto-login tras registro), redirigir a productos
-      if (data.user && data.session) {
-        router.push("/productos");
-        router.refresh();
-        return;
-      }
-
-      // Si no hay sesión automática, mostrar pantalla de éxito
+      // Siempre mostrar la pantalla de éxito, sin importar si hay sesión o no.
+      // El usuario pulsa los botones manualmente para navegar.
       setSuccess(true);
-    } catch {
+    } catch (err) {
+      console.error("[REGISTER] Error inesperado:", err);
       setError("Error de conexión. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
@@ -112,6 +112,7 @@ export default function RegisterPage() {
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-lime/5 rounded-full blur-[100px]" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-electric/5 rounded-full blur-[100px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-lime/3 rounded-full blur-[120px]" />
         </div>
 
         <motion.div
@@ -121,31 +122,44 @@ export default function RegisterPage() {
           className="w-full max-w-md relative z-10"
         >
           <div className="bg-mid-gray/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
-            <div className="w-16 h-16 bg-lime/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="h-8 w-8 text-lime" />
-            </div>
+            {/* Icono de éxito */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
+              className="w-20 h-20 bg-lime/10 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-lime/30"
+            >
+              <CheckCircle2 className="h-10 w-10 text-lime" />
+            </motion.div>
+
             <h2 className="text-2xl font-bold text-white mb-3">
               ¡Cuenta creada correctamente!
             </h2>
-            <p className="text-white/60 text-sm leading-relaxed mb-6">
-              Ya puedes iniciar sesión y explorar nuestro catálogo de ropa
-              deportiva y accesorios premium.
+            <p className="text-white/60 text-sm leading-relaxed mb-8">
+              Gracias por registrarte en TiendaFitnessPro. Ya puedes iniciar
+              sesión con el correo y contraseña que acabas de crear.
             </p>
+
             <div className="space-y-3">
               <Button
                 onClick={() => router.push("/auth/login")}
-                className="w-full h-11 bg-electric hover:bg-electric/90 text-white font-semibold shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.4)] transition-all duration-300 cursor-pointer"
+                className="w-full h-12 bg-electric hover:bg-electric/90 text-white font-semibold text-base shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.4)] transition-all duration-300 cursor-pointer"
               >
-                Ir a Iniciar Sesión
+                Iniciar sesión
               </Button>
               <Button
                 onClick={() => router.push("/productos")}
                 variant="outline"
-                className="w-full h-11 border-lime/40 text-lime hover:bg-lime/10 font-semibold transition-all duration-300 cursor-pointer"
+                className="w-full h-12 border-lime/40 text-lime hover:bg-lime/10 font-semibold text-base transition-all duration-300 cursor-pointer"
               >
-                Ver Productos
+                Ver productos
               </Button>
             </div>
+
+            <p className="text-white/30 text-xs mt-6">
+              Te hemos enviado un email de bienvenida a{" "}
+              <span className="text-white/50">{email}</span>
+            </p>
           </div>
         </motion.div>
       </div>

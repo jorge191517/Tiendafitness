@@ -15,9 +15,13 @@ export async function sendWelcomeEmailAction(
   userName: string,
   userEmail: string
 ): Promise<void> {
-  // Ejecutar en background sin bloquear la respuesta al cliente
-  // Si falla, el error se captura dentro de sendWelcomeEmail (solo log warning)
-  sendWelcomeEmail({ userName, userEmail }).catch((err) => {
-    console.warn("[Auth] Error enviando email de bienvenida (no bloqueante):", err);
-  });
+  console.log("[WELCOME_EMAIL] Intentando enviar bienvenida a:", userEmail);
+
+  try {
+    await sendWelcomeEmail({ userName, userEmail });
+    console.log("[WELCOME_EMAIL] Acción completada para:", userEmail);
+  } catch (err) {
+    console.warn("[WELCOME_EMAIL] Error:", err);
+    // No lanzar — el registro ya se completó correctamente
+  }
 }
