@@ -1,15 +1,29 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star, ShoppingCart, ArrowLeft, ShieldCheck, Truck, Check, Heart } from "lucide-react";
-import { useState } from "react";
+import {
+  Star,
+  ShoppingCart,
+  ArrowLeft,
+  ShieldCheck,
+  Truck,
+  Check,
+  Heart,
+  Minus,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+} from "lucide-react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import WhatsAppButton from "@/components/ui/whatsapp-button";
-import type { Product } from "@/data/types";
+import type { Product, ProductVariant } from "@/data/types";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
-import { useCartStore } from "@/store/cart-store";
+import { useCartStore, buildCartKey, type CartItem } from "@/store/cart-store";
 import { useWishlistStore } from "@/store/wishlist-store";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -33,17 +47,82 @@ function StarRating({ rating }: { rating: number }) {
 
 export default function ProductDetail({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem);
-  const isInCart = useCartStore((s) => s.isInCart);
   const toggleWishlist = useWishlistStore((s) => s.toggleItem);
   const isInWishlist = useWishlistStore((s) => s.isInWishlist);
-  const [justAdded, setJustAdded] = useState(false);
-  const inCart = isInCart(product.id);
+  const { toast } = useToast();
+
   const inWishlist = isInWishlist(product.id);
 
+  // Current variant index
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
+  const currentVariant = product.variants[selectedVariantIdx];
+
+  // Size selection
+  const hasSizes = currentVariant.sizes.length > 0;
+  const [selectedSize, setSelectedSize] = useState("");
+
+  // Quantity
+  const [quantity, setQuantity] = useState(1);
+
+  // Feedback
+  const [justAdded, setJustAdded] = useState(false);
+
+  // When variant changes, reset size
+  const handleVariantChange = (idx: number) => {
+    setSelectedVariantIdx(idx);
+    setSelectedSize("");
+    setQuantity(1);
+  };
+
+  // Navigate variant with arrows
+  const goNextVariant = () => {
+    const next = (selectedVariantIdx + 1) % product.variants.length;
+    handleVariantChange(next);
+  };
+  const goPrevVariant = () => {
+    const prev = (selectedVariantIdx - 1 + product.variants.length) % product.variants.length;
+    handleVariantChange(prev);
+  };
+
   const handleAddToCart = () => {
-    addItem(product);
+    if (hasSizes && !selectedSize) {
+      toast({
+        title: "Selecciona una talla",
+        description: "Debes elegir una talla antes de añadir al carrito.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const cartKey = buildCartKey(product.id, currentVariant.id, selectedSize);
+
+    const cartItem: CartItem = {
+      cartKey,
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      oldPrice: product.oldPrice,
+      image: currentVariant.image,
+      category: product.category,
+      variantId: currentVariant.id,
+      colorName: currentVariant.colorName,
+      color: currentVariant.color,
+      selectedSize,
+      quantity,
+    };
+
+    addItem(cartItem);
     setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1500);
+    toast({
+      title: "Añadido al carrito",
+      description: `${product.name} — ${currentVariant.colorName}${selectedSize ? ` · Talla ${selectedSize}` : ""} × ${quantity}`,
+    });
+    setTimeout(() => setJustAdded(false), 2000);
+  };
+
+  const handleQuantityChange = (delta: number) => {
+    setQuantity((prev) => Math.max(1, Math.min(10, prev + delta)));
   };
 
   return (
@@ -67,21 +146,72 @@ export default function ProductDetail({ product }: { product: Product }) {
           animate="visible"
           className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16"
         >
-          {/* Product Image */}
-          <motion.div variants={fadeInUp} className="relative aspect-square rounded-2xl overflow-hidden bg-dark-gray">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
-            {product.badge && (
-              <span className="absolute top-4 left-4 px-4 py-1.5 rounded-full bg-electric text-white text-sm font-bold uppercase tracking-wider">
-                {product.badge}
-              </span>
+          {/* ─── Product Image Gallery ─── */}
+          <motion.div variants={fadeInUp} className="flex flex-col gap-4">
+            {/* Main Image */}
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-dark-gray group">
+              <img
+                key={currentVariant.image}
+                src={currentVariant.image}
+                alt={`${product.name} — ${currentVariant.colorName}`}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+
+              {/* Arrow navigation */}
+              {product.variants.length > 1 && (
+                <>
+                  <button
+                    onClick={goPrevVariant}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-300 backdrop-blur-sm"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={goNextVariant}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-300 backdrop-blur-sm"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+
+              {product.badge && (
+                <span className="absolute top-4 left-4 px-4 py-1.5 rounded-full bg-electric text-white text-sm font-bold uppercase tracking-wider">
+                  {product.badge}
+                </span>
+              )}
+            </div>
+
+            {/* Thumbnails */}
+            {product.variants.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-1">
+                {product.variants.map((variant, idx) => (
+                  <button
+                    key={variant.id}
+                    onClick={() => handleVariantChange(idx)}
+                    className={`relative shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                      idx === selectedVariantIdx
+                        ? "border-electric shadow-[0_0_15px_rgba(0,153,255,0.4)]"
+                        : "border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <img
+                      src={variant.image}
+                      alt={variant.colorName}
+                      className="w-full h-full object-cover"
+                    />
+                    {idx === selectedVariantIdx && (
+                      <div className="absolute inset-0 bg-electric/20 flex items-center justify-center">
+                        <Check className="h-4 w-4 text-white" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
             )}
           </motion.div>
 
-          {/* Product Info */}
+          {/* ─── Product Info ─── */}
           <motion.div variants={fadeInUp} className="flex flex-col justify-center">
             <div className="flex items-start justify-between gap-4">
               <p className="text-sm text-electric font-semibold uppercase tracking-wider mb-2">
@@ -118,28 +248,117 @@ export default function ProductDetail({ product }: { product: Product }) {
               )}
             </div>
 
-            <p className="text-white/60 leading-relaxed mb-8">
+            <p className="text-white/60 leading-relaxed mb-6">
               {product.description}
             </p>
 
-            {/* Stock status */}
+            {/* ─── Color Selector ─── */}
             <div className="mb-6">
-              {product.stock === "in_stock" && (
+              <p className="text-sm font-semibold text-white/70 mb-3">
+                Color: <span className="text-white">{currentVariant.colorName}</span>
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {product.variants.map((variant, idx) => (
+                  <button
+                    key={variant.id}
+                    onClick={() => handleVariantChange(idx)}
+                    title={variant.colorName}
+                    className={`relative w-10 h-10 rounded-full border-2 transition-all duration-300 flex items-center justify-center ${
+                      idx === selectedVariantIdx
+                        ? "border-electric shadow-[0_0_15px_rgba(0,153,255,0.4)] scale-110"
+                        : "border-white/20 hover:border-white/50 hover:scale-105"
+                    }`}
+                    style={{ backgroundColor: variant.color }}
+                  >
+                    {idx === selectedVariantIdx && (
+                      <Check
+                        className={`h-4 w-4 ${
+                          isLightColor(variant.color) ? "text-black" : "text-white"
+                        }`}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ─── Size Selector ─── */}
+            {hasSizes && (
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-white/70 mb-3">
+                  Talla:{" "}
+                  {selectedSize ? (
+                    <span className="text-white">{selectedSize}</span>
+                  ) : (
+                    <span className="text-yellow-400">Selecciona una talla</span>
+                  )}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {currentVariant.sizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`min-w-[48px] px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
+                        selectedSize === size
+                          ? "bg-electric text-white shadow-[0_0_15px_rgba(0,153,255,0.4)] border-2 border-electric"
+                          : "bg-white/5 text-white/70 border-2 border-white/10 hover:border-electric/50 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+                {hasSizes && !selectedSize && (
+                  <div className="flex items-center gap-2 mt-2 text-yellow-400 text-xs">
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    <span>Debes seleccionar una talla para continuar</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─── Quantity Selector ─── */}
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-white/70 mb-3">Cantidad</p>
+              <div className="inline-flex items-center gap-0 rounded-xl border border-white/10 overflow-hidden bg-white/5">
+                <button
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1}
+                  className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="w-12 text-center font-bold text-white text-lg">
+                  {quantity}
+                </span>
+                <button
+                  onClick={() => handleQuantityChange(1)}
+                  disabled={quantity >= 10}
+                  className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* ─── Stock status ─── */}
+            <div className="mb-6">
+              {currentVariant.stock === "in_stock" && (
                 <span className="text-lime text-sm font-semibold">En stock</span>
               )}
-              {product.stock === "low_stock" && (
+              {currentVariant.stock === "low_stock" && (
                 <span className="text-yellow-400 text-sm font-semibold">Últimas unidades</span>
               )}
-              {product.stock === "out_of_stock" && (
+              {currentVariant.stock === "out_of_stock" && (
                 <span className="text-red-400 text-sm font-semibold">Agotado</span>
               )}
             </div>
 
-            {/* Add to cart + WhatsApp */}
+            {/* ─── Add to cart + WhatsApp ─── */}
             <div className="flex flex-wrap gap-4 mb-8">
               <Button
                 onClick={handleAddToCart}
-                disabled={product.stock === "out_of_stock"}
+                disabled={currentVariant.stock === "out_of_stock"}
                 className={`font-bold px-8 py-6 text-base rounded-xl transition-all duration-300 uppercase tracking-wider ${
                   justAdded
                     ? "bg-lime hover:bg-lime/90 text-black shadow-[0_0_30px_rgba(170,255,0,0.3)]"
@@ -154,12 +373,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                 ) : (
                   <>
                     <ShoppingCart className="h-5 w-5 mr-2" />
-                    {inCart ? "Añadir Más" : "Añadir al Carrito"}
+                    Añadir al Carrito
                   </>
                 )}
               </Button>
               <WhatsAppButton
-                message={`Hola, estoy interesado en este producto: ${product.name}`}
+                message={`Hola, estoy interesado en: ${product.name} (${currentVariant.colorName}${selectedSize ? `, Talla ${selectedSize}` : ""})`}
                 label="Consultar"
                 variant="outline"
                 className="py-6 px-6 text-base rounded-xl uppercase tracking-wider"
@@ -182,4 +401,15 @@ export default function ProductDetail({ product }: { product: Product }) {
       </div>
     </div>
   );
+}
+
+/** Determines if a color is light (for contrast text) */
+function isLightColor(color: string): boolean {
+  const hex = color.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  // Relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6;
 }
