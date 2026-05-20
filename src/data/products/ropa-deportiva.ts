@@ -1,17 +1,12 @@
 import type { Product } from "@/data/types";
 
-/**
- * Productos de la categoría Ropa Deportiva.
- * Modelo base + variantes (colores con imagen propia y tallas).
- */
 export const ropaDeportivaProducts: Product[] = [
   {
     id: 101,
     name: "Conjunto Deportivo Dama",
     slug: "conjunto-deportivo-dama",
     category: "ropa-deportiva",
-    description:
-      "Conjunto deportivo de dama con top y legging de alta compresión. Tejido transpirable con tecnología de absorción de sudor, ideal para entrenamientos de alta intensidad, yoga o uso casual deportivo. Ajuste ergonómico que realza la silueta brindando comodidad y estilo en cada movimiento.",
+    description: "Conjunto deportivo de dama con top y legging de alta compresión. Tejido transpirable con tecnología de absorción de sudor, ideal para entrenamientos de alta intensidad, yoga o uso casual deportivo.",
     price: 39.99,
     oldPrice: 54.99,
     image: "/images/products/ConjuntoMocha.png",
@@ -21,38 +16,10 @@ export const ropaDeportivaProducts: Product[] = [
     featured: true,
     stock: "in_stock",
     variants: [
-      {
-        id: 1011,
-        colorName: "Mocha",
-        color: "#8B7355",
-        image: "/images/products/ConjuntoMocha.png",
-        sizes: ["S", "M", "L"],
-        stock: "in_stock",
-      },
-      {
-        id: 1012,
-        colorName: "Negro",
-        color: "#1A1A1A",
-        image: "/images/products/ConjuntoNegro.png",
-        sizes: ["S", "M", "L"],
-        stock: "in_stock",
-      },
-      {
-        id: 1013,
-        colorName: "Verde Sage",
-        color: "#7A8B6F",
-        image: "/images/products/ConjuntoSage.png",
-        sizes: ["S", "M", "L"],
-        stock: "in_stock",
-      },
-      {
-        id: 1014,
-        colorName: "Terracota",
-        color: "#C4724B",
-        image: "/images/products/ConjuntoTerracota.png",
-        sizes: ["S", "M", "L"],
-        stock: "low_stock",
-      },
+      { id: 1011, colorName: "Mocha", color: "#8B7355", image: "/images/products/ConjuntoMocha.png", sizes: ["S", "M", "L"], stock: "in_stock" },
+      { id: 1012, colorName: "Negro", color: "#1A1A1A", image: "/images/products/ConjuntoNegro.png", sizes: ["S", "M", "L"], stock: "in_stock" },
+      { id: 1013, colorName: "Verde Sage", color: "#7A8B6F", image: "/images/products/ConjuntoSage.png", sizes: ["S", "M", "L"], stock: "in_stock" },
+      { id: 1014, colorName: "Terracota", color: "#C4724B", image: "/images/products/ConjuntoTerracota.png", sizes: ["S", "M", "L"], stock: "low_stock" },
     ],
   },
   {
@@ -60,8 +27,7 @@ export const ropaDeportivaProducts: Product[] = [
     name: "Short Deportivo Caballero",
     slug: "short-deportivo-caballero",
     category: "ropa-deportiva",
-    description:
-      "Short deportivo para caballero con tejido de secado rápido y cintura elástica ajustable. Diseñado para entrenamiento de fuerza, cardio y actividades al aire libre. Bolsillos laterales prácticos y costuras reforzadas para máxima durabilidad en cada sesión de entrenamiento.",
+    description: "Short deportivo para caballero con tejido de secado rápido y cintura elástica ajustable. Diseñado para entrenamiento de fuerza, cardio y actividades al aire libre.",
     price: 24.99,
     oldPrice: 34.99,
     image: "/images/products/ShortsGris.png",
@@ -71,46 +37,11 @@ export const ropaDeportivaProducts: Product[] = [
     featured: true,
     stock: "in_stock",
     variants: [
-      {
-        id: 1021,
-        colorName: "Gris",
-        color: "#808080",
-        image: "/images/products/ShortsGris.png",
-        sizes: ["S", "M", "L", "XL"],
-        stock: "in_stock",
-      },
-      {
-        id: 1022,
-        colorName: "Mocha",
-        color: "#8B7355",
-        image: "/images/products/ShortsMocha.png",
-        sizes: ["S", "M", "L", "XL"],
-        stock: "in_stock",
-      },
-      {
-        id: 1023,
-        colorName: "Azul Navy",
-        color: "#1B2A4A",
-        image: "/images/products/ShortsNavy.png",
-        sizes: ["S", "M", "L", "XL"],
-        stock: "in_stock",
-      },
-      {
-        id: 1024,
-        colorName: "Negro",
-        color: "#1A1A1A",
-        image: "/images/products/ShortsNegro.png",
-        sizes: ["S", "M", "L", "XL"],
-        stock: "in_stock",
-      },
-      {
-        id: 1025,
-        colorName: "Verde Olive",
-        color: "#556B2F",
-        image: "/images/products/ShortsOlive.png",
-        sizes: ["S", "M", "L", "XL"],
-        stock: "in_stock",
-      },
+      { id: 1021, colorName: "Gris", color: "#808080", image: "/images/products/ShortsGris.png", sizes: ["S", "M", "L", "XL"], stock: "in_stock" },
+      { id: 1022, colorName: "Mocha", color: "#8B7355", image: "/images/products/ShortsMocha.png", sizes: ["S", "M", "L", "XL"], stock: "in_stock" },
+      { id: 1023, colorName: "Azul Navy", color: "#1B2A4A", image: "/images/products/ShortsNavy.png", sizes: ["S", "M", "L", "XL"], stock: "in_stock" },
+      { id: 1024, colorName: "Negro", color: "#1A1A1A", image: "/images/products/ShortsNegro.png", sizes: ["S", "M", "L", "XL"], stock: "in_stock" },
+      { id: 1025, colorName: "Verde Olive", color: "#556B2F", image: "/images/products/ShortsOlive.png", sizes: ["S", "M", "L", "XL"], stock: "in_stock" },
     ],
   },
   {
@@ -118,8 +49,7 @@ export const ropaDeportivaProducts: Product[] = [
     name: "Franela Deportiva Caballero",
     slug: "franela-deportiva-caballero",
     category: "ropa-deportiva",
-    description:
-      "Franela deportiva de caballero con tejido transpirable y corte atlético. Diseño de dos tonos moderno y versátil, perfecto para el gimnasio, entrenamientos al aire libre o como prenda casual deportiva. Cierre frontal con cremallera y bolsillos funcionales.",
+    description: "Franela deportiva de caballero con tejido transpirable y corte atlético. Diseño de dos tonos moderno y versátil, perfecto para el gimnasio o como prenda casual deportiva.",
     price: 29.99,
     image: "/images/products/camisa.png",
     rating: 4.5,
@@ -128,30 +58,9 @@ export const ropaDeportivaProducts: Product[] = [
     featured: true,
     stock: "in_stock",
     variants: [
-      {
-        id: 1031,
-        colorName: "Negro / Azul",
-        color: "#1A1A2E",
-        image: "/images/products/camisa.png",
-        sizes: ["S", "M", "L", "XL"],
-        stock: "in_stock",
-      },
-      {
-        id: 1032,
-        colorName: "Azul / Negro",
-        color: "#2C3E6B",
-        image: "/images/products/FranelaAzulNegro.png",
-        sizes: ["S", "M", "L", "XL"],
-        stock: "in_stock",
-      },
-      {
-        id: 1033,
-        colorName: "Verde / Negro",
-        color: "#2D4A2D",
-        image: "/images/products/FranelaVerdeNegro.png",
-        sizes: ["S", "M", "L", "XL"],
-        stock: "in_stock",
-      },
+      { id: 1031, colorName: "Negro / Azul", color: "#1A1A2E", image: "/images/products/camisa.png", sizes: ["S", "M", "L", "XL"], stock: "in_stock" },
+      { id: 1032, colorName: "Azul / Negro", color: "#2C3E6B", image: "/images/products/FranelaAzulNegro.png", sizes: ["S", "M", "L", "XL"], stock: "in_stock" },
+      { id: 1033, colorName: "Verde / Negro", color: "#2D4A2D", image: "/images/products/FranelaVerdeNegro.png", sizes: ["S", "M", "L", "XL"], stock: "in_stock" },
     ],
   },
 ];

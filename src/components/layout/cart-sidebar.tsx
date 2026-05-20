@@ -164,7 +164,6 @@ export default function CartSidebar() {
             <div className="border-t border-white/5 px-4 pt-4 pb-2 space-y-4">
               <Separator className="bg-white/5" />
 
-              {/* Subtotal */}
               <div className="flex items-center justify-between">
                 <span className="text-white/60 font-medium">Subtotal</span>
                 <span className="text-xl font-black text-white">
@@ -176,7 +175,6 @@ export default function CartSidebar() {
                 Envío calculado en el checkout
               </p>
 
-              {/* Botones */}
               <div className="space-y-2">
                 <Button
                   asChild

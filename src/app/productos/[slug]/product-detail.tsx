@@ -15,10 +15,10 @@ import {
   ChevronRight,
   AlertCircle,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import WhatsAppButton from "@/components/ui/whatsapp-button";
-import type { Product, ProductVariant } from "@/data/types";
+import type { Product } from "@/data/types";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 import { useCartStore, buildCartKey, type CartItem } from "@/store/cart-store";
 import { useWishlistStore } from "@/store/wishlist-store";
@@ -43,6 +43,16 @@ function StarRating({ rating }: { rating: number }) {
       </span>
     </div>
   );
+}
+
+/** Determines if a color is light (for contrast text) */
+function isLightColor(color: string): boolean {
+  const hex = color.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6;
 }
 
 export default function ProductDetail({ product }: { product: Product }) {
@@ -127,11 +137,9 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   return (
     <div className="min-h-screen bg-deep">
-      {/* Header spacer */}
       <div className="h-20" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
-        {/* Back link */}
         <Link
           href="/productos"
           className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-8 transition-colors"
@@ -148,7 +156,6 @@ export default function ProductDetail({ product }: { product: Product }) {
         >
           {/* ─── Product Image Gallery ─── */}
           <motion.div variants={fadeInUp} className="flex flex-col gap-4">
-            {/* Main Image */}
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-dark-gray group">
               <img
                 key={currentVariant.image}
@@ -156,8 +163,6 @@ export default function ProductDetail({ product }: { product: Product }) {
                 alt={`${product.name} — ${currentVariant.colorName}`}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-
-              {/* Arrow navigation */}
               {product.variants.length > 1 && (
                 <>
                   <button
@@ -174,7 +179,6 @@ export default function ProductDetail({ product }: { product: Product }) {
                   </button>
                 </>
               )}
-
               {product.badge && (
                 <span className="absolute top-4 left-4 px-4 py-1.5 rounded-full bg-electric text-white text-sm font-bold uppercase tracking-wider">
                   {product.badge}
@@ -401,15 +405,4 @@ export default function ProductDetail({ product }: { product: Product }) {
       </div>
     </div>
   );
-}
-
-/** Determines if a color is light (for contrast text) */
-function isLightColor(color: string): boolean {
-  const hex = color.replace("#", "");
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  // Relative luminance
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.6;
 }

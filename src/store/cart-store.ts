@@ -6,7 +6,6 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Product } from "@/data/types";
 
 /** Elemento del carrito con datos de variante */
 export interface CartItem {

@@ -7,16 +7,11 @@ import type { Product, ProductBadge } from "@/data/types";
 
 function getBadgeColor(badge: ProductBadge | string) {
   switch (badge) {
-    case "OFERTA":
-      return "bg-red-500 text-white";
-    case "NUEVO":
-      return "bg-electric text-white";
-    case "MÁS VENDIDO":
-      return "bg-lime text-black";
-    case "TOP VALORADO":
-      return "bg-yellow-500 text-black";
-    default:
-      return "bg-white/20 text-white";
+    case "OFERTA": return "bg-red-500 text-white";
+    case "NUEVO": return "bg-electric text-white";
+    case "MÁS VENDIDO": return "bg-lime text-black";
+    case "TOP VALORADO": return "bg-yellow-500 text-black";
+    default: return "bg-white/20 text-white";
   }
 }
 
@@ -24,14 +19,7 @@ function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`h-3 w-3 ${
-            star <= Math.round(rating)
-              ? "text-yellow-400 fill-yellow-400"
-              : "text-white/20 fill-white/20"
-          }`}
-        />
+        <Star key={star} className={`h-3 w-3 ${star <= Math.round(rating) ? "text-yellow-400 fill-yellow-400" : "text-white/20 fill-white/20"}`} />
       ))}
       <span className="text-xs text-white/40 ml-1">({rating})</span>
     </div>
@@ -63,7 +51,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       whileHover={{ y: -8 }}
       className="group relative rounded-2xl bg-mid-gray border border-white/5 hover:border-electric/30 transition-all duration-500 overflow-hidden block"
     >
-      {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-dark-gray">
         <img
           key={displayImage}
@@ -72,17 +59,12 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         {product.badge && (
-          <span
-            className={`absolute top-2 left-2 md:top-3 md:left-3 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider ${getBadgeColor(
-              product.badge
-            )}`}
-          >
+          <span className={`absolute top-2 left-2 md:top-3 md:left-3 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider ${getBadgeColor(product.badge)}`}>
             {product.badge}
           </span>
         )}
       </div>
 
-      {/* Product Info */}
       <div className="p-3 md:p-4">
         <p className="text-[10px] md:text-xs text-electric/60 font-semibold uppercase tracking-wider mb-1">
           {product.category}
