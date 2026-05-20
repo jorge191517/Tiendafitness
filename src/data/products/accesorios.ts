@@ -2,62 +2,55 @@ import type { Product } from "@/data/types";
 
 /**
  * Productos de la categoría Accesorios.
- *
- * Estructura: producto base con variantes de color.
- * En catálogo se muestra 1 card por producto base.
- * En detalle se elige color.
- *
- * Para añadir productos nuevos, agrégalos a este array.
+ * Modelo base + variantes (colores con imagen propia, sin tallas).
  */
 export const accesoriosProducts: Product[] = [
   {
-    id: 4,
+    id: 104,
     name: "Shaker Deportivo",
     slug: "shaker-deportivo",
     category: "accesorios",
-    categoryName: "Accesorios",
-    subcategory: "shakers-deportivos",
-    subcategoryName: "Shakers Deportivos",
-    variantGroup: "shaker-deportivo",
     description:
-      "Shaker deportivo de 600 ml con diseño ergonómico y sistema de mezcla eficiente. Fabricado en materiales libres de BPA, resistente y fácil de limpiar. Perfecto para batidos de proteínas, bebidas deportivas o hidratación diaria. Cierre herético que evita derrames durante el transporte.",
-    price: 9.99,
-    image: "/images/products/ShakerNegro.png",
-    rating: 5.0,
-    reviews: 0,
-    badge: "NUEVO",
+      "Shaker deportivo de 700ml con sistema de mezcla premium sin grumos. Fabricado en material libre de BPA, resistente a impactos y apto para lavavajillas. Diseño ergonómico con tapa de cierre hermético y medida lateral transparente. Perfecto para batidos de proteína, BCAAs, pre-entrenos o hidratación diaria en el gimnasio.",
+    price: 12.99,
+    oldPrice: 17.99,
+    image: "/images/products/ShakerGris.png",
+    rating: 4.7,
+    reviews: 267,
+    badge: "OFERTA",
     featured: true,
     stock: "in_stock",
-    // No sizes for shaker
-    color: "#1A1A1A",
-    colorName: "Negro",
     variants: [
       {
-        id: 401,
-        color: "#808080",
+        id: 1041,
         colorName: "Gris",
+        color: "#808080",
         image: "/images/products/ShakerGris.png",
+        sizes: [],
         stock: "in_stock",
       },
       {
-        id: 402,
-        color: "#1A1A1A",
+        id: 1042,
         colorName: "Negro",
+        color: "#1A1A1A",
         image: "/images/products/ShakerNegro.png",
+        sizes: [],
         stock: "in_stock",
       },
       {
-        id: 403,
-        color: "#E8A0BF",
+        id: 1043,
         colorName: "Rosa",
+        color: "#E8A0BF",
         image: "/images/products/ShakerRosa.png",
+        sizes: [],
         stock: "in_stock",
       },
       {
-        id: 404,
-        color: "#D4E8DC",
+        id: 1044,
         colorName: "Transparente",
-        image: "/images/products/ShakerTransparente.png",
+        color: "#D4E8E0",
+        image: "/images/products/ShakerTrasparente.png",
+        sizes: [],
         stock: "in_stock",
       },
     ],

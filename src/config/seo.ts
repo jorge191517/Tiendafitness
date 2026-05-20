@@ -25,7 +25,9 @@ export const seoConfig: Metadata = {
   ],
   authors: [{ name: siteConfig.name }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     title: `${siteConfig.name} - Tu Mejor Versión Empieza Aquí`,

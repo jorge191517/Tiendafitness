@@ -15,8 +15,8 @@ import Link from "next/link";
 
 /**
  * Sidebar del carrito — se desliza desde la derecha.
- * Muestra los productos del carrito con controles de cantidad,
- * el subtotal y un enlace a la página de checkout.
+ * Muestra los productos del carrito con variante, color, talla,
+ * controles de cantidad, subtotal y enlace a checkout.
  */
 export default function CartSidebar() {
   const items = useCartStore((s) => s.items);
@@ -72,14 +72,14 @@ export default function CartSidebar() {
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
               {items.map((item) => (
                 <div
-                  key={item.product.cartKey}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-mid-gray border border-white/5"
+                  key={item.cartKey}
+                  className="flex items-start gap-3 p-3 rounded-xl bg-mid-gray border border-white/5"
                 >
                   {/* Imagen */}
                   <div className="w-14 h-14 rounded-lg bg-dark-gray overflow-hidden shrink-0">
                     <img
-                      src={item.product.image}
-                      alt={item.product.name}
+                      src={item.image}
+                      alt={item.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -87,37 +87,29 @@ export default function CartSidebar() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-white/90 truncate">
-                      {item.product.name}
+                      {item.name}
                     </p>
-                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                      {item.product.colorName && (
-                        <div className="flex items-center gap-1">
-                          <div
-                            className="w-2.5 h-2.5 rounded-full border border-white/20"
-                            style={{ backgroundColor: item.product.color }}
-                          />
-                          <span className="text-xs text-white/40">{item.product.colorName}</span>
-                        </div>
-                      )}
-                      {item.product.selectedSize && (
+                    {/* Color + Talla */}
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span
+                        className="w-3 h-3 rounded-full border border-white/20 shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-xs text-white/50">{item.colorName}</span>
+                      {item.selectedSize && (
                         <>
-                          {item.product.colorName && <span className="text-white/20 text-xs">·</span>}
-                          <span className="text-xs text-white/40">Talla {item.product.selectedSize}</span>
+                          <span className="text-white/20">·</span>
+                          <span className="text-xs text-white/50">Talla {item.selectedSize}</span>
                         </>
-                      )}
-                      {!item.product.colorName && !item.product.selectedSize && (
-                        <p className="text-xs text-electric/60 uppercase tracking-wider">
-                          {item.product.category}
-                        </p>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-sm font-bold text-white">
-                        {item.product.price.toFixed(2)} €
+                        {item.price.toFixed(2)} €
                       </span>
-                      {item.product.oldPrice && (
+                      {item.oldPrice && (
                         <span className="text-xs text-white/30 line-through">
-                          {item.product.oldPrice.toFixed(2)} €
+                          {item.oldPrice.toFixed(2)} €
                         </span>
                       )}
                     </div>
@@ -129,7 +121,7 @@ export default function CartSidebar() {
                         size="icon"
                         className="h-6 w-6 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
                         onClick={() =>
-                          updateQuantity(item.product.cartKey, item.quantity - 1)
+                          updateQuantity(item.cartKey, item.quantity - 1)
                         }
                       >
                         <Minus className="h-3 w-3" />
@@ -142,7 +134,7 @@ export default function CartSidebar() {
                         size="icon"
                         className="h-6 w-6 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
                         onClick={() =>
-                          updateQuantity(item.product.cartKey, item.quantity + 1)
+                          updateQuantity(item.cartKey, item.quantity + 1)
                         }
                       >
                         <Plus className="h-3 w-3" />
@@ -156,12 +148,12 @@ export default function CartSidebar() {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-md"
-                      onClick={() => removeItem(item.product.cartKey)}
+                      onClick={() => removeItem(item.cartKey)}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                     <span className="text-sm font-black text-white">
-                      {(item.product.price * item.quantity).toFixed(2)} €
+                      {(item.price * item.quantity).toFixed(2)} €
                     </span>
                   </div>
                 </div>

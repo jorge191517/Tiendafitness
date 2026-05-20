@@ -26,7 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useCartStore, useCartTotals } from "@/store/cart-store";
+import { useCartStore, useCartTotals, type CartItem } from "@/store/cart-store";
 import { createClient } from "@/lib/supabase/client";
 import { createOrder, type CheckoutResult } from "./actions";
 import Link from "next/link";
@@ -121,7 +121,7 @@ export default function CheckoutPage() {
     );
   };
 
-  /** Enviar pedido vía Server Action (validación de precios en servidor) */
+  /** Enviar pedido vía Server Action */
   const handleSubmit = async () => {
     if (!isFormValid()) return;
 
@@ -143,8 +143,13 @@ export default function CheckoutPage() {
           country: address.country,
         },
         items: items.map((item) => ({
-          product: item.product,
+          name: item.name,
+          slug: item.slug,
+          price: item.price,
+          colorName: item.colorName,
+          selectedSize: item.selectedSize,
           quantity: item.quantity,
+          image: item.image,
         })),
       });
 
@@ -154,7 +159,6 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Vaciar carrito y mostrar éxito
       clearCart();
       setStep("success");
     } catch (err) {
@@ -459,7 +463,7 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4">
                 {items.map((item) => (
                   <CartItemRow
-                    key={item.product.cartKey}
+                    key={item.cartKey}
                     item={item}
                     onUpdateQuantity={updateQuantity}
                     onRemove={removeItem}
@@ -483,26 +487,27 @@ export default function CheckoutPage() {
                 <div className="hidden lg:block space-y-3 max-h-72 overflow-y-auto pr-1">
                   {items.map((item) => (
                     <div
-                      key={item.product.cartKey}
+                      key={item.cartKey}
                       className="flex items-center gap-3"
                     >
                       <div className="w-12 h-12 rounded-lg bg-dark-gray overflow-hidden shrink-0">
                         <img
-                          src={item.product.image}
-                          alt={item.product.name}
+                          src={item.image}
+                          alt={item.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-white/90 truncate">
-                          {item.product.name}
+                          {item.name}
                         </p>
                         <p className="text-xs text-white/40">
-                          {item.quantity} × {item.product.price.toFixed(2)} €
+                          {item.colorName}
+                          {item.selectedSize ? ` · Talla ${item.selectedSize}` : ""} · {item.quantity} × {item.price.toFixed(2)} €
                         </p>
                       </div>
                       <span className="text-sm font-bold text-white shrink-0">
-                        {(item.product.price * item.quantity).toFixed(2)} €
+                        {(item.price * item.quantity).toFixed(2)} €
                       </span>
                     </div>
                   ))}
@@ -579,41 +584,43 @@ function CartItemRow({
   onUpdateQuantity,
   onRemove,
 }: {
-  item: { product: { cartKey: string; id: number | string; name: string; image: string; price: number; oldPrice?: number; colorName?: string; selectedSize?: string }; quantity: number };
+  item: CartItem;
   onUpdateQuantity: (cartKey: string, qty: number) => void;
   onRemove: (cartKey: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-dark-gray border border-white/5">
+    <div className="flex items-start gap-3 p-3 rounded-xl bg-dark-gray border border-white/5">
       <div className="w-16 h-16 rounded-lg bg-mid-gray overflow-hidden shrink-0">
         <img
-          src={item.product.image}
-          alt={item.product.name}
+          src={item.image}
+          alt={item.name}
           className="w-full h-full object-cover"
         />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-white/90 truncate">
-          {item.product.name}
+          {item.name}
         </p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          {item.product.colorName && (
-            <span className="text-xs text-white/40">{item.product.colorName}</span>
-          )}
-          {item.product.selectedSize && (
+        <div className="flex items-center gap-2 mt-0.5">
+          <span
+            className="w-3 h-3 rounded-full border border-white/20 shrink-0"
+            style={{ backgroundColor: item.color }}
+          />
+          <span className="text-xs text-white/50">{item.colorName}</span>
+          {item.selectedSize && (
             <>
-              {item.product.colorName && <span className="text-white/20 text-xs">·</span>}
-              <span className="text-xs text-white/40">Talla {item.product.selectedSize}</span>
+              <span className="text-white/20">·</span>
+              <span className="text-xs text-white/50">Talla {item.selectedSize}</span>
             </>
           )}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-sm font-bold text-white">
-            {item.product.price.toFixed(2)} €
+            {item.price.toFixed(2)} €
           </span>
-          {item.product.oldPrice && (
+          {item.oldPrice && (
             <span className="text-xs text-white/30 line-through">
-              {item.product.oldPrice.toFixed(2)} €
+              {item.oldPrice.toFixed(2)} €
             </span>
           )}
         </div>
@@ -623,7 +630,7 @@ function CartItemRow({
             size="icon"
             className="h-7 w-7 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
             onClick={() =>
-              onUpdateQuantity(item.product.cartKey, item.quantity - 1)
+              onUpdateQuantity(item.cartKey, item.quantity - 1)
             }
           >
             <Minus className="h-3.5 w-3.5" />
@@ -636,7 +643,7 @@ function CartItemRow({
             size="icon"
             className="h-7 w-7 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
             onClick={() =>
-              onUpdateQuantity(item.product.cartKey, item.quantity + 1)
+              onUpdateQuantity(item.cartKey, item.quantity + 1)
             }
           >
             <Plus className="h-3.5 w-3.5" />
@@ -648,12 +655,12 @@ function CartItemRow({
           variant="ghost"
           size="icon"
           className="h-7 w-7 text-white/30 hover:text-red-400 hover:bg-red-400/10 rounded-md"
-          onClick={() => onRemove(item.product.cartKey)}
+          onClick={() => onRemove(item.cartKey)}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
         <span className="text-sm font-black text-white">
-          {(item.product.price * item.quantity).toFixed(2)} €
+          {(item.price * item.quantity).toFixed(2)} €
         </span>
       </div>
     </div>
