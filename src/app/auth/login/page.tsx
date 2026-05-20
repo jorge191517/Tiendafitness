@@ -35,7 +35,7 @@ export default function LoginPage() {
         const errorMessages: Record<string, string> = {
           "Invalid login credentials":
             "Credenciales de inicio de sesión inválidas",
-          "Email not confirmed": "Email no confirmado",
+          "Email not confirmed": "Credenciales inválidas. Verifica tu correo y contraseña.",
           "Too many requests": "Demasiados intentos. Intenta de nuevo más tarde",
           "User not found": "Usuario no encontrado",
           "Invalid password": "Contraseña incorrecta",

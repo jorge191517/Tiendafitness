@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, Loader2, Zap, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { sendWelcomeEmailAction } from "@/app/auth/welcome-email-action";
 import { fadeInUp } from "@/lib/animations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,14 +79,24 @@ export default function RegisterPage() {
         return;
       }
 
-      // Si el usuario tiene sesión (auto-confirmado), redirigir
+      // Enviar email de bienvenida (fire-and-forget, no bloquea el registro)
+      if (data.user?.email) {
+        sendWelcomeEmailAction(
+          data.user.user_metadata?.full_name || fullName,
+          data.user.email
+        ).catch(() => {
+          // Silenciar error — el email de bienvenida no debe romper el registro
+        });
+      }
+
+      // Si el usuario tiene sesión (auto-login tras registro), redirigir a productos
       if (data.user && data.session) {
-        router.push("/");
+        router.push("/productos");
         router.refresh();
         return;
       }
 
-      // Si no hay sesión, necesita confirmar email
+      // Si no hay sesión automática, mostrar pantalla de éxito
       setSuccess(true);
     } catch {
       setError("Error de conexión. Inténtalo de nuevo.");
@@ -114,16 +125,11 @@ export default function RegisterPage() {
               <CheckCircle2 className="h-8 w-8 text-lime" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">
-              ¡Cuenta Creada Correctamente!
+              ¡Cuenta creada correctamente!
             </h2>
-            <p className="text-white/60 text-sm leading-relaxed mb-3">
-              Te hemos enviado un enlace de confirmación a{" "}
-              <span className="text-electric font-medium">{email}</span>.
-            </p>
-            <p className="text-white/40 text-xs leading-relaxed mb-8">
-              Revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace
-              para verificar tu cuenta. Una vez confirmada, podrás iniciar sesión y
-              empezar a explorar el catálogo de TiendaFitnessPro.
+            <p className="text-white/60 text-sm leading-relaxed mb-6">
+              Ya puedes iniciar sesión y explorar nuestro catálogo de ropa
+              deportiva y accesorios premium.
             </p>
             <div className="space-y-3">
               <Button
@@ -133,11 +139,11 @@ export default function RegisterPage() {
                 Ir a Iniciar Sesión
               </Button>
               <Button
-                onClick={() => router.push("/")}
+                onClick={() => router.push("/productos")}
                 variant="outline"
-                className="w-full h-11 border-white/10 text-white/60 hover:text-white hover:bg-white/5 cursor-pointer"
+                className="w-full h-11 border-lime/40 text-lime hover:bg-lime/10 font-semibold transition-all duration-300 cursor-pointer"
               >
-                Volver al Inicio
+                Ver Productos
               </Button>
             </div>
           </div>
