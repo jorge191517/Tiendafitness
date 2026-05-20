@@ -1,6 +1,9 @@
 /**
  * Servicio de productos.
- * Lee productos desde Supabase. Fallback a datos locales si Supabase no está configurado.
+ * Lee productos desde Supabase. Fallback a datos locales si:
+ * - Supabase no está configurado
+ * - Supabase devuelve error
+ * - Supabase devuelve array vacío (tabla sin datos)
  */
 
 import { createClient } from '@/lib/supabase/server';
@@ -42,10 +45,18 @@ function isSupabaseConfigured(): boolean {
   return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
 
+/**
+ * Comprueba si la respuesta de Supabase es usable.
+ * Fallback a datos locales si: hay error, data es null, o data está vacío.
+ */
+function shouldFallbackToLocals(data: unknown[] | null | undefined, error: unknown): boolean {
+  return !!error || !data || data.length === 0;
+}
+
 /** Obtiene todos los productos activos */
 export async function getProducts(): Promise<Product[]> {
   if (!isSupabaseConfigured()) return localAllProducts;
-  
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -53,8 +64,8 @@ export async function getProducts(): Promise<Product[]> {
       .select('*, category:categories(slug, name)')
       .eq('active', true)
       .order('created_at', { ascending: false });
-    
-    if (error || !data) return localAllProducts;
+
+    if (shouldFallbackToLocals(data, error)) return localAllProducts;
     return data.map(dbProductToLocal);
   } catch {
     return localAllProducts;
@@ -64,7 +75,7 @@ export async function getProducts(): Promise<Product[]> {
 /** Obtiene productos destacados */
 export async function getFeaturedProducts(): Promise<Product[]> {
   if (!isSupabaseConfigured()) return localFeatured;
-  
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -73,8 +84,8 @@ export async function getFeaturedProducts(): Promise<Product[]> {
       .eq('active', true)
       .eq('featured', true)
       .order('rating', { ascending: false });
-    
-    if (error || !data) return localFeatured;
+
+    if (shouldFallbackToLocals(data, error)) return localFeatured;
     return data.map(dbProductToLocal);
   } catch {
     return localFeatured;
@@ -84,10 +95,9 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 /** Obtiene un producto por su slug */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   if (!isSupabaseConfigured()) {
-    const local = localGetBySlug(slug);
-    return local ?? null;
+    return localGetBySlug(slug) ?? null;
   }
-  
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -96,22 +106,20 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       .eq('slug', slug)
       .eq('active', true)
       .single();
-    
+
     if (error || !data) {
-      const local = localGetBySlug(slug);
-      return local ?? null;
+      return localGetBySlug(slug) ?? null;
     }
     return dbProductToLocal(data);
   } catch {
-    const local = localGetBySlug(slug);
-    return local ?? null;
+    return localGetBySlug(slug) ?? null;
   }
 }
 
 /** Obtiene productos por categoría (slug de categoría) */
 export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
   if (!isSupabaseConfigured()) return localGetByCategory(categorySlug);
-  
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -120,8 +128,8 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
       .eq('active', true)
       .eq('category.slug', categorySlug)
       .order('created_at', { ascending: false });
-    
-    if (error || !data) return localGetByCategory(categorySlug);
+
+    if (shouldFallbackToLocals(data, error)) return localGetByCategory(categorySlug);
     return data.map(dbProductToLocal);
   } catch {
     return localGetByCategory(categorySlug);
@@ -131,15 +139,15 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
 /** Obtiene todos los slugs de productos activos (para generateStaticParams) */
 export async function getAllProductSlugs(): Promise<string[]> {
   if (!isSupabaseConfigured()) return localAllProducts.map(p => p.slug);
-  
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('products')
       .select('slug')
       .eq('active', true);
-    
-    if (error || !data) return localAllProducts.map(p => p.slug);
+
+    if (shouldFallbackToLocals(data, error)) return localAllProducts.map(p => p.slug);
     return data.map(p => p.slug);
   } catch {
     return localAllProducts.map(p => p.slug);
