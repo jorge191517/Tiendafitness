@@ -1,11 +1,16 @@
 /**
- * Store del carrito con Zustand + persistencia en localStorage.
+ * Store del carrito con Zustand + persistencia en sessionStorage.
  * Compatible con modelo base+variantes.
  * Key compuesta: productId-variantId-size para unicidad.
+ *
+ * Se usa sessionStorage (no localStorage) para que:
+ * - Al cerrar el navegador se borre automáticamente
+ * - Al cerrar sesión se pueda limpiar fácilmente
  */
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { getProductBySlug } from "@/data/products";
 
 /** Elemento del carrito con datos de variante */
 export interface CartItem {
@@ -62,6 +67,103 @@ export function buildCartKey(
   return `${productId}-${variantId}-${selectedSize || "nosize"}`;
 }
 
+/** Storage key para sessionStorage */
+const CART_STORAGE_KEY = "tiendafitnesspro-cart";
+
+/**
+ * Limpia el almacenamiento del carrito en sessionStorage y localStorage.
+ * Útil al cerrar sesión o al cambiar de usuario.
+ */
+export function clearCartStorage(): void {
+  try {
+    sessionStorage.removeItem(CART_STORAGE_KEY);
+  } catch {
+    // sessionStorage puede no estar disponible en SSR
+  }
+  try {
+    localStorage.removeItem(CART_STORAGE_KEY);
+  } catch {
+    // localStorage puede no estar disponible en SSR
+  }
+}
+
+/**
+ * Valida y limpia items inválidos del carrito.
+ * Un item es inválido si:
+ * - No tiene slug o productId
+ * - No tiene variantId válido
+ * - Su slug no corresponde a ningún producto del catálogo
+ * - Tiene precio <= 0
+ * - No tiene nombre
+ *
+ * Retorna el número de items eliminados.
+ */
+export function sanitizeCart(): number {
+  const state = useCartStore.getState();
+  const invalidKeys: string[] = [];
+
+  for (const item of state.items) {
+    const hasSlug = !!item.slug && item.slug.trim() !== "";
+    const hasProductId = item.productId !== undefined && item.productId !== null && item.productId !== "";
+    const hasVariantId = item.variantId !== undefined && item.variantId !== null && item.variantId > 0;
+    const hasName = !!item.name && item.name.trim() !== "";
+    const hasPrice = typeof item.price === "number" && item.price > 0;
+
+    // Verificar que el producto existe en el catálogo
+    const productExists = hasSlug ? !!getProductBySlug(item.slug) : false;
+
+    if (!hasSlug || !hasProductId || !hasVariantId || !hasName || !hasPrice || !productExists) {
+      console.warn(
+        `[CartSanitize] Item inválido eliminado: name="${item.name}" slug="${item.slug}" productId=${item.productId} variantId=${item.variantId} price=${item.price} productExists=${productExists}`
+      );
+      invalidKeys.push(item.cartKey);
+    }
+  }
+
+  if (invalidKeys.length > 0) {
+    // Eliminar todos los items inválidos de una vez
+    const validItems = state.items.filter(
+      (i) => !invalidKeys.includes(i.cartKey)
+    );
+    useCartStore.setState({ items: validItems });
+    console.log(`[CartSanitize] ${invalidKeys.length} item(s) inválido(s) eliminado(s) del carrito.`);
+  }
+
+  return invalidKeys.length;
+}
+
+/**
+ * Custom storage API for Zustand persist middleware using sessionStorage.
+ * Falls back gracefully in SSR environments.
+ */
+const sessionStorageAPI = {
+  getItem: (name: string) => {
+    if (typeof window === "undefined") return null;
+    try {
+      const str = sessionStorage.getItem(name);
+      return str;
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: string) => {
+    if (typeof window === "undefined") return;
+    try {
+      sessionStorage.setItem(name, value);
+    } catch {
+      // sessionStorage full or unavailable — ignore silently
+    }
+  },
+  removeItem: (name: string) => {
+    if (typeof window === "undefined") return;
+    try {
+      sessionStorage.removeItem(name);
+    } catch {
+      // ignore
+    }
+  },
+};
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -103,15 +205,28 @@ export const useCartStore = create<CartState>()(
         }));
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => {
+        set({ items: [] });
+        // También limpiar sessionStorage directamente
+        clearCartStorage();
+      },
 
       totalItems: 0,
 
       total: 0,
     }),
     {
-      name: "tiendafitnesspro-cart",
+      name: CART_STORAGE_KEY,
+      storage: sessionStorageAPI,
       onRehydrateStorage: () => (state) => {
+        // Migración: limpiar datos antiguos de localStorage
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem(CART_STORAGE_KEY);
+          } catch {
+            // ignore
+          }
+        }
         if (state) {
           state.totalItems = state.items.reduce(
             (acc, i) => acc + i.quantity,
