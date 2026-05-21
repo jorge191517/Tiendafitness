@@ -1,29 +1,38 @@
 -- ============================================
--- TIENDA FITNESS PRO — Row Level Security (RLS)
+-- TIENDA FITNESS PRO — FIX RLS INFINITE RECURSION
 -- ============================================
--- Ejecutar DESPUÉS de schema.sql en el SQL Editor de Supabase.
 --
--- ⚠️ VERSIÓN CORREGIDA — Sin infinite recursion
--- Este archivo usa la función is_admin() (SECURITY DEFINER) en lugar de
--- EXISTS (SELECT 1 FROM profiles ...) que causaba recursion infinita.
+-- PROBLEMA:
+-- Error 42P17: infinite recursion detected in policy for relation "profiles"
 --
--- Si ya tienes policies anteriores instaladas, ejecuta fix-rls-recursion.sql
--- que hace DROP de las policies viejas antes de crear las nuevas.
+-- CAUSA:
+-- Las policies RLS de profiles se autoreferencian:
+--   "Los admins pueden ver todos los perfiles" →
+--     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+--   Al consultar profiles, esta policy se evalúa, lo que requiere
+--   consultar profiles de nuevo → loop infinito.
+--
+-- Lo mismo ocurre en las policies de categories, products, orders, order_items
+-- que usan EXISTS (SELECT 1 FROM profiles ...) para verificar admin.
+--
+-- SOLUCIÓN:
+-- 1. Crear función is_admin() con SECURITY DEFINER (bypass RLS)
+-- 2. Reemplazar todos los EXISTS (SELECT 1 FROM profiles ...) por is_admin()
+-- 3. Eliminar policies de profiles que causan autoreferencia
+--
+-- EJECUTAR en el SQL Editor de Supabase DESPUÉS de rls.sql
+-- (o reemplazar las policies existentes)
+--
+-- ⚠️ IMPORTANTE: Ejecutar TODO este script de una vez.
+-- Si falla alguna sentencia, las policies anteriores ya fueron eliminadas.
+-- Asegurarse de que el entorno tenga acceso para ejecutar DDL.
 -- ============================================
 
--- ─── Habilitar RLS en todas las tablas ──────────────────────────────────────
-
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.cart_items ENABLE ROW LEVEL SECURITY;
-
--- ─── Función helper is_admin() ──────────────────────────────────────────────
--- SECURITY DEFINER: ejecuta como propietario de la función (postgres),
--- bypassando RLS. Esto elimina la recursión infinita que ocurría cuando
--- las policies de profiles consultaban profiles para verificar admin.
+-- ═══════════════════════════════════════════════════════════════════════════
+-- PASO 1: Crear función helper is_admin() — SECURITY DEFINER (bypass RLS)
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Esta función consulta profiles SIN pasar por RLS (porque es SECURITY DEFINER),
+-- eliminando la recursión infinita.
 
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN
@@ -37,31 +46,36 @@ AS $$
   );
 $$;
 
+-- Otorgar permisos de ejecución a roles necesarios
 GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO anon;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- PROFILES
+-- PASO 2: Corregir policies de PROFILES (eliminando autoreferencia)
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Cualquier usuario puede ver su propio perfil
+-- Eliminar policies anteriores (pueden tener nombres en español)
+DROP POLICY IF EXISTS "Los usuarios pueden ver su propio perfil" ON public.profiles;
+DROP POLICY IF EXISTS "Los usuarios pueden actualizar su propio perfil" ON public.profiles;
+DROP POLICY IF EXISTS "Los admins pueden ver todos los perfiles" ON public.profiles;
+DROP POLICY IF EXISTS "Los admins pueden cambiar roles" ON public.profiles;
+
+-- SELECT: usuarios ven su propio perfil + admins ven todos
 CREATE POLICY "profiles_select_own"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);
 
--- Admin puede ver todos los perfiles (usa is_admin() — sin recursion)
 CREATE POLICY "profiles_select_admin"
   ON public.profiles FOR SELECT
   TO authenticated
   USING (public.is_admin());
 
--- Usuarios pueden actualizar su propio perfil
+-- UPDATE: usuarios actualizan su propio perfil + admins actualizan cualquiera
 CREATE POLICY "profiles_update_own"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
--- Admin puede actualizar cualquier perfil (incluyendo roles)
 CREATE POLICY "profiles_update_admin"
   ON public.profiles FOR UPDATE
   TO authenticated
@@ -69,98 +83,112 @@ CREATE POLICY "profiles_update_admin"
   WITH CHECK (public.is_admin());
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- CATEGORIES
+-- PASO 3: Corregir policies de CATEGORIES (usar is_admin en vez de EXISTS)
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Cualquier usuario (incluidos invitados) puede leer categorías activas
+DROP POLICY IF EXISTS "Cualquier usuario puede leer categorías activas" ON public.categories;
+DROP POLICY IF EXISTS "Solo admin puede crear categorías" ON public.categories;
+DROP POLICY IF EXISTS "Solo admin puede actualizar categorías" ON public.categories;
+DROP POLICY IF EXISTS "Solo admin puede eliminar categorías" ON public.categories;
+
+-- SELECT: cualquiera puede leer categorías activas
 CREATE POLICY "categories_select_active"
   ON public.categories FOR SELECT
   USING (active = true);
 
--- Solo admin puede crear categorías (usa is_admin — sin recursion)
+-- INSERT/UPDATE/DELETE: solo admin
 CREATE POLICY "categories_insert_admin"
   ON public.categories FOR INSERT
   TO authenticated
   WITH CHECK (public.is_admin());
 
--- Solo admin puede actualizar categorías
 CREATE POLICY "categories_update_admin"
   ON public.categories FOR UPDATE
   TO authenticated
   USING (public.is_admin());
 
--- Solo admin puede eliminar categorías
 CREATE POLICY "categories_delete_admin"
   ON public.categories FOR DELETE
   TO authenticated
   USING (public.is_admin());
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- PRODUCTS
+-- PASO 4: Corregir policies de PRODUCTS (usar is_admin en vez de EXISTS)
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Cualquier usuario puede leer productos activos
+DROP POLICY IF EXISTS "Cualquier usuario puede leer productos activos" ON public.products;
+DROP POLICY IF EXISTS "Solo admin puede crear productos" ON public.products;
+DROP POLICY IF EXISTS "Solo admin puede actualizar productos" ON public.products;
+DROP POLICY IF EXISTS "Solo admin puede eliminar productos" ON public.products;
+
+-- SELECT: cualquiera puede leer productos activos
 CREATE POLICY "products_select_active"
   ON public.products FOR SELECT
   USING (active = true);
 
--- Solo admin puede crear productos (usa is_admin — sin recursion)
+-- INSERT/UPDATE/DELETE: solo admin
 CREATE POLICY "products_insert_admin"
   ON public.products FOR INSERT
   TO authenticated
   WITH CHECK (public.is_admin());
 
--- Solo admin puede actualizar productos
 CREATE POLICY "products_update_admin"
   ON public.products FOR UPDATE
   TO authenticated
   USING (public.is_admin());
 
--- Solo admin puede eliminar productos
 CREATE POLICY "products_delete_admin"
   ON public.products FOR DELETE
   TO authenticated
   USING (public.is_admin());
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- ORDERS
+-- PASO 5: Corregir policies de ORDERS (usar is_admin + permitir guest INSERT)
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Un usuario autenticado puede ver sus propios pedidos
+DROP POLICY IF EXISTS "Los usuarios pueden ver sus propios pedidos" ON public.orders;
+DROP POLICY IF EXISTS "Los admins pueden ver todos los pedidos" ON public.orders;
+DROP POLICY IF EXISTS "Los usuarios autenticados pueden crear pedidos" ON public.orders;
+DROP POLICY IF EXISTS "Solo admin puede actualizar pedidos" ON public.orders;
+
+-- SELECT: usuarios ven sus propios pedidos + admins ven todos
 CREATE POLICY "orders_select_own"
   ON public.orders FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
 
--- Admin puede ver todos los pedidos (usa is_admin — sin recursion)
 CREATE POLICY "orders_select_admin"
   ON public.orders FOR SELECT
   TO authenticated
   USING (public.is_admin());
 
--- Un usuario autenticado puede crear pedidos
+-- INSERT: usuarios autenticados pueden crear sus pedidos
 CREATE POLICY "orders_insert_authenticated"
   ON public.orders FOR INSERT
   TO authenticated
   WITH CHECK (user_id = auth.uid());
 
--- Invitados (anon) pueden crear pedidos (guest checkout, user_id = null)
+-- INSERT: invitados (anon) pueden crear pedidos (user_id = null)
 CREATE POLICY "orders_insert_guest"
   ON public.orders FOR INSERT
   TO anon
   WITH CHECK (user_id IS NULL);
 
--- Solo admin puede actualizar pedidos (cambiar estado)
+-- UPDATE: solo admin puede cambiar estado de pedidos
 CREATE POLICY "orders_update_admin"
   ON public.orders FOR UPDATE
   TO authenticated
   USING (public.is_admin());
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- ORDER ITEMS
+-- PASO 6: Corregir policies de ORDER_ITEMS (usar is_admin + permitir guest INSERT)
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Un usuario puede ver los items de sus propios pedidos
+DROP POLICY IF EXISTS "Los usuarios pueden ver items de sus pedidos" ON public.order_items;
+DROP POLICY IF EXISTS "Los admins pueden ver todos los items" ON public.order_items;
+DROP POLICY IF EXISTS "Los usuarios pueden crear items en sus pedidos" ON public.order_items;
+
+-- SELECT: usuarios ven items de sus pedidos + admins ven todos
 CREATE POLICY "order_items_select_own"
   ON public.order_items FOR SELECT
   TO authenticated
@@ -170,13 +198,12 @@ CREATE POLICY "order_items_select_own"
     )
   );
 
--- Admin puede ver todos los items (usa is_admin — sin recursion)
 CREATE POLICY "order_items_select_admin"
   ON public.order_items FOR SELECT
   TO authenticated
   USING (public.is_admin());
 
--- Un usuario autenticado puede crear items en sus propios pedidos
+-- INSERT: usuarios autenticados pueden crear items en sus pedidos
 CREATE POLICY "order_items_insert_authenticated"
   ON public.order_items FOR INSERT
   TO authenticated
@@ -186,7 +213,7 @@ CREATE POLICY "order_items_insert_authenticated"
     )
   );
 
--- Invitados (anon) pueden crear items en pedidos guest
+-- INSERT: invitados (anon) pueden crear items en pedidos guest
 CREATE POLICY "order_items_insert_guest"
   ON public.order_items FOR INSERT
   TO anon
@@ -197,29 +224,12 @@ CREATE POLICY "order_items_insert_guest"
   );
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- CART ITEMS
+-- VERIFICACIÓN
 -- ═══════════════════════════════════════════════════════════════════════════
-
--- Un usuario puede ver su propio carrito
-CREATE POLICY "cart_items_select_own"
-  ON public.cart_items FOR SELECT
-  TO authenticated
-  USING (user_id = auth.uid());
-
--- Un usuario puede agregar items a su carrito
-CREATE POLICY "cart_items_insert_own"
-  ON public.cart_items FOR INSERT
-  TO authenticated
-  WITH CHECK (user_id = auth.uid());
-
--- Un usuario puede actualizar items de su carrito
-CREATE POLICY "cart_items_update_own"
-  ON public.cart_items FOR UPDATE
-  TO authenticated
-  USING (user_id = auth.uid());
-
--- Un usuario puede eliminar items de su carrito
-CREATE POLICY "cart_items_delete_own"
-  ON public.cart_items FOR DELETE
-  TO authenticated
-  USING (user_id = auth.uid());
+-- Ejecutar después de aplicar para verificar que no hay recursion:
+--
+-- SELECT * FROM public.profiles WHERE id = auth.uid();
+-- (como usuario autenticado — no debe dar error 42P17)
+--
+-- SELECT public.is_admin();
+-- (debe devolver true si el usuario es admin, false si no)

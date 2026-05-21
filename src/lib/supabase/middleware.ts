@@ -3,9 +3,14 @@
  * Se encarga de:
  * - Refrescar la sesión del usuario en cada request
  * - Proteger rutas /admin (solo role='admin')
+ * - Permitir acceso a /checkout tanto para usuarios autenticados como invitados
  * - Redirigir usuarios autenticados lejos de login/register
  *
  * Usa SOLO la anon key (NEXT_PUBLIC_) — nunca la service role key.
+ *
+ * ⚠️ La consulta a profiles para verificar admin usa anon key.
+ * Si hay recursion en RLS de profiles, esta consulta fallará.
+ * Ejecutar fix-rls-recursion.sql en Supabase para resolverlo.
  */
 
 import { createServerClient } from '@supabase/ssr';
@@ -53,26 +58,34 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Verificar rol de admin en la tabla profiles
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    // ⚠️ Si hay infinite recursion (error 42P17), ejecutar fix-rls-recursion.sql
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
 
-    if (!profile || profile.role !== 'admin') {
-      // Usuario autenticado pero no admin — redirigir a home
+      if (profileError) {
+        console.error("[Middleware] Error consultando profile:", profileError.code, profileError.message);
+        // Si hay recursion, denegar acceso por seguridad
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+
+      if (!profile || profile.role !== 'admin') {
+        // Usuario autenticado pero no admin — redirigir a home
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+    } catch (err) {
+      console.error("[Middleware] Excepción consultando profile:", err);
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
-  // ─── Proteger ruta de checkout ─────────────────────────────────────────
-  if (request.nextUrl.pathname.startsWith('/checkout')) {
-    if (!user) {
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('redirect', '/checkout');
-      return NextResponse.redirect(loginUrl);
-    }
-  }
+  // ─── Ruta de checkout: acceso libre para autenticados e invitados ──────
+  // Se eliminó la redirección a login para permitir guest checkout.
+  // El server action createOrder() usa service role (bypass RLS)
+  // y maneja tanto usuarios autenticados como invitados.
 
   // ─── Redirigir usuarios autenticados lejos de login/register ───────────
   if (user && (
