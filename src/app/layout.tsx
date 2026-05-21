@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { seoConfig } from "@/config/seo";
 import CartSidebar from "@/components/layout/cart-sidebar";
+import MobileCartFloat from "@/components/layout/mobile-cart-float";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,7 @@ export default function RootLayout({
       >
         {children}
         <CartSidebar />
+        <MobileCartFloat />
         <Toaster />
       </body>
     </html>

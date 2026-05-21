@@ -139,9 +139,9 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-deep">
+    <div className="min-h-screen bg-deep pb-20 lg:pb-0">
       <div className="h-20" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-12">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" className="text-white/50 hover:text-white hover:bg-white/10 rounded-full" asChild>
             <Link href="/productos"><ArrowLeft className="h-5 w-5" /></Link>

@@ -8,6 +8,11 @@
  *
  * NUNCA confiar en los precios enviados desde el cliente.
  *
+ * Estrategia de validación de precios:
+ * 1. Buscar producto en Supabase por slug
+ * 2. Si Supabase no tiene el producto (tabla vacía o error), usar datos locales
+ * 3. Siempre usar el precio del SERVIDOR, nunca del cliente
+ *
  * Tras crear el pedido correctamente, se envían emails de notificación
  * tanto al cliente como al admin. Si el envío de email falla,
  * NO se interrumpe el flujo del pedido (se registra el error en servidor).
@@ -17,6 +22,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from "@/lib/email/send-order-email";
+import { getProductBySlug as getLocalProductBySlug } from "@/data/products";
 
 export interface CheckoutItem {
   name: string;
@@ -50,12 +56,69 @@ export interface CheckoutResult {
   error?: string;
 }
 
+/** Verifica si Supabase está configurado */
+function isSupabaseConfigured(): boolean {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+}
+
+/**
+ * Obtiene el precio de un producto desde el servidor.
+ * Primero busca en Supabase, si no lo encuentra usa datos locales.
+ * Siempre devuelve el precio del servidor (anti-manipulación).
+ */
+async function getServerPrice(slug: string): Promise<{
+  found: boolean;
+  productId?: string;
+  price?: number;
+  active?: boolean;
+  stockStatus?: string;
+}> {
+  // Intentar Supabase primero
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, slug, price, active, stock_status")
+        .eq("slug", slug)
+        .single();
+
+      if (!error && data) {
+        return {
+          found: true,
+          productId: data.id,
+          price: Number(data.price),
+          active: data.active,
+          stockStatus: data.stock_status,
+        };
+      }
+    } catch (err) {
+      console.warn("[Checkout] Error consultando Supabase para slug:", slug, err);
+    }
+  }
+
+  // Fallback a datos locales
+  const localProduct = getLocalProductBySlug(slug);
+  if (localProduct) {
+    console.log("[Checkout] Producto encontrado en datos locales:", slug);
+    return {
+      found: true,
+      productId: String(localProduct.id),
+      price: localProduct.price,
+      active: true,
+      stockStatus: localProduct.stock,
+    };
+  }
+
+  return { found: false };
+}
+
 /**
  * Crea un pedido en Supabase.
  *
  * Flujo:
  * 1. Verifica que el usuario esté autenticado
- * 2. Valida los precios contra la base de datos (anti-manipulación)
+ * 2. Valida los precios contra Supabase o datos locales (anti-manipulación)
  * 3. Crea el pedido en la tabla `orders`
  * 4. Crea las líneas de pedido en `order_items`
  * 5. Envía emails de confirmación (cliente + admin) — no bloqueante
@@ -75,24 +138,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       return { success: false, error: "El carrito está vacío." };
     }
 
-    // 3. Buscar productos en la base de datos y validar precios
-    const slugs = payload.items.map((i) => i.slug);
-    const { data: dbProducts, error: dbError } = await supabase
-      .from("products")
-      .select("id, slug, price, active, stock_status, stock_quantity")
-      .in("slug", slugs);
-
-    if (dbError) {
-      return { success: false, error: "Error al verificar productos." };
-    }
-
-    // Mapeo slug → producto DB
-    const productMap = new Map<string, (typeof dbProducts)[0]>();
-    for (const p of dbProducts ?? []) {
-      productMap.set(p.slug, p);
-    }
-
-    // Validar cada item del carrito contra la DB
+    // 3. Validar cada item del carrito contra Supabase o datos locales
     let serverTotal = 0;
     const orderItems: {
       product_id: string;
@@ -110,28 +156,28 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
     }[] = [];
 
     for (const item of payload.items) {
-      const dbProduct = productMap.get(item.slug);
+      const serverProduct = await getServerPrice(item.slug);
 
-      if (!dbProduct) {
+      if (!serverProduct.found) {
         return { success: false, error: `Producto "${item.name}" no encontrado en el catálogo.` };
       }
 
-      if (!dbProduct.active) {
+      if (serverProduct.active === false) {
         return { success: false, error: `Producto "${item.name}" no está disponible.` };
       }
 
-      if (dbProduct.stock_status === "out_of_stock") {
+      if (serverProduct.stockStatus === "out_of_stock") {
         return { success: false, error: `Producto "${item.name}" está agotado.` };
       }
 
       // ⛔ Usar el precio del SERVIDOR, no el del cliente (anti-manipulación)
-      const serverPrice = Number(dbProduct.price);
+      const serverPrice = serverProduct.price!;
       const lineTotal = serverPrice * item.quantity;
 
       serverTotal += lineTotal;
 
       orderItems.push({
-        product_id: dbProduct.id,
+        product_id: serverProduct.productId!,
         quantity: item.quantity,
         unit_price: serverPrice,
         total: lineTotal,

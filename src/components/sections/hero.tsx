@@ -17,7 +17,7 @@ export default function Hero() {
   const { slogans, cta } = brandingConfig;
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
+    <section className="relative min-h-[85vh] md:min-h-screen flex items-center overflow-hidden">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -32,7 +32,7 @@ export default function Hero() {
       <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-lime/5 rounded-full blur-[100px]" />
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-32 md:py-0">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20 md:py-32">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -50,7 +50,7 @@ export default function Hero() {
           {/* Main headline */}
           <motion.h1
             variants={fadeInUp}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.9] tracking-tight mb-4 md:mb-6"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.9] tracking-tight mb-4 md:mb-6"
           >
             <span className="text-white">{slogans.hero.headline.line1}</span>
             <br />
@@ -96,7 +96,7 @@ export default function Hero() {
           {/* Feature Icons */}
           <motion.div
             variants={fadeInUp}
-            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-8 md:mt-14"
           >
             {slogans.features.map((feature, i) => {
               const Icon = featureIcons[i];

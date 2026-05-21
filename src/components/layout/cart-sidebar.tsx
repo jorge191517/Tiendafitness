@@ -181,7 +181,7 @@ export default function CartSidebar() {
                   onClick={() => setCartSidebarOpen(false)}
                   className="w-full bg-electric hover:bg-electric/90 text-white font-bold py-5 rounded-xl shadow-[0_0_20px_rgba(0,153,255,0.3)] uppercase tracking-wider"
                 >
-                  <Link href="/checkout">Ver Carrito</Link>
+                  <Link href="/checkout">Finalizar Compra</Link>
                 </Button>
                 <Button
                   asChild

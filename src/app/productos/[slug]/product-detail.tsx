@@ -24,6 +24,7 @@ import { useCartStore, buildCartKey, type CartItem } from "@/store/cart-store";
 import { useWishlistStore } from "@/store/wishlist-store";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { useUIStore } from "@/store/ui-store";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -136,13 +137,13 @@ export default function ProductDetail({ product }: { product: Product }) {
   };
 
   return (
-    <div className="min-h-screen bg-deep">
+    <div className="min-h-screen bg-deep pb-24 lg:pb-0">
       <div className="h-20" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-16">
         <Link
           href="/productos"
-          className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-4 md:mb-8 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver a productos
@@ -152,7 +153,7 @@ export default function ProductDetail({ product }: { product: Product }) {
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-16"
         >
           {/* ─── Product Image Gallery ─── */}
           <motion.div variants={fadeInUp} className="flex flex-col gap-4">
@@ -230,14 +231,14 @@ export default function ProductDetail({ product }: { product: Product }) {
                 <Heart className={`h-5 w-5 ${inWishlist ? "fill-red-400 text-red-400" : ""}`} />
               </Button>
             </div>
-            <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tight mb-4">
+            <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-white uppercase tracking-tight mb-3 md:mb-4">
               {product.name}
             </h1>
 
             <StarRating rating={product.rating} />
 
             <div className="flex items-baseline gap-3 mt-4 mb-6">
-              <span className="text-3xl md:text-4xl font-black text-white">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-black text-white">
                 {product.price.toFixed(2)} €
               </span>
               {product.oldPrice && (
@@ -359,11 +360,11 @@ export default function ProductDetail({ product }: { product: Product }) {
             </div>
 
             {/* ─── Add to cart + WhatsApp ─── */}
-            <div className="flex flex-wrap gap-4 mb-8">
+            <div className="flex flex-wrap gap-4 mb-4">
               <Button
                 onClick={handleAddToCart}
                 disabled={currentVariant.stock === "out_of_stock"}
-                className={`font-bold px-8 py-6 text-base rounded-xl transition-all duration-300 uppercase tracking-wider ${
+                className={`font-bold px-5 md:px-8 py-4 md:py-6 text-sm md:text-base rounded-xl transition-all duration-300 uppercase tracking-wider ${
                   justAdded
                     ? "bg-lime hover:bg-lime/90 text-black shadow-[0_0_30px_rgba(170,255,0,0.3)]"
                     : "bg-electric hover:bg-electric/90 text-white shadow-[0_0_30px_rgba(0,153,255,0.3)] hover:shadow-[0_0_40px_rgba(0,153,255,0.5)]"
@@ -385,9 +386,34 @@ export default function ProductDetail({ product }: { product: Product }) {
                 message={`Hola, estoy interesado en: ${product.name} (${currentVariant.colorName}${selectedSize ? `, Talla ${selectedSize}` : ""})`}
                 label="Consultar"
                 variant="outline"
-                className="py-6 px-6 text-base rounded-xl uppercase tracking-wider"
+                className="py-4 md:py-6 px-4 md:px-6 text-sm md:text-base rounded-xl uppercase tracking-wider"
               />
             </div>
+
+            {/* ─── Post-add CTAs: Ver carrito / Finalizar compra ─── */}
+            {justAdded && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="flex flex-wrap gap-3 mb-6"
+              >
+                <Button
+                  onClick={() => useUIStore.getState().setCartSidebarOpen(true)}
+                  variant="outline"
+                  className="border-electric/40 text-electric hover:bg-electric/10 font-bold py-3 px-6 rounded-xl transition-all duration-300"
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Ver Carrito
+                </Button>
+                <Button
+                  asChild
+                  className="bg-lime hover:bg-lime/90 text-black font-bold py-3 px-6 rounded-xl shadow-[0_0_20px_rgba(170,255,0,0.2)] transition-all duration-300"
+                >
+                  <Link href="/checkout">Finalizar Compra</Link>
+                </Button>
+              </motion.div>
+            )}
 
             {/* Features */}
             <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
