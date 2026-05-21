@@ -10,22 +10,27 @@ export default function PromoBanner() {
   const { slogans, cta } = brandingConfig;
 
   return (
-    <section id="offers" className="relative py-16 md:py-24 bg-deep overflow-hidden">
+    <section id="offers" className="relative py-16 md:py-24 bg-deep w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
-          className="relative rounded-3xl overflow-hidden min-h-[300px] md:min-h-[400px] flex items-center"
+          className="relative rounded-3xl overflow-hidden min-h-[300px] md:min-h-[400px] flex items-center w-full"
         >
           {/* Background */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#001a33] via-[#002244] to-[#001a33]" />
 
-          {/* Neon glow effects */}
-          <div className="absolute top-0 left-1/4 w-64 h-64 bg-electric/10 rounded-full blur-[100px]" />
-          <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-lime/8 rounded-full blur-[80px]" />
-          <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-electric/15 rounded-full blur-[60px]" />
+          {/* Neon glow effects — radial-gradient (no blur filter = no overflow) */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse at 25% 0%, rgba(0,153,255,0.1) 0%, transparent 50%)" }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse at 75% 100%, rgba(170,255,0,0.08) 0%, transparent 50%)" }}
+          />
 
           {/* Grid pattern overlay */}
           <div

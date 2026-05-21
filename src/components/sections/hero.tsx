@@ -17,7 +17,7 @@ export default function Hero() {
   const { slogans, cta } = brandingConfig;
 
   return (
-    <section className="relative min-h-[85vh] md:min-h-screen flex items-center overflow-hidden">
+    <section className="relative min-h-[85vh] md:min-h-screen flex items-center w-full">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -27,9 +27,15 @@ export default function Hero() {
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 via-50% to-black/30" />
 
-      {/* Subtle glow accents */}
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-electric/5 rounded-full blur-[120px]" />
-      <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-lime/5 rounded-full blur-[100px]" />
+      {/* Subtle glow accents — using radial-gradient instead of blur filter to prevent overflow */}
+      <div
+        className="absolute top-[15%] right-0 w-[50%] h-[40%] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 100% 50%, rgba(0,153,255,0.05) 0%, transparent 70%)" }}
+      />
+      <div
+        className="absolute bottom-[20%] left-0 w-[40%] h-[35%] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 0% 50%, rgba(170,255,0,0.04) 0%, transparent 70%)" }}
+      />
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20 md:py-32">
@@ -103,12 +109,12 @@ export default function Hero() {
               return (
                 <div
                   key={feature.label}
-                  className="flex items-center gap-2 md:gap-3 group cursor-default"
+                  className="flex items-center gap-2 md:gap-3 group cursor-default min-w-0"
                 >
                   <div className="flex-shrink-0 w-9 h-9 md:w-11 md:h-11 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-300 group-hover:border-electric/40 group-hover:bg-electric/10 group-hover:shadow-[0_0_15px_rgba(0,153,255,0.2)]">
                     <Icon className="h-4 w-4 md:h-5 md:w-5 text-white/60 group-hover:text-electric transition-colors duration-300" />
                   </div>
-                  <span className="text-[11px] md:text-xs text-white/40 font-medium leading-tight group-hover:text-white/70 transition-colors duration-300">
+                  <span className="text-[11px] md:text-xs text-white/40 font-medium leading-tight group-hover:text-white/70 transition-colors duration-300 truncate">
                     {feature.label}
                   </span>
                 </div>

@@ -108,12 +108,12 @@ export default function RegisterPage() {
   // Pantalla de éxito después del registro
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-lime/5 rounded-full blur-[100px]" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-electric/5 rounded-full blur-[100px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-lime/3 rounded-full blur-[120px]" />
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative w-full">
+        {/* Fondo decorativo — radial-gradient */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at 70% 30%, rgba(170,255,0,0.04) 0%, transparent 50%), radial-gradient(ellipse at 30% 70%, rgba(0,153,255,0.04) 0%, transparent 50%)" }}
+        />
 
         <motion.div
           variants={fadeInUp}
@@ -167,13 +167,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative overflow-hidden">
-      {/* Fondo decorativo */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-electric/5 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-lime/5 rounded-full blur-[100px]" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-lime/3 rounded-full blur-[150px]" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative w-full">
+      {/* Fondo decorativo — radial-gradient */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 80% 30%, rgba(0,153,255,0.05) 0%, transparent 50%), radial-gradient(ellipse at 20% 70%, rgba(170,255,0,0.04) 0%, transparent 50%)" }}
+      />
 
       <motion.div
         variants={fadeInUp}

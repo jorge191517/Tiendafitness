@@ -32,9 +32,16 @@ export default function FeaturedProductsClient({ products }: { products: Product
   const { slogans } = brandingConfig;
 
   return (
-    <section id="products" className="relative py-16 md:py-24 bg-deep">
-      <div className="absolute top-0 left-1/4 w-72 h-72 bg-electric/3 rounded-full blur-[120px]" />
-      <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-lime/3 rounded-full blur-[120px]" />
+    <section id="products" className="relative py-16 md:py-24 bg-deep w-full">
+      {/* Glow accents — radial-gradient (no blur filter = no overflow) */}
+      <div
+        className="absolute top-0 left-0 w-full h-[50%] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 30% 0%, rgba(0,153,255,0.03) 0%, transparent 60%)" }}
+      />
+      <div
+        className="absolute bottom-0 left-0 w-full h-[50%] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 70% 100%, rgba(170,255,0,0.03) 0%, transparent 60%)" }}
+      />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -78,7 +85,7 @@ function FeaturedProductCard({ product, index }: { product: Product; index: numb
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
       whileHover={{ y: -8 }}
-      className="group relative rounded-2xl bg-mid-gray border border-white/5 hover:border-electric/30 transition-all duration-500 overflow-hidden block"
+      className="group relative rounded-2xl bg-mid-gray border border-white/5 hover:border-electric/30 transition-all duration-500 overflow-hidden block min-w-0"
     >
       <div className="relative aspect-square overflow-hidden bg-dark-gray">
         <img key={displayImage} src={displayImage} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />

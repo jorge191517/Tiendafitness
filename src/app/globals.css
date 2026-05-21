@@ -87,8 +87,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body {
+    overflow-x: clip;
+    max-width: 100%;
+  }
   body {
     @apply bg-deep text-foreground;
+    width: 100%;
   }
 }
 
