@@ -109,6 +109,12 @@ export async function sendMail(params: {
   try {
     const fromEmail = getEmailFrom();
 
+    console.log("[SMTP] sending:", {
+      from: fromEmail,
+      to: Array.isArray(params.to) ? params.to.join(", ") : params.to,
+      subject: params.subject,
+    });
+
     await transporter.sendMail({
       from: `Tienda Fitness Pro <${fromEmail}>`,
       to: Array.isArray(params.to) ? params.to.join(", ") : params.to,
@@ -117,10 +123,10 @@ export async function sendMail(params: {
       ...(params.replyTo ? { replyTo: params.replyTo } : {}),
     });
 
-    console.log("[Nodemailer] Email enviado correctamente:", params.subject);
+    console.log("[SMTP] sent:", params.subject);
     return true;
   } catch (err) {
-    console.error("[Nodemailer] Error enviando email:", err);
+    console.error("[SMTP] error:", err);
     return false;
   }
 }

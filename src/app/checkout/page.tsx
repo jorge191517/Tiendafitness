@@ -26,7 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useCartStore, useCartTotals, type CartItem } from "@/store/cart-store";
+import { useCartStore, useCartTotals, sanitizeCart, type CartItem } from "@/store/cart-store";
 import { createClient } from "@/lib/supabase/client";
 import { createOrder, type CheckoutResult } from "./actions";
 import Link from "next/link";
@@ -64,6 +64,11 @@ export default function CheckoutPage() {
     });
   }, []);
 
+  // Sanitizar carrito al montar: eliminar items inválidos/obsoletos
+  useEffect(() => {
+    sanitizeCart();
+  }, []);
+
   const isFormValid = (): boolean => {
     return (
       customer.name.trim() !== "" && customer.email.trim() !== "" && customer.phone.trim() !== "" &&
@@ -85,6 +90,7 @@ export default function CheckoutPage() {
           name: item.name, slug: item.slug, price: item.price,
           colorName: item.colorName, selectedSize: item.selectedSize,
           quantity: item.quantity, image: item.image,
+          variantId: item.variantId,
         })),
       });
 

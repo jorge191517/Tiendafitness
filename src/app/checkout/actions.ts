@@ -8,22 +8,13 @@
  *
  * NUNCA confiar en los precios enviados desde el cliente.
  *
- * Estrategia de validación de precios:
- * 1. Buscar producto en Supabase por slug
- * 2. Si Supabase no tiene el producto (tabla vacía o error), usar datos locales
- * 3. Siempre usar el precio del SERVIDOR, nunca del cliente
- *
- * ⚠️ IMPORTANTE — Uso de createAdminClient() (service role):
- * - El INSERT en orders y order_items usa service role para BYPASS RLS
- * - Esto evita errores de infinite recursion en policies de profiles
- * - También permite guest checkout (user_id = null) sin necesitar
- *   policies RLS complejas para el rol anon
- * - La service role key NUNCA se expone al cliente
- * - El cliente solo llama este server action
- *
- * Tras crear el pedido correctamente, se envían emails de notificación
- * tanto al cliente como al admin. Si el envío de email falla,
- * NO se interrumpe el flujo del pedido (se registra el error en servidor).
+ * ⚠️ IMPORTANTE — Esquema de order_items:
+ * - product_slug TEXT NOT NULL → identificador universal (local + Supabase)
+ * - product_name TEXT NOT NULL → nombre al momento de compra
+ * - product_id UUID NULLABLE → solo si existe en Supabase (UUID real)
+ * - Los productos locales (IDs 101-104) NO se insertan en product_id
+ * - variant_id TEXT → ID de variante como string (no UUID)
+ * - subtotal en vez de total (para coincidir con el schema SQL)
  */
 
 "use server";
@@ -40,6 +31,7 @@ export interface CheckoutItem {
   selectedSize: string;
   quantity: number;
   image: string;
+  variantId?: number | string;
 }
 
 export interface CheckoutPayload {
@@ -74,18 +66,23 @@ function isServiceRoleAvailable(): boolean {
   return !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 }
 
+/** Valida si un string es un UUID válido */
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
 /**
  * Obtiene el precio de un producto desde el servidor.
  * Primero busca en Supabase, si no lo encuentra usa datos locales.
  * Siempre devuelve el precio del servidor (anti-manipulación).
  *
- * Usa createClient() (anon key) para leer products — la policy SELECT
- * de products es `active = true` y NO consulta profiles, así que no
- * hay riesgo de infinite recursion.
+ * Retorna también si el product_id es un UUID válido de Supabase.
  */
 async function getServerPrice(slug: string): Promise<{
   found: boolean;
-  productId?: string;
+  productId?: string;     // UUID de Supabase o string numérico local
+  isUUID?: boolean;       // true si productId es un UUID real de Supabase
   price?: number;
   active?: boolean;
   stockStatus?: string;
@@ -103,7 +100,8 @@ async function getServerPrice(slug: string): Promise<{
       if (!error && data) {
         return {
           found: true,
-          productId: data.id,
+          productId: data.id,       // UUID real de Supabase
+          isUUID: true,
           price: Number(data.price),
           active: data.active,
           stockStatus: data.stock_status,
@@ -120,7 +118,8 @@ async function getServerPrice(slug: string): Promise<{
     console.log("[Checkout] Producto encontrado en datos locales:", slug);
     return {
       found: true,
-      productId: String(localProduct.id),
+      productId: String(localProduct.id),  // "101", "102", etc. — NO es UUID
+      isUUID: false,
       price: localProduct.price,
       active: true,
       stockStatus: localProduct.stock,
@@ -138,12 +137,10 @@ async function getServerPrice(slug: string): Promise<{
  * 2. Valida los precios contra Supabase o datos locales (anti-manipulación)
  * 3. Crea el pedido en la tabla `orders` usando SERVICE ROLE (bypass RLS)
  * 4. Crea las líneas de pedido en `order_items` usando SERVICE ROLE
+ *    - product_slug siempre se guarda (identificador universal)
+ *    - product_id solo se guarda si es UUID válido de Supabase
+ *    - NO se insertan IDs numéricos locales en columna UUID
  * 5. Envía emails de confirmación (cliente + admin) — no bloqueante
- *
- * ⚠️ Los INSERT usan createAdminClient() (service role) para:
- * - Evitar infinite recursion en RLS policies de profiles
- * - Permitir guest checkout (user_id = null)
- * - Garantizar que el pedido se crea sin depender de policies complejas
  */
 export async function createOrder(payload: CheckoutPayload): Promise<CheckoutResult> {
   try {
@@ -162,13 +159,19 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       return { success: false, error: "El carrito está vacío." };
     }
 
-    // ─── 3. Validar cada item del carrito contra Supabase o datos locales ───
+    // ─── 3. Validar cada item y construir payload de order_items ───
     let serverTotal = 0;
-    const orderItems: {
-      product_id: string;
+    const orderItemsPayload: {
+      product_slug: string;
+      product_name: string;
+      product_id?: string;        // solo UUID válido de Supabase
+      variant_id: string | null;
+      color_name: string;
+      size: string | null;
       quantity: number;
       unit_price: number;
-      total: number;
+      subtotal: number;
+      image: string | null;
     }[] = [];
 
     // Datos para emails (con nombres de producto)
@@ -200,12 +203,26 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
 
       serverTotal += lineTotal;
 
-      orderItems.push({
-        product_id: serverProduct.productId!,
+      // Construir item — product_id SOLO si es UUID válido de Supabase
+      const orderItem: typeof orderItemsPayload[number] = {
+        product_slug: item.slug,
+        product_name: item.name,
+        variant_id: item.variantId != null ? String(item.variantId) : null,
+        color_name: item.colorName,
+        size: item.selectedSize || null,
         quantity: item.quantity,
         unit_price: serverPrice,
-        total: lineTotal,
-      });
+        subtotal: lineTotal,
+        image: item.image || null,
+      };
+
+      // Solo incluir product_id si es un UUID válido de Supabase
+      // Los productos locales (101, 102, etc.) NO son UUID y causarían error 22P02
+      if (serverProduct.isUUID && serverProduct.productId && isValidUUID(serverProduct.productId)) {
+        orderItem.product_id = serverProduct.productId;
+      }
+
+      orderItemsPayload.push(orderItem);
 
       emailItems.push({
         name: `${item.name} (${item.colorName}${item.selectedSize ? `, Talla ${item.selectedSize}` : ""})`,
@@ -216,9 +233,6 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
     }
 
     // ─── 4. Crear el pedido usando SERVICE ROLE (bypass RLS) ───
-    // Usar createAdminClient() para evitar infinite recursion en RLS
-    // y permitir guest checkout con user_id = null
-
     if (!isServiceRoleAvailable()) {
       console.error("[CHECKOUT_ERROR] SUPABASE_SERVICE_ROLE_KEY no configurada");
       return { success: false, error: "Error de configuración del servidor. Contacta al administrador." };
@@ -257,11 +271,13 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
     }
 
     // ─── 5. Crear las líneas de pedido usando SERVICE ROLE ───
-    if (orderData?.id && orderItems.length > 0) {
-      const itemsWithOrderId = orderItems.map((item) => ({
+    if (orderData?.id && orderItemsPayload.length > 0) {
+      const itemsWithOrderId = orderItemsPayload.map((item) => ({
         ...item,
         order_id: orderData.id,
       }));
+
+      console.log("[CHECKOUT_ORDER_ITEMS_PAYLOAD]", JSON.stringify(itemsWithOrderId, null, 2));
 
       const { error: itemsError } = await adminClient
         .from("order_items")
@@ -279,8 +295,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       }
     }
 
-    // ─── 6. Enviar emails de notificación (no bloqueante) ───
-    // Si falla el envío de email, NO debe romper la creación del pedido.
+    // ─── 6. Enviar emails de notificación ───
     if (orderData?.id) {
       const orderIdShort = orderData.id.substring(0, 8).toUpperCase();
 
@@ -294,14 +309,22 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         shippingAddress: payload.address,
       };
 
-      // Ejecutar en paralelo sin await para no bloquear la respuesta
-      // (fire-and-forget con catch interno)
-      Promise.all([
-        sendOrderConfirmationEmail(emailPayload),
-        sendNewOrderAdminEmail(emailPayload),
-      ]).catch((err) => {
-        console.error("[Checkout] Error en envío de emails de notificación:", err);
-      });
+      // Enviar emails — no bloquear el checkout si fallan
+      try {
+        console.log("[ORDER_EMAIL_CLIENT] sending to:", payload.customer.email);
+        await sendOrderConfirmationEmail(emailPayload);
+        console.log("[ORDER_EMAIL_CLIENT] sent to:", payload.customer.email);
+      } catch (err) {
+        console.error("[ORDER_EMAIL_CLIENT] error:", err);
+      }
+
+      try {
+        console.log("[ORDER_EMAIL_ADMIN] sending");
+        await sendNewOrderAdminEmail(emailPayload);
+        console.log("[ORDER_EMAIL_ADMIN] sent");
+      } catch (err) {
+        console.error("[ORDER_EMAIL_ADMIN] error:", err);
+      }
     }
 
     console.log("[Checkout] Pedido creado exitosamente:", orderData.id, "userId:", userId ?? "guest");

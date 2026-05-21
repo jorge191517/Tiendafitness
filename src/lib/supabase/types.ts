@@ -53,13 +53,16 @@ export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | '
 
 export interface Order {
   id: string; // uuid
-  user_id: string;
+  user_id: string | null;
   status: OrderStatus;
   total: number;
   customer_name: string | null;
   customer_email: string | null;
   customer_phone: string | null;
   shipping_address: ShippingAddress | null; // jsonb
+  shipping_company: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
   created_at: string;
 }
 
@@ -74,10 +77,17 @@ export interface ShippingAddress {
 export interface OrderItem {
   id: string; // uuid
   order_id: string;
-  product_id: string;
+  product_slug: string;
+  product_name: string;
+  product_id: string | null; // nullable: solo UUID si existe en Supabase
+  variant_id: string | null;
+  color_name: string | null;
+  size: string | null;
   quantity: number;
   unit_price: number;
-  total: number;
+  subtotal: number;
+  image: string | null;
+  created_at: string;
   // Joined
   product?: ProductDB;
 }

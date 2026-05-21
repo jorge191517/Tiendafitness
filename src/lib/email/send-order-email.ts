@@ -207,8 +207,9 @@ function renderNewOrderAdminHtml(
  * Si falla, registra el error pero no lanza excepción.
  */
 export async function sendOrderConfirmationEmail(payload: OrderEmailPayload): Promise<void> {
+  console.log("[ORDER_EMAIL_CLIENT] sending to:", payload.customerEmail);
   try {
-    await sendMail({
+    const result = await sendMail({
       to: payload.customerEmail,
       subject: "Confirmación de pedido - Tienda Fitness Pro",
       html: renderOrderConfirmationHtml(
@@ -219,8 +220,13 @@ export async function sendOrderConfirmationEmail(payload: OrderEmailPayload): Pr
         "pending"
       ),
     });
+    if (result) {
+      console.log("[ORDER_EMAIL_CLIENT] sent to:", payload.customerEmail);
+    } else {
+      console.warn("[ORDER_EMAIL_CLIENT] sendMail returned false (SMTP not configured or failed) for:", payload.customerEmail);
+    }
   } catch (err) {
-    console.error("[Email] Error enviando confirmación al cliente:", err);
+    console.error("[ORDER_EMAIL_CLIENT] error:", err);
     // No lanzar — el pedido ya se creó
   }
 }
@@ -230,8 +236,9 @@ export async function sendOrderConfirmationEmail(payload: OrderEmailPayload): Pr
  * Si falla, registra el error pero no lanza excepción.
  */
 export async function sendNewOrderAdminEmail(payload: OrderEmailPayload): Promise<void> {
+  console.log("[ORDER_EMAIL_ADMIN] sending");
   try {
-    await sendMail({
+    const result = await sendMail({
       to: getOrdersEmailTo(),
       subject: `Nuevo pedido recibido — #${payload.orderId}`,
       html: renderNewOrderAdminHtml(
@@ -244,8 +251,13 @@ export async function sendNewOrderAdminEmail(payload: OrderEmailPayload): Promis
         payload.shippingAddress
       ),
     });
+    if (result) {
+      console.log("[ORDER_EMAIL_ADMIN] sent");
+    } else {
+      console.warn("[ORDER_EMAIL_ADMIN] sendMail returned false (SMTP not configured or failed)");
+    }
   } catch (err) {
-    console.error("[Email] Error enviando notificación al admin:", err);
+    console.error("[ORDER_EMAIL_ADMIN] error:", err);
     // No lanzar — el pedido ya se creó
   }
 }
