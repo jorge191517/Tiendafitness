@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient, verifyAdmin } from "@/lib/supabase/server";
-import { sendMail, getOrdersEmailTo } from "@/lib/email/nodemailer";
+import { sendEmail, getOrdersEmailTo } from "@/lib/email/resend";
 
 export async function PATCH(request: NextRequest) {
   try {

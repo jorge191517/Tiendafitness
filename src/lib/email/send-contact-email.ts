@@ -1,14 +1,14 @@
 /**
- * Envío de emails del formulario de contacto vía Nodemailer.
+ * Envío de emails del formulario de contacto vía Resend.
  *
  * ⛔ Solo usar desde Server Actions o Server Components.
  * Si falla el envío, devuelve error para que el usuario pueda reintentar.
  *
- * El remitente técnico es SMTP_FROM (pedidos@tiendafitnesspro.es).
+ * El remitente técnico es EMAIL_FROM (no-reply@tiendafitnesspro.es).
  * Se usa replyTo con el email del cliente para poder responderle directamente.
  */
 
-import { sendMail, getContactEmailTo } from "./nodemailer";
+import { sendEmail, getContactEmailTo } from "./resend";
 
 interface ContactEmailPayload {
   name: string;
@@ -28,7 +28,7 @@ function renderContactMessageHtml(
 ): string {
   const phoneRow = phone
     ? `<tr>
-        <td style="color: rgba(255,255,255,0.5); padding: 4px 0;">Teléfono:</td>
+        <td style="color: rgba(255,255,255,0.5); padding: 4px 0;">Tel&eacute;fono:</td>
         <td style="color: #ffffff; text-align: right;">${phone}</td>
       </tr>`
     : "";
@@ -72,7 +72,7 @@ function renderContactMessageHtml(
 /**
  * Envía el email de contacto al equipo de Tienda Fitness Pro.
  *
- * - Remitente: SMTP_FROM (pedidos@tiendafitnesspro.es)
+ * - Remitente: EMAIL_FROM (no-reply@tiendafitnesspro.es)
  * - Destino: EMAIL_CONTACT_TO (contacto@tiendafitnesspro.es)
  * - ReplyTo: email del cliente (para responder directamente)
  *
@@ -80,7 +80,7 @@ function renderContactMessageHtml(
  */
 export async function sendContactEmail(payload: ContactEmailPayload): Promise<boolean> {
   try {
-    return await sendMail({
+    return await sendEmail({
       to: getContactEmailTo(),
       subject: `Mensaje de contacto de ${payload.name}`,
       html: renderContactMessageHtml(

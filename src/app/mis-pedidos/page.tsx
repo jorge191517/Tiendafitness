@@ -212,8 +212,8 @@ function ProductThumbnails({ items }: { items: OrderItem[] }) {
   return (
     <div className="flex items-center -space-x-2">
       {visible.map((item, i) => {
-        const imageUrl =
-          item.product?.image_url || item.product?.gallery?.[0] || null;
+        // image_url se guarda directamente en order_items (no usa FK a products)
+        const imageUrl = item.image_url || null;
         return (
           <div
             key={item.id}
@@ -223,7 +223,7 @@ function ProductThumbnails({ items }: { items: OrderItem[] }) {
             {imageUrl ? (
               <img
                 src={imageUrl}
-                alt={item.product?.name || "Producto"}
+                alt={item.product_name || "Producto"}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -248,7 +248,8 @@ function ProductThumbnails({ items }: { items: OrderItem[] }) {
 
 // ── Order Card ────────────────────────────────────────────────────────
 function OrderCard({ order }: { order: OrderWithItems }) {
-  const orderNumber = generateOrderNumber(order);
+  // Usar order_number de la BD (formato TFP-YYYYMMDD-XXXXX)
+  const orderNumber = order.order_number || generateOrderNumber(order);
   const formattedDate = formatDateES(order.created_at);
   const itemCount = order.order_items?.reduce(
     (sum, item) => sum + item.quantity,
@@ -330,7 +331,7 @@ export default function MisPedidosPage() {
       // Query orders by user_id
       let query = supabase
         .from("orders")
-        .select("*, order_items(*, products(image_url, name, gallery))")
+        .select("*, order_items(*)")
         .eq("user_id", uid)
         .order("created_at", { ascending: false });
 
@@ -348,7 +349,7 @@ export default function MisPedidosPage() {
       if (ordersData.length === 0 && email) {
         const { data: guestData, error: guestError } = await supabase
           .from("orders")
-          .select("*, order_items(*, products(image_url, name, gallery))")
+          .select("*, order_items(*)")
           .eq("customer_email", email)
           .order("created_at", { ascending: false });
 
