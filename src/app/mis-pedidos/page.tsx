@@ -338,7 +338,7 @@ export default function MisPedidosPage() {
       const { data, error } = await query;
 
       if (error) {
-        console.error("Error fetching orders:", error);
+        console.error("[MIS_PEDIDOS] Error fetching orders:", error);
         setOrders([]);
         return;
       }
@@ -358,9 +358,26 @@ export default function MisPedidosPage() {
         }
       }
 
+      // Fallback: si order_items viene vacío en alguna orden, intentar fetch directo
+      // (puede ocurrir si RLS bloquea el nested select pero permite el directo)
+      for (const order of ordersData) {
+        if (!order.order_items || order.order_items.length === 0) {
+          const { data: directItems, error: itemsErr } = await supabase
+            .from("order_items")
+            .select("*")
+            .eq("order_id", order.id);
+
+          if (!itemsErr && directItems && directItems.length > 0) {
+            order.order_items = directItems as OrderItem[];
+          } else if (itemsErr) {
+            console.warn("[MIS_PEDIDOS] RLS bloquea order_items para orden:", order.id, itemsErr.message);
+          }
+        }
+      }
+
       setOrders(ordersData);
     } catch (err) {
-      console.error("Error fetching orders:", err);
+      console.error("[MIS_PEDIDOS] Error fetching orders:", err);
       setOrders([]);
     } finally {
       setLoading(false);

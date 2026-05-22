@@ -109,7 +109,7 @@ function renderWelcomeEmailHtml(userName: string): string {
  * Fire-and-forget: si falla, no lanza excepción, solo registra un warning.
  */
 export async function sendWelcomeEmail(payload: WelcomeEmailPayload): Promise<void> {
-  console.log("[WELCOME_EMAIL] sendWelcomeEmail llamado para:", payload.userEmail);
+  console.log("[WELCOME_EMAIL] Enviando a:", payload.userEmail);
   try {
     const result = await sendEmail({
       to: payload.userEmail,
@@ -117,12 +117,12 @@ export async function sendWelcomeEmail(payload: WelcomeEmailPayload): Promise<vo
       html: renderWelcomeEmailHtml(payload.userName),
     });
     if (result) {
-      console.log("[WELCOME_EMAIL] Email enviado correctamente a:", payload.userEmail);
+      console.log("[WELCOME_EMAIL] Enviado a:", payload.userEmail);
     } else {
-      console.warn("[WELCOME_EMAIL] sendEmail devolvió false (Resend no configurado o fallo) para:", payload.userEmail);
+      console.warn("[WELCOME_EMAIL] Error: sendEmail devolvió false para:", payload.userEmail);
     }
   } catch (err) {
-    console.warn("[WELCOME_EMAIL] No se pudo enviar el email de bienvenida:", err);
+    console.error("[WELCOME_EMAIL] Error:", err);
     // No lanzar — el registro ya se completó correctamente
   }
 }

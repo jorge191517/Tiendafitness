@@ -3,7 +3,7 @@
  *
  * ⛔ La creación de pedidos se hace en el servidor para:
  * - Validar precios contra el catálogo local (evitar manipulación)
- * - Usar el cliente Supabase para INSERT
+ * - Usar el cliente admin Supabase para INSERT (bypassea RLS)
  * - Garantizar integridad de los datos
  *
  * NUNCA confiar en los precios enviados desde el cliente.
@@ -14,11 +14,14 @@
  *
  * La validación de productos se hace contra ALL_PRODUCTS (catálogo local)
  * buscando SIEMPRE por slug. NO se usa id numérico ni UUID.
+ *
+ * Usa createAdminClient() para INSERT en orders y order_items
+ * para evitar problemas de RLS que impedirían la escritura.
  */
 
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { ALL_PRODUCTS } from "@/data/products";
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from "@/lib/email/send-order-email";
 
@@ -73,10 +76,10 @@ function generateOrderNumber(): string {
  *
  * Flujo:
  * 1. Verifica que haya items en el carrito
- * 2. Identifica al usuario (autenticado o invitado)
+ * 2. Identifica al usuario (autenticado o invitado) usando createClient()
  * 3. Valida los productos contra ALL_PRODUCTS por slug (anti-manipulación)
- * 4. Crea el pedido en la tabla `orders` con order_number
- * 5. Crea las líneas de pedido en `order_items`
+ * 4. Crea el pedido en la tabla `orders` con adminClient (bypassea RLS)
+ * 5. Crea las líneas de pedido en `order_items` con adminClient
  * 6. Envía emails de confirmación (cliente + admin) — no bloqueante
  */
 export async function createOrder(payload: CheckoutPayload): Promise<CheckoutResult> {
@@ -84,9 +87,8 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
     console.log("[CHECKOUT] Iniciando creación de pedido...");
     console.log("[CHECKOUT] Customer:", payload.customer.email, "| Items:", payload.items.length);
 
+    // 1. Identificar al usuario usando el cliente normal (lee sesión de cookies)
     const supabase = await createClient();
-
-    // 1. Verificar autenticación (opcional — invitados permitidos)
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id ?? null;
     console.log("[CHECKOUT] Usuario:", userId ? `autenticado (${userId.substring(0, 8)}...)` : "invitado");
@@ -161,8 +163,10 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
     const orderNumber = generateOrderNumber();
     console.log("[CHECKOUT] Order number generado:", orderNumber);
 
-    // 5. Crear el pedido
-    const { data: orderData, error: orderError } = await supabase
+    // 5. Usar adminClient para INSERT (bypassea RLS)
+    const adminClient = await createAdminClient();
+
+    const { data: orderData, error: orderError } = await adminClient
       .from("orders")
       .insert({
         user_id: userId,
@@ -196,32 +200,40 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
     const finalOrderNumber = orderData.order_number || orderNumber;
     console.log("[CHECKOUT] Pedido creado:", { id: orderData.id, orderNumber: finalOrderNumber });
 
-    // 6. Crear las líneas de pedido con order_id real
+    // 6. Crear las líneas de pedido con order_id real usando adminClient
     const itemsWithOrderId = orderItems.map((item) => ({
       ...item,
       order_id: orderData.id,
     }));
 
-    console.log("[CHECKOUT ORDER_ITEMS] Insertando", itemsWithOrderId.length, "items:", JSON.stringify(itemsWithOrderId.map(i => ({
+    console.log("[CHECKOUT] Insertando", itemsWithOrderId.length, "order_items:", JSON.stringify(itemsWithOrderId.map(i => ({
       product_slug: i.product_slug,
       product_name: i.product_name,
-      variant_id: i.variant_id,
       quantity: i.quantity,
       unit_price: i.unit_price,
+      total: i.total,
+      image_url: i.image_url ? "presente" : "vacía",
     }))));
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await adminClient
       .from("order_items")
       .insert(itemsWithOrderId);
 
     if (itemsError) {
-      console.error("[CHECKOUT] Error creando líneas de pedido:", itemsError);
+      console.error("[CHECKOUT] Error creando order_items:", itemsError);
       // El pedido principal ya se creó, no lanzamos error
+      // Pero registramos el error detalladamente para diagnóstico
+      console.error("[CHECKOUT] Detalle del error order_items:", JSON.stringify({
+        code: itemsError.code,
+        message: itemsError.message,
+        details: itemsError.details,
+        hint: itemsError.hint,
+      }));
     } else {
-      console.log("[CHECKOUT] Order items creados correctamente");
+      console.log("[CHECKOUT] Order items creados correctamente:", itemsWithOrderId.length, "items");
     }
 
-    // 7. Enviar emails de notificación
+    // 7. Enviar emails de notificación (no bloquear el pedido si fallan)
     console.log("[CHECKOUT] Enviando emails de notificación...");
     try {
       const emailPayload = {
@@ -240,18 +252,18 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       ]);
 
       if (clientResult.status === "fulfilled") {
-        console.log("[CHECKOUT] Email cliente enviado correctamente");
+        console.log("[ORDER_EMAIL_CLIENT] Enviado (confirmación checkout)");
       } else {
-        console.error("[CHECKOUT] Error enviando email al cliente:", clientResult.reason);
+        console.error("[ORDER_EMAIL_CLIENT] Error (confirmación checkout):", clientResult.reason);
       }
 
       if (adminResult.status === "fulfilled") {
-        console.log("[CHECKOUT] Email admin enviado correctamente");
+        console.log("[ORDER_EMAIL_ADMIN] Enviado (notificación checkout)");
       } else {
-        console.error("[CHECKOUT] Error enviando email al admin:", adminResult.reason);
+        console.error("[ORDER_EMAIL_ADMIN] Error (notificación checkout):", adminResult.reason);
       }
     } catch (emailErr) {
-      console.error("[CHECKOUT] Error en envío de emails:", emailErr);
+      console.error("[CHECKOUT] Error general en envío de emails:", emailErr);
     }
 
     return { success: true, orderId: orderData.id, orderNumber: finalOrderNumber };

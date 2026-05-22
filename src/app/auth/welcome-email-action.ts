@@ -2,7 +2,7 @@
  * Server Action para enviar email de bienvenida al usuario.
  *
  * ⛔ Este archivo se ejecuta SOLO en el servidor ("use server").
- * Nunca se expone al cliente, por lo que las credenciales SMTP permanecen seguras.
+ * Nunca se expone al cliente, por lo que la API key permanece segura.
  *
  * El envío es fire-and-forget: si falla, no afecta al registro.
  */
@@ -15,13 +15,13 @@ export async function sendWelcomeEmailAction(
   userName: string,
   userEmail: string
 ): Promise<void> {
-  console.log("[WELCOME_EMAIL] Intentando enviar bienvenida a:", userEmail);
+  console.log("[WELCOME_EMAIL] Enviando a:", userEmail);
 
   try {
     await sendWelcomeEmail({ userName, userEmail });
-    console.log("[WELCOME_EMAIL] Acción completada para:", userEmail);
+    console.log("[WELCOME_EMAIL] Enviado a:", userEmail);
   } catch (err) {
-    console.warn("[WELCOME_EMAIL] Error:", err);
+    console.error("[WELCOME_EMAIL] Error:", err);
     // No lanzar — el registro ya se completó correctamente
   }
 }

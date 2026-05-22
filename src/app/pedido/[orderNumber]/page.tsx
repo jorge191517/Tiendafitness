@@ -134,6 +134,21 @@ export default function OrderTrackingPage() {
           return;
         }
 
+        // Fallback: si order_items viene vacío, intentar fetch directo
+        // (puede ocurrir si RLS bloquea el nested select)
+        if (!data.order_items || data.order_items.length === 0) {
+          const { data: directItems, error: itemsErr } = await supabase
+            .from("order_items")
+            .select("*")
+            .eq("order_id", data.id);
+
+          if (!itemsErr && directItems && directItems.length > 0) {
+            data.order_items = directItems;
+          } else if (itemsErr) {
+            console.warn("[ORDER TRACKING] RLS bloquea order_items:", itemsErr.message);
+          }
+        }
+
         // If the user is authenticated, optionally verify ownership
         const { data: userData } = await supabase.auth.getUser();
         if (userData.user) {

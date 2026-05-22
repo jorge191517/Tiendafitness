@@ -265,7 +265,7 @@ function renderNewOrderAdminHtml(
  * Si falla, registra el error pero no lanza excepción.
  */
 export async function sendOrderConfirmationEmail(payload: OrderEmailPayload): Promise<void> {
-  console.log("[ORDER_EMAIL] Enviando confirmación al cliente:", payload.customerEmail);
+  console.log("[ORDER_EMAIL_CLIENT] Enviando a:", payload.customerEmail);
   try {
     const result = await sendEmail({
       to: payload.customerEmail,
@@ -280,12 +280,12 @@ export async function sendOrderConfirmationEmail(payload: OrderEmailPayload): Pr
       ),
     });
     if (result) {
-      console.log("[ORDER_EMAIL] Confirmación enviada correctamente a:", payload.customerEmail);
+      console.log("[ORDER_EMAIL_CLIENT] Enviado a:", payload.customerEmail);
     } else {
-      console.warn("[ORDER_EMAIL] No se pudo enviar confirmación a:", payload.customerEmail);
+      console.warn("[ORDER_EMAIL_CLIENT] Error: sendEmail devolvió false para:", payload.customerEmail);
     }
   } catch (err) {
-    console.error("[ORDER_EMAIL] Error enviando confirmación al cliente:", err);
+    console.error("[ORDER_EMAIL_CLIENT] Error:", err);
   }
 }
 
@@ -294,7 +294,7 @@ export async function sendOrderConfirmationEmail(payload: OrderEmailPayload): Pr
  * Si falla, registra el error pero no lanza excepción.
  */
 export async function sendNewOrderAdminEmail(payload: OrderEmailPayload): Promise<void> {
-  console.log("[ORDER_EMAIL] Enviando notificación al admin");
+  console.log("[ORDER_EMAIL_ADMIN] Enviando a:", getOrdersEmailTo());
   try {
     const result = await sendEmail({
       to: getOrdersEmailTo(),
@@ -310,12 +310,12 @@ export async function sendNewOrderAdminEmail(payload: OrderEmailPayload): Promis
       ),
     });
     if (result) {
-      console.log("[ORDER_EMAIL] Notificación admin enviada correctamente");
+      console.log("[ORDER_EMAIL_ADMIN] Enviado a:", getOrdersEmailTo());
     } else {
-      console.warn("[ORDER_EMAIL] No se pudo enviar notificación al admin");
+      console.warn("[ORDER_EMAIL_ADMIN] Error: sendEmail devolvió false");
     }
   } catch (err) {
-    console.error("[ORDER_EMAIL] Error enviando notificación al admin:", err);
+    console.error("[ORDER_EMAIL_ADMIN] Error:", err);
   }
 }
 
@@ -331,7 +331,7 @@ export async function sendOrderStatusUpdateEmail(params: {
   trackingUrl?: string;
   shippingCompany?: string;
 }): Promise<void> {
-  console.log("[ORDER_EMAIL] Enviando actualización de estado a:", params.customerEmail, "- Estado:", params.newStatus);
+  console.log("[ORDER_EMAIL_CLIENT] Enviando actualización de estado a:", params.customerEmail, "- Estado:", params.newStatus);
 
   const statusLabel: Record<string, string> = {
     pending: "Pendiente",
@@ -386,8 +386,8 @@ export async function sendOrderStatusUpdateEmail(params: {
       subject: `Pedido #${params.orderId} — ${statusLabel[params.newStatus] ?? params.newStatus}`,
       html,
     });
-    console.log("[ORDER_EMAIL] Email de actualización de estado enviado correctamente");
+    console.log("[ORDER_EMAIL_CLIENT] Enviado actualización de estado a:", params.customerEmail);
   } catch (err) {
-    console.error("[ORDER_EMAIL] Error enviando actualización de estado:", err);
+    console.error("[ORDER_EMAIL_CLIENT] Error actualización de estado:", err);
   }
 }
