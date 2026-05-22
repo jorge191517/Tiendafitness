@@ -47,15 +47,17 @@ export function createTransporter(): Transporter | null {
     return null;
   }
 
-  transporterInstance = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: Number(process.env.SMTP_PORT) === 465,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-  });
+ transporterInstance = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false,
+  requireTLS: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
+  connectionTimeout: 10000,
+});
 
   return transporterInstance;
 }
@@ -116,7 +118,9 @@ export async function sendMail(params: {
     });
 
     await transporter.sendMail({
-      from: `Tienda Fitness Pro <${fromEmail}>`,
+      from: fromEmail.includes("<")
+  ? fromEmail
+  : `Tienda Fitness Pro <${fromEmail}>`,
       to: Array.isArray(params.to) ? params.to.join(", ") : params.to,
       subject: params.subject,
       html: params.html,
