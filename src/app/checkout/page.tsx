@@ -26,7 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useCartStore, useCartTotals, sanitizeCart, type CartItem } from "@/store/cart-store";
+import { useCartStore, useCartTotals, type CartItem } from "@/store/cart-store";
 import { createClient } from "@/lib/supabase/client";
 import { createOrder, type CheckoutResult } from "./actions";
 import Link from "next/link";
@@ -46,6 +46,7 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<CheckoutStep>("form");
   const [errorMessage, setErrorMessage] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string>("");
 
   const [customer, setCustomer] = useState<CustomerForm>({ name: "", email: "", phone: "" });
   const [address, setAddress] = useState<AddressForm>({ street: "", city: "", province: "", postal_code: "", country: "España" });
@@ -62,11 +63,6 @@ export default function CheckoutPage() {
         }));
       }
     });
-  }, []);
-
-  // Sanitizar carrito al montar: eliminar items inválidos/obsoletos
-  useEffect(() => {
-    sanitizeCart();
   }, []);
 
   const isFormValid = (): boolean => {
@@ -90,7 +86,6 @@ export default function CheckoutPage() {
           name: item.name, slug: item.slug, price: item.price,
           colorName: item.colorName, selectedSize: item.selectedSize,
           quantity: item.quantity, image: item.image,
-          variantId: item.variantId,
         })),
       });
 
@@ -100,6 +95,7 @@ export default function CheckoutPage() {
         return;
       }
       clearCart();
+      setOrderNumber(result.orderNumber ?? result.orderId ?? "");
       setStep("success");
     } catch (err) {
       console.error("Error al procesar el pedido:", err);
@@ -110,16 +106,27 @@ export default function CheckoutPage() {
 
   if (step === "success") {
     return (
-      <div className="min-h-screen bg-deep flex items-center justify-center px-4">
-        <Card className="w-full max-w-lg bg-mid-gray border-white/5">
+      <div className="min-h-screen bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120] flex items-center justify-center px-4">
+        <Card className="w-full max-w-lg bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.1)]">
           <CardContent className="p-8 text-center">
             <div className="w-20 h-20 bg-electric/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="h-10 w-10 text-electric" />
             </div>
             <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-3">¡Pedido Recibido!</h2>
             <p className="text-white/60 mb-2">Tu pedido ha sido procesado correctamente. Recibirás un correo de confirmación en breve.</p>
-            <p className="text-sm text-white/40 mb-8">Número de pedido: #{Date.now().toString(36).toUpperCase()}</p>
-            <Button onClick={() => router.push("/")} className="bg-electric hover:bg-electric/90 text-white font-bold uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,153,255,0.3)]">Volver a la Tienda</Button>
+            {orderNumber && (
+              <p className="text-sm text-electric font-semibold mb-4">Número de pedido: #{orderNumber}</p>
+            )}
+            <div className="space-y-3 mt-6">
+              {orderNumber && (
+                <Button onClick={() => router.push(`/pedido/${orderNumber}`)} className="w-full bg-electric hover:bg-electric/90 text-white font-bold uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(0,153,255,0.3)]">
+                  Seguir mi Pedido
+                </Button>
+              )}
+              <Button onClick={() => router.push("/")} variant="outline" className="w-full border-white/10 text-white/70 hover:text-white hover:bg-white/5 uppercase tracking-wider rounded-xl">
+                Volver a la Tienda
+              </Button>
+            </div>
             <div className="mt-4"><WhatsAppButton message="Hola, necesito ayuda con mi pedido en Tienda Fitness Pro." label="Ayuda con mi pedido" variant="outline" className="rounded-xl" /></div>
           </CardContent>
         </Card>
@@ -129,8 +136,8 @@ export default function CheckoutPage() {
 
   if (items.length === 0 && step !== "success") {
     return (
-      <div className="min-h-screen bg-deep flex items-center justify-center px-4">
-        <Card className="w-full max-w-lg bg-mid-gray border-white/5">
+      <div className="min-h-screen bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120] flex items-center justify-center px-4">
+        <Card className="w-full max-w-lg bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl">
           <CardContent className="p-8 text-center">
             <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingCart className="h-10 w-10 text-white/30" />
@@ -145,9 +152,9 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-deep pb-20 lg:pb-0">
+    <div className="min-h-screen bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120]">
       <div className="h-20" />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" className="text-white/50 hover:text-white hover:bg-white/10 rounded-full" asChild>
             <Link href="/productos"><ArrowLeft className="h-5 w-5" /></Link>
@@ -175,7 +182,7 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-6">
             {/* Customer data */}
-            <Card className="bg-mid-gray border-white/5">
+            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl">
               <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><CreditCard className="h-5 w-5 text-electric" />Datos del Cliente</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -187,7 +194,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* Shipping address */}
-            <Card className="bg-mid-gray border-white/5">
+            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl">
               <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><Truck className="h-5 w-5 text-electric" />Dirección de Envío</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2"><Label htmlFor="street" className="text-white/70 text-sm">Calle y número *</Label><Input id="street" type="text" placeholder="Calle Mayor 10, 3ºA" value={address.street} onChange={(e) => setAddress((p) => ({ ...p, street: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
@@ -203,7 +210,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* Mobile cart items */}
-            <Card className="bg-mid-gray border-white/5 lg:hidden">
+            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl lg:hidden">
               <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><ShoppingCart className="h-5 w-5 text-electric" />Tu Carrito ({totalItems})</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {items.map((item) => (<CartItemRow key={item.cartKey} item={item} onUpdateQuantity={updateQuantity} onRemove={removeItem} />))}
@@ -213,7 +220,7 @@ export default function CheckoutPage() {
 
           {/* Summary */}
           <div className="space-y-6">
-            <Card className="bg-mid-gray border-white/5 sticky top-24">
+            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl sticky top-24">
               <CardHeader className="pb-4"><CardTitle className="text-white text-lg">Resumen del Pedido</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="hidden lg:block space-y-3 max-h-72 overflow-y-auto pr-1">

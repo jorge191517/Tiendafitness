@@ -11,7 +11,6 @@ import {
   LogOut,
   Settings,
   Package,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { navigationLinks } from "@/config/navigation";
@@ -23,7 +22,7 @@ import {
   mobileMenuTransition,
   mobileMenuItemVariants,
 } from "@/lib/animations";
-import { useCartStore, useCartTotals, clearCartStorage } from "@/store/cart-store";
+import { useCartStore, useCartTotals } from "@/store/cart-store";
 import { useUIStore } from "@/store/ui-store";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -53,38 +52,19 @@ export default function Header() {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setUser(session?.user ?? null);
-        // Limpiar carrito al cerrar sesión o cambiar de usuario
-        if (event === "SIGNED_OUT") {
-          useCartStore.getState().clearCart();
-          clearCartStorage();
-        }
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Cerrar menú al cambiar de ruta
-  useEffect(() => {
-    const handleRouteChange = () => {
-      setMobileMenuOpen(false);
-      setShowUserMenu(false);
-    };
-    window.addEventListener("popstate", handleRouteChange);
-    return () => window.removeEventListener("popstate", handleRouteChange);
-  }, []);
-
   const handleLogout = async () => {
     const supabase = createClient();
-    useCartStore.getState().clearCart();
-    clearCartStorage();
     await supabase.auth.signOut();
     setUser(null);
     setShowUserMenu(false);
-    setMobileMenuOpen(false);
-    window.location.href = "/";
   };
 
   return (
@@ -155,7 +135,7 @@ export default function Header() {
               )}
             </Button>
 
-            {/* Desktop User menu / Auth */}
+            {/* User menu / Auth */}
             <div className="relative hidden md:block">
               {user ? (
                 <Button
@@ -178,7 +158,7 @@ export default function Header() {
                 </a>
               )}
 
-              {/* Desktop Dropdown del usuario */}
+              {/* Dropdown del usuario */}
               <AnimatePresence>
                 {showUserMenu && user && (
                   <motion.div
@@ -195,6 +175,14 @@ export default function Header() {
                       <p className="text-xs text-white/40 truncate">{user.email}</p>
                     </div>
                     <div className="py-1">
+                      <a
+                        href="/mi-cuenta"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <User className="h-4 w-4" />
+                        Mi Cuenta
+                      </a>
                       <a
                         href="/mis-pedidos"
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
@@ -241,7 +229,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu — fondo sólido oscuro, no glass/transparente */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -250,7 +238,7 @@ export default function Header() {
             animate="visible"
             exit="exit"
             transition={mobileMenuTransition}
-            className="lg:hidden bg-[#0d0d0d] border-t border-white/5"
+            className="lg:hidden glass overflow-hidden"
           >
             <div className="px-4 py-4 space-y-1">
               {navigationLinks.map((link, i) => (
@@ -262,69 +250,62 @@ export default function Header() {
                   animate="visible"
                   custom={i}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-4 py-3.5 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300 font-medium text-base"
+                  className="block px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
                 >
                   {link.label}
-                  <ChevronRight className="h-4 w-4 text-white/30" />
                 </motion.a>
               ))}
-
-              {/* User section — separado visualmente */}
-              <div className="pt-3 mt-2 border-t border-white/10">
+              <div className="pt-2 border-t border-white/10 mt-2">
                 {user ? (
                   <>
-                    <div className="px-4 py-3 mb-1">
-                      <p className="text-sm font-semibold text-white truncate">
+                    <div className="px-4 py-2">
+                      <p className="text-sm font-medium text-white truncate">
                         {user.user_metadata?.full_name || user.email}
                       </p>
-                      <p className="text-xs text-white/40 truncate mt-0.5">{user.email}</p>
                     </div>
                     <a
-                      href="/mis-pedidos"
-                      className="flex items-center justify-between px-4 py-3.5 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300 font-medium text-base"
+                      href="/mi-cuenta"
+                      className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <span className="flex items-center gap-3">
-                        <Package className="h-5 w-5 text-electric" />
-                        Mis Pedidos
-                      </span>
-                      <ChevronRight className="h-4 w-4 text-white/30" />
+                      <User className="h-5 w-5" />
+                      Mi Cuenta
+                    </a>
+                    <a
+                      href="/mis-pedidos"
+                      className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Package className="h-5 w-5" />
+                      Mis Pedidos
                     </a>
                     <a
                       href="/admin"
-                      className="flex items-center justify-between px-4 py-3.5 text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300 font-medium text-base"
+                      className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <span className="flex items-center gap-3">
-                        <Settings className="h-5 w-5 text-white/50" />
-                        Panel Admin
-                      </span>
-                      <ChevronRight className="h-4 w-4 text-white/30" />
+                      <Settings className="h-5 w-5" />
+                      Panel Admin
                     </a>
                     <button
                       onClick={() => {
                         handleLogout();
                         setMobileMenuOpen(false);
                       }}
-                      className="w-full flex items-center justify-between px-4 py-3.5 text-red-400 hover:text-red-300 hover:bg-red-400/5 rounded-xl transition-all duration-300 font-medium text-base"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
                     >
-                      <span className="flex items-center gap-3">
-                        <LogOut className="h-5 w-5" />
-                        Cerrar Sesión
-                      </span>
+                      <LogOut className="h-5 w-5" />
+                      Cerrar Sesión
                     </button>
                   </>
                 ) : (
                   <a
                     href="/auth/login"
-                    className="flex items-center justify-between px-4 py-3.5 text-electric hover:text-white hover:bg-electric/10 rounded-xl transition-all duration-300 font-semibold text-base"
+                    className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <span className="flex items-center gap-3">
-                      <User className="h-5 w-5" />
-                      {brandingConfig.cta.login}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-white/30" />
+                    <User className="h-5 w-5" />
+                    {brandingConfig.cta.login}
                   </a>
                 )}
               </div>
