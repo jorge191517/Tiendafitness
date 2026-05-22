@@ -10,9 +10,9 @@ export async function POST(request: NextRequest) {
     const userEmail = body?.userEmail;
 
     if (!userEmail || typeof userEmail !== "string") {
-      console.warn("[WELCOME_EMAIL_API] userEmail inválido");
+      console.warn("[WELCOME_EMAIL_API] userEmail invalido");
       return NextResponse.json(
-        { ok: false, error: "userEmail inválido" },
+        { ok: false, error: "userEmail invalido" },
         { status: 400 }
       );
     }
