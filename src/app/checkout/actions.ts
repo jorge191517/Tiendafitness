@@ -2,8 +2,8 @@
  * Server Actions para el checkout.
  *
  * ⛔ La creación de pedidos se hace en el servidor para:
- * - Validar precios contra la base de datos (evitar manipulación)
- * - Usar el cliente Supabase admin (service role) para INSERT
+ * - Validar precios contra el catálogo local (evitar manipulación)
+ * - Usar el cliente Supabase para INSERT
  * - Garantizar integridad de los datos
  *
  * NUNCA confiar en los precios enviados desde el cliente.
@@ -12,14 +12,14 @@
  * Si el usuario está autenticado, se vincula user_id.
  * Si no, se usa customer_email como referencia.
  *
- * Tras crear el pedido correctamente, se envían emails de notificación
- * tanto al cliente como al admin. Si el envío de email falla,
- * NO se interrumpe el flujo del pedido (se registra el error en servidor).
+ * La validación de productos se hace contra ALL_PRODUCTS (catálogo local)
+ * buscando SIEMPRE por slug. NO se usa id numérico ni UUID.
  */
 
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { ALL_PRODUCTS } from "@/data/products";
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from "@/lib/email/send-order-email";
 
 export interface CheckoutItem {
@@ -74,9 +74,9 @@ function generateOrderNumber(): string {
  * Flujo:
  * 1. Verifica que haya items en el carrito
  * 2. Identifica al usuario (autenticado o invitado)
- * 3. Valida los precios contra la base de datos (anti-manipulación)
+ * 3. Valida los productos contra ALL_PRODUCTS por slug (anti-manipulación)
  * 4. Crea el pedido en la tabla `orders` con order_number
- * 5. Crea las líneas de pedido en `order_items` con datos de producto local
+ * 5. Crea las líneas de pedido en `order_items`
  * 6. Envía emails de confirmación (cliente + admin) — no bloqueante
  */
 export async function createOrder(payload: CheckoutPayload): Promise<CheckoutResult> {
@@ -96,25 +96,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       return { success: false, error: "El carrito está vacío." };
     }
 
-    // 3. Buscar productos en la base de datos y validar precios
-    const slugs = payload.items.map((i) => i.slug);
-    const { data: dbProducts, error: dbError } = await supabase
-      .from("products")
-      .select("id, slug, price, active, stock_status, stock_quantity")
-      .in("slug", slugs);
-
-    if (dbError) {
-      console.error("[CHECKOUT] Error consultando productos:", dbError);
-      return { success: false, error: "Error al verificar productos." };
-    }
-
-    // Mapeo slug → producto DB
-    const productMap = new Map<string, (typeof dbProducts)[0]>();
-    for (const p of dbProducts ?? []) {
-      productMap.set(p.slug, p);
-    }
-
-    // Validar cada item del carrito contra la DB
+    // 3. Validar cada item del carrito contra ALL_PRODUCTS por slug
     let serverTotal = 0;
     const orderItems: {
       order_id: string;
@@ -130,7 +112,6 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       total: number;
     }[] = [];
 
-    // Datos para emails (con nombres de producto)
     const emailItems: {
       name: string;
       quantity: number;
@@ -140,29 +121,22 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
     }[] = [];
 
     for (const item of payload.items) {
-      const dbProduct = productMap.get(item.slug);
+      // ⛔ Validar SIEMPRE por slug contra el catálogo local
+      const catalogProduct = ALL_PRODUCTS.find((p) => p.slug === item.slug);
 
-      if (!dbProduct) {
+      if (!catalogProduct) {
+        console.error("[CHECKOUT] Producto no encontrado en catálogo local:", item.slug);
         return { success: false, error: `Producto "${item.name}" no encontrado en el catálogo.` };
       }
 
-      if (!dbProduct.active) {
-        return { success: false, error: `Producto "${item.name}" no está disponible.` };
-      }
-
-      if (dbProduct.stock_status === "out_of_stock") {
-        return { success: false, error: `Producto "${item.name}" está agotado.` };
-      }
-
-      // ⛔ Usar el precio del SERVIDOR, no el del cliente (anti-manipulación)
-      const serverPrice = Number(dbProduct.price);
+      // ⛔ Usar el precio del SERVIDOR (catálogo local), no el del cliente (anti-manipulación)
+      const serverPrice = catalogProduct.price;
       const lineTotal = serverPrice * item.quantity;
       serverTotal += lineTotal;
 
-      // Guardar datos para order_items (se completará order_id después)
       orderItems.push({
         order_id: "", // Se rellenará después del INSERT de orders
-        product_id: dbProduct.id,
+        product_id: null, // No usamos UUID de Supabase para productos locales
         product_slug: item.slug,
         product_name: item.name,
         variant_id: item.variantId?.toString() ?? "0",
@@ -187,7 +161,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
     const orderNumber = generateOrderNumber();
     console.log("[CHECKOUT] Order number generado:", orderNumber);
 
-    // 5. Crear el pedido con admin client (service role) para bypass RLS
+    // 5. Crear el pedido
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .insert({
@@ -247,7 +221,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       console.log("[CHECKOUT] Order items creados correctamente");
     }
 
-    // 7. Enviar emails de notificación (no bloqueante pero con await para logging)
+    // 7. Enviar emails de notificación
     console.log("[CHECKOUT] Enviando emails de notificación...");
     try {
       const emailPayload = {
@@ -278,7 +252,6 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       }
     } catch (emailErr) {
       console.error("[CHECKOUT] Error en envío de emails:", emailErr);
-      // No interrumpir el flujo
     }
 
     return { success: true, orderId: orderData.id, orderNumber: finalOrderNumber };

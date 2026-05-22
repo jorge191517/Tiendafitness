@@ -6,7 +6,7 @@
  * no necesiten conocer la estructura interna de carpetas.
  *
  * USO:
- *   import { allProducts, featuredProducts, getProductBySlug } from "@/data/products";
+ *   import { ALL_PRODUCTS, featuredProducts, getProductsByCategory } from "@/data/products";
  */
 
 import type { Product } from "@/data/types";
@@ -27,18 +27,53 @@ export const productsByCategory: Record<string, Product[]> = {
   suplementos: suplementosProducts,
 };
 
-/** Todos los productos del catálogo en un único array */
-export const allProducts: Product[] = Object.values(productsByCategory).flat();
+/**
+ * Array unificado con TODOS los productos del catálogo.
+ * Usado por checkout/actions.ts para validar slugs y precios.
+ */
+export const ALL_PRODUCTS: Product[] = [
+  ...accesoriosProducts,
+  ...fitnessGymProducts,
+  ...padelProducts,
+  ...ropaDeportivaProducts,
+  ...suplementosProducts,
+];
 
-/** Productos marcados como destacados (featured: true) */
-export const featuredProducts: Product[] = allProducts.filter(
-  (p) => p.featured === true
+/** Alias para compatibilidad con imports existentes */
+export const allProducts = ALL_PRODUCTS;
+
+/** Categorías que tienen productos activos */
+export const activeCategories: string[] = Array.from(
+  new Set(ALL_PRODUCTS.map((product) => product.category))
 );
 
-/** Categorías que tienen al menos 1 producto */
-export const activeCategories: string[] = Object.entries(productsByCategory)
-  .filter(([, products]) => products.length > 0)
-  .map(([slug]) => slug);
+/** Productos marcados como destacados (featured: true) */
+export const featuredProducts: Product[] = ALL_PRODUCTS.filter(
+  (product) => product.featured === true
+);
+
+// ─── Validación de integridad ───────────────────────────────────────────────
+
+/** Verificar que no haya slugs duplicados o productos sin slug (solo en desarrollo) */
+if (process.env.NODE_ENV !== "production") {
+  const slugs = ALL_PRODUCTS.map((product) => product.slug);
+  const duplicates = slugs.filter((slug, index) => slugs.indexOf(slug) !== index);
+
+  if (duplicates.length > 0) {
+    console.warn("[Products] Slugs duplicados detectados:", duplicates);
+  }
+
+  const missingSlugs = ALL_PRODUCTS.filter(
+    (product) => !product.slug || product.slug.trim() === ""
+  );
+
+  if (missingSlugs.length > 0) {
+    console.warn(
+      "[Products] Productos sin slug:",
+      missingSlugs.map((product) => product.name)
+    );
+  }
+}
 
 // ─── Utilidades de consulta ─────────────────────────────────────────────────
 
@@ -47,45 +82,37 @@ export function getProductsByCategory(categorySlug: string): Product[] {
   return productsByCategory[categorySlug] ?? [];
 }
 
-/** Devuelve los productos de una subcategoría por su slug */
-export function getProductsBySubcategory(subcategorySlug: string): Product[] {
-  return allProducts.filter((p) => p.subcategory === subcategorySlug);
-}
-
-/** Busca un producto por su slug (devuelve undefined si no existe) */
+/** Busca un producto por su slug */
 export function getProductBySlug(slug: string): Product | undefined {
-  return allProducts.find((p) => p.slug === slug);
+  return ALL_PRODUCTS.find((product) => product.slug === slug);
 }
 
-/** Devuelve todas las subcategorías únicas presentes en los productos */
-export function getUniqueSubcategories(categorySlug?: string): { slug: string; name: string; parentCategory: string }[] {
-  const source = categorySlug
-    ? allProducts.filter((p) => p.category === categorySlug)
-    : allProducts;
-
-  const seen = new Set<string>();
-  return source
-    .filter((p) => p.subcategory && p.subcategoryName)
-    .filter((p) => {
-      if (seen.has(p.subcategory!)) return false;
-      seen.add(p.subcategory!);
-      return true;
-    })
-    .map((p) => ({
-      slug: p.subcategory!,
-      name: p.subcategoryName!,
-      parentCategory: p.category,
-    }));
+/** Devuelve todos los slugs de productos */
+export function getAllProductSlugs(): string[] {
+  return ALL_PRODUCTS.map((product) => product.slug);
 }
 
-/**
- * Busca una variante específica de un producto por su variant ID.
- * Devuelve la variante o undefined si no existe.
- */
-export function getVariantById(product: Product, variantId: number): Product["variants"] extends (infer V)[] ? V : never | undefined {
-  return product.variants?.find((v) => v.id === variantId) as any;
+/** Devuelve productos por subcategoría si existe el campo */
+export function getProductsBySubcategory(subcategorySlug: string): Product[] {
+  return ALL_PRODUCTS.filter((product) => product.subcategory === subcategorySlug);
 }
 
-// ─── Re-export de tipos (comodidad) ─────────────────────────────────────────
+/** Devuelve subcategorías únicas con productos */
+export function getUniqueSubcategories(): string[] {
+  return Array.from(
+    new Set(
+      ALL_PRODUCTS
+        .map((product) => product.subcategory)
+        .filter((subcategory): subcategory is string => Boolean(subcategory))
+    )
+  );
+}
 
-export type { Product, ProductVariant, ProductBadge, ProductStock } from "@/data/types";
+// ─── Re-export de tipos ─────────────────────────────────────────────────────
+
+export type {
+  Product,
+  ProductBadge,
+  ProductStock,
+  ProductVariant,
+} from "@/data/types";

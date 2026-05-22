@@ -22,7 +22,7 @@ import {
   mobileMenuTransition,
   mobileMenuItemVariants,
 } from "@/lib/animations";
-import { useCartStore, useCartTotals } from "@/store/cart-store";
+import { useCartStore, useCartTotals, switchCartToUser, initCartUser, clearCartStorage } from "@/store/cart-store";
 import { useUIStore } from "@/store/ui-store";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -43,17 +43,34 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Escuchar cambios en la sesión de Supabase
+  // Escuchar cambios en la sesión de Supabase + gestionar carrito por usuario
   useEffect(() => {
     const supabase = createClient();
 
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      // Inicializar carrito con el usuario actual
+      initCartUser(user?.id ?? null);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
+      (event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        // Gestionar carrito según evento de auth
+        if (event === "SIGNED_IN") {
+          // Login: migrar carrito guest → usuario
+          switchCartToUser(currentUser?.id ?? null, event);
+        } else if (event === "SIGNED_OUT") {
+          // Logout: limpiar carrito visual y storage del usuario
+          useCartStore.getState().clearCart();
+          clearCartStorage(currentUser?.id ?? null);
+          switchCartToUser(null, event);
+        } else if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          // Mantener contexto de usuario
+          switchCartToUser(currentUser?.id ?? null, event);
+        }
       }
     );
 
@@ -62,9 +79,15 @@ export default function Header() {
 
   const handleLogout = async () => {
     const supabase = createClient();
+    // Limpiar carrito del usuario antes de cerrar sesión
+    const userId = (await supabase.auth.getUser()).data.user?.id ?? null;
+    useCartStore.getState().clearCart();
+    clearCartStorage(userId);
+    switchCartToUser(null, "SIGNED_OUT");
     await supabase.auth.signOut();
     setUser(null);
     setShowUserMenu(false);
+    setMobileMenuOpen(false);
   };
 
   return (
