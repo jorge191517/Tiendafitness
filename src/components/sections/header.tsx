@@ -11,6 +11,7 @@ import {
   LogOut,
   Settings,
   Package,
+  Home,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { navigationLinks } from "@/config/navigation";
@@ -22,7 +23,7 @@ import {
   mobileMenuTransition,
   mobileMenuItemVariants,
 } from "@/lib/animations";
-import { useCartStore, useCartTotals, switchCartToUser, initCartUser, clearCartStorage } from "@/store/cart-store";
+import { useCartStore, useCartTotals } from "@/store/cart-store";
 import { useUIStore } from "@/store/ui-store";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -31,6 +32,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { totalItems } = useCartTotals();
   const setCartSidebarOpen = useUIStore((s) => s.setCartSidebarOpen);
@@ -43,33 +45,36 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Escuchar cambios en la sesión de Supabase + gestionar carrito por usuario
+  // Escuchar cambios en la sesión de Supabase + verificar rol admin
   useEffect(() => {
     const supabase = createClient();
 
+    async function checkAdminRole(userId: string) {
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", userId)
+          .single();
+        setIsAdmin(profile?.role === "admin");
+      } catch {
+        setIsAdmin(false);
+      }
+    }
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
-      // Inicializar carrito con el usuario actual
-      initCartUser(user?.id ?? null);
+      if (user) checkAdminRole(user.id);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        // Gestionar carrito según evento de auth
-        if (event === "SIGNED_IN") {
-          // Login: migrar carrito guest → usuario
-          switchCartToUser(currentUser?.id ?? null, event);
-        } else if (event === "SIGNED_OUT") {
-          // Logout: limpiar carrito visual y storage del usuario
-          useCartStore.getState().clearCart();
-          clearCartStorage(currentUser?.id ?? null);
-          switchCartToUser(null, event);
-        } else if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
-          // Mantener contexto de usuario
-          switchCartToUser(currentUser?.id ?? null, event);
+      (_event, session) => {
+        const sessionUser = session?.user ?? null;
+        setUser(sessionUser);
+        if (sessionUser) {
+          checkAdminRole(sessionUser.id);
+        } else {
+          setIsAdmin(false);
         }
       }
     );
@@ -79,15 +84,10 @@ export default function Header() {
 
   const handleLogout = async () => {
     const supabase = createClient();
-    // Limpiar carrito del usuario antes de cerrar sesión
-    const userId = (await supabase.auth.getUser()).data.user?.id ?? null;
-    useCartStore.getState().clearCart();
-    clearCartStorage(userId);
-    switchCartToUser(null, "SIGNED_OUT");
     await supabase.auth.signOut();
     setUser(null);
+    setIsAdmin(false);
     setShowUserMenu(false);
-    setMobileMenuOpen(false);
   };
 
   return (
@@ -181,7 +181,7 @@ export default function Header() {
                 </a>
               )}
 
-              {/* Dropdown del usuario */}
+              {/* Dropdown del usuario (desktop) */}
               <AnimatePresence>
                 {showUserMenu && user && (
                   <motion.div
@@ -199,12 +199,12 @@ export default function Header() {
                     </div>
                     <div className="py-1">
                       <a
-                        href="/mi-cuenta"
+                        href="/"
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <User className="h-4 w-4" />
-                        Mi Cuenta
+                        <Home className="h-4 w-4" />
+                        Inicio
                       </a>
                       <a
                         href="/mis-pedidos"
@@ -214,14 +214,16 @@ export default function Header() {
                         <Package className="h-4 w-4" />
                         Mis Pedidos
                       </a>
-                      <a
-                        href="/admin"
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        <Settings className="h-4 w-4" />
-                        Panel Admin
-                      </a>
+                      {isAdmin && (
+                        <a
+                          href="/admin"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Settings className="h-4 w-4" />
+                          Panel Admin
+                        </a>
+                      )}
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors"
@@ -287,12 +289,12 @@ export default function Header() {
                       </p>
                     </div>
                     <a
-                      href="/mi-cuenta"
+                      href="/"
                       className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <User className="h-5 w-5" />
-                      Mi Cuenta
+                      <Home className="h-5 w-5" />
+                      Inicio
                     </a>
                     <a
                       href="/mis-pedidos"
@@ -302,14 +304,16 @@ export default function Header() {
                       <Package className="h-5 w-5" />
                       Mis Pedidos
                     </a>
-                    <a
-                      href="/admin"
-                      className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Settings className="h-5 w-5" />
-                      Panel Admin
-                    </a>
+                    {isAdmin && (
+                      <a
+                        href="/admin"
+                        className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Settings className="h-5 w-5" />
+                        Panel Admin
+                      </a>
+                    )}
                     <button
                       onClick={() => {
                         handleLogout();

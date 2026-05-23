@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Save, Loader2, Trash2 } from "lucide-react";
+import { ImageUpload } from "@/components/admin/image-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +64,7 @@ export default function EditarProductoPage({
   const [error, setError] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -136,7 +138,7 @@ export default function EditarProductoPage({
         category_id: values.category_id || null,
         description: values.description || null,
         old_price: values.old_price ? Number(values.old_price) : null,
-        image_url: values.image_url || null,
+        image_url: uploadedImageUrl || values.image_url || null,
         badge: values.badge || null,
       };
 
@@ -341,7 +343,15 @@ export default function EditarProductoPage({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white/70 text-sm">URL de Imagen</Label>
+                <Label className="text-white/70 text-sm">Imagen del Producto</Label>
+                <ImageUpload
+                  currentImageUrl={product.image_url || undefined}
+                  onImageUploaded={(url) => setUploadedImageUrl(url)}
+                  onImageRemoved={() => setUploadedImageUrl(null)}
+                />
+                <p className="text-white/20 text-[10px]">
+                  O introduce una URL manualmente:
+                </p>
                 <Input
                   {...register("image_url")}
                   placeholder="https://ejemplo.com/imagen.jpg"

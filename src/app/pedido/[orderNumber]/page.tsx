@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Package, Truck, MapPin, CheckCircle2, Clock, AlertCircle, ExternalLink } from "lucide-react";
+import { ArrowLeft, Package, Truck, MapPin, CheckCircle2, Clock, AlertCircle, ExternalLink, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -181,10 +181,11 @@ export default function PedidoPage() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link
-            href="/mis-pedidos"
+            href="/"
             className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all duration-300"
+            title="Volver al Inicio"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <Home className="h-4 w-4" />
           </Link>
           <div>
             <h1 className="text-2xl font-black text-white uppercase tracking-tight">Pedido #{orderRef}</h1>

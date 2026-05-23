@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Package, Eye, ArrowLeft, ShoppingBag } from "lucide-react";
+import { Package, Eye, ArrowLeft, ShoppingBag, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -108,10 +108,11 @@ export default function MisPedidosPage() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link
-            href="/mi-cuenta"
+            href="/"
             className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all duration-300"
+            title="Volver al Inicio"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <Home className="h-4 w-4" />
           </Link>
           <div>
             <h1 className="text-2xl font-black text-white uppercase tracking-tight">Mis Pedidos</h1>
