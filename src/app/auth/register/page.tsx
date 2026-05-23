@@ -6,7 +6,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, Loader2, Zap, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { sendWelcomeEmailAction } from "@/app/auth/welcome-email-action";
 import { fadeInUp } from "@/lib/animations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,24 +80,41 @@ export default function RegisterPage() {
         return;
       }
 
-      // Registro exitoso
+           // Registro exitoso
       console.log("[REGISTER] Usuario creado:", email);
 
       // Enviar email de bienvenida — SIEMPRE que data.user exista
       // NO depende de data.session, solo de data.user
       if (data.user) {
-        const userName = data.user.user_metadata?.full_name || fullName || "atleta";
+        const userName =
+          data.user.user_metadata?.full_name || fullName || "atleta";
         const userEmail = data.user.email || email;
-        console.log("[REGISTER] Enviando email bienvenida a:", userEmail);
-        try {
-          await sendWelcomeEmailAction(userName, userEmail);
-          console.log("[REGISTER] Email bienvenida enviado a:", userEmail);
-        } catch (welcomeErr) {
-          console.error("[REGISTER] Error enviando bienvenida:", welcomeErr);
-          // No bloquear el registro aunque falle el email
-        }
+
+        console.log("[REGISTER] Solicitando email bienvenida a:", userEmail);
+
+        fetch("/api/auth/welcome-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName, userEmail }),
+        })
+          .then(async (res) => {
+            const json = await res.json().catch(() => null);
+            console.log(
+              "[REGISTER] Respuesta email bienvenida:",
+              res.status,
+              json
+            );
+          })
+          .catch((welcomeErr) => {
+            console.error(
+              "[REGISTER] Error solicitando email bienvenida:",
+              welcomeErr
+            );
+          });
       } else {
-        console.warn("[REGISTER] data.user es null, no se puede enviar bienvenida");
+        console.warn(
+          "[REGISTER] data.user es null, no se puede enviar bienvenida"
+        );
       }
 
       // Siempre mostrar la pantalla de éxito, sin importar si hay sesión o no.
@@ -113,6 +129,7 @@ export default function RegisterPage() {
 
   // Pantalla de éxito después del registro
   if (success) {
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
