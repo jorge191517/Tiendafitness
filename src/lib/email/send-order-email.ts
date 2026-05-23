@@ -3,15 +3,34 @@
  *
  * ⛔ Solo usar desde Server Actions, Server Components o API Routes.
  * Si falla el envío, NO rompe el flujo de creación del pedido.
+ *
+ * Las imágenes de productos se incluyen cuando hay image_url disponible.
+ * Las URLs relativas (ej: /images/products/...) se convierten a absolutas
+ * usando NEXT_PUBLIC_SITE_URL para que funcionen en los emails.
  */
 
 import { sendEmail } from "@/lib/email/resend";
+
+// ─── Site URL helper ────────────────────────────────────────────────────────
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.tiendafitnesspro.es";
+
+/** Convierte una URL relativa a absoluta para usar en emails */
+function toAbsoluteUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.startsWith("/")) return `${SITE_URL}${url}`;
+  if (url.startsWith("http")) return url;
+  return null;
+}
+
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 interface OrderEmailItem {
   name: string;
   quantity: number;
   unit_price: number;
   total: number;
+  image_url?: string | null;
 }
 
 interface OrderEmailPayload {
@@ -42,7 +61,7 @@ interface StatusEmailPayload extends OrderEmailPayload {
 const statusLabel: Record<string, string> = {
   pending: "Pendiente",
   confirmed: "Confirmado",
-  preparing: "En preparación",
+  preparing: "En preparacion",
   processing: "En proceso",
   shipped: "Enviado",
   delivered: "Entregado",
@@ -50,10 +69,10 @@ const statusLabel: Record<string, string> = {
 };
 
 const statusSubject: Record<string, string> = {
-  pending: "Confirmación de pedido",
+  pending: "Confirmacion de pedido",
   confirmed: "Tu pedido ha sido confirmado",
-  preparing: "Tu pedido está en preparación",
-  processing: "Tu pedido está en proceso",
+  preparing: "Tu pedido esta en preparacion",
+  processing: "Tu pedido esta en proceso",
   shipped: "Tu pedido ha sido enviado",
   delivered: "Tu pedido ha sido entregado",
   cancelled: "Tu pedido ha sido cancelado",
@@ -78,14 +97,23 @@ function statusColor(status: string): { bg: string; text: string } {
 
 function renderItemRows(items: OrderEmailItem[]): string {
   return items
-    .map(
-      (item) => `
+    .map((item) => {
+      const imgUrl = toAbsoluteUrl(item.image_url);
+      const imgHtml = imgUrl
+        ? `<img src="${imgUrl}" alt="${item.name}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; margin-right: 12px; flex-shrink: 0;" />`
+        : "";
+      return `
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-          <td style="padding: 10px 16px; color: #ffffff;">${item.name}</td>
+          <td style="padding: 10px 16px; color: #ffffff;">
+            <div style="display: flex; align-items: center;">
+              ${imgHtml}
+              <span>${item.name}</span>
+            </div>
+          </td>
           <td style="padding: 10px 8px; color: rgba(255,255,255,0.6); text-align: center;">${item.quantity}</td>
-          <td style="padding: 10px 16px; color: #ffffff; text-align: right; font-weight: 600;">${item.total.toFixed(2)} \u20AC</td>
-        </tr>`
-    )
+          <td style="padding: 10px 16px; color: #ffffff; text-align: right; font-weight: 600;">${item.total.toFixed(2)} &euro;</td>
+        </tr>`;
+    })
     .join("");
 }
 
@@ -110,7 +138,7 @@ function renderTotalBlock(total: number): string {
   return `
     <div style="background-color: #111111; border-radius: 8px; padding: 20px; margin-bottom: 24px; text-align: right;">
       <span style="font-size: 16px; color: rgba(255,255,255,0.6);">Total: </span>
-      <span style="font-size: 24px; font-weight: 800; color: #ffffff;">${total.toFixed(2)} \u20AC</span>
+      <span style="font-size: 24px; font-weight: 800; color: #ffffff;">${total.toFixed(2)} &euro;</span>
     </div>`;
 }
 
@@ -125,11 +153,11 @@ function renderTrackingBlock(payload: StatusEmailPayload): string {
       </div>`
     : "";
   return `
-    <h2 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #AAFF00;">Datos de Env\u00edo</h2>
+    <h2 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #AAFF00;">Datos de Envio</h2>
     <div style="background-color: #111111; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
       <table style="width: 100%; font-size: 14px;">
         ${payload.shippingCompany ? `<tr><td style="color: rgba(255,255,255,0.5); padding: 4px 0;">Empresa:</td><td style="color: #ffffff; font-weight: 600; text-align: right;">${payload.shippingCompany}</td></tr>` : ""}
-        ${payload.trackingNumber ? `<tr><td style="color: rgba(255,255,255,0.5); padding: 4px 0;">N\u00ba Seguimiento:</td><td style="color: #AAFF00; font-weight: 700; text-align: right;">${payload.trackingNumber}</td></tr>` : ""}
+        ${payload.trackingNumber ? `<tr><td style="color: rgba(255,255,255,0.5); padding: 4px 0;">N. Seguimiento:</td><td style="color: #AAFF00; font-weight: 700; text-align: right;">${payload.trackingNumber}</td></tr>` : ""}
       </table>
       ${trackingButton}
     </div>`;
@@ -139,13 +167,13 @@ function renderFooterBlock(): string {
   return `
     <div style="background-color: rgba(0,153,255,0.08); border-left: 3px solid #0099FF; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
       <p style="margin: 0; font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6;">
-        Recibir\u00e1s notificaciones por email cuando tu pedido cambie de estado.
-        Si tienes cualquier duda, escr\u00edbenos a
+        Recibiras notificaciones por email cuando tu pedido cambie de estado.
+        Si tienes cualquier duda, escribenos a
         <a href="mailto:pedidos@tiendafitnesspro.es" style="color: #0099FF;">pedidos@tiendafitnesspro.es</a>
         o por WhatsApp al <span style="color: #25D366;">633 184 354</span>.
       </p>
     </div>
-    <p style="font-size: 12px; color: rgba(255,255,255,0.3); text-align: center;">Tienda Fitness Pro \u2014 Tu Mejor Versi\u00f3n Empieza Aqu\u00ed</p>`;
+    <p style="font-size: 12px; color: rgba(255,255,255,0.3); text-align: center;">Tienda Fitness Pro - Tu Mejor Version Empieza Aqui</p>`;
 }
 
 // ─── Order confirmation HTML (client) ───────────────────────────────────────
@@ -162,11 +190,11 @@ function renderOrderConfirmationHtml(
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0a0a0a; color: #ffffff; border-radius: 12px; overflow: hidden;">
       <div style="background-color: #0099FF; padding: 24px 32px;">
         <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px;">TIENDA FITNESS PRO</h1>
-        <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Confirmaci\u00f3n de pedido</p>
+        <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Confirmacion de pedido</p>
       </div>
       <div style="padding: 32px;">
         <p style="font-size: 16px; color: #ffffff; margin-bottom: 8px;">Hola <strong>${customerName}</strong>,</p>
-        <p style="font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 24px;">\u00a1Gracias por tu compra! Tu pedido ha sido registrado correctamente.</p>
+        <p style="font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 24px;">Gracias por tu compra! Tu pedido ha sido registrado correctamente.</p>
         <div style="background-color: #111111; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
           <table style="width: 100%; font-size: 14px;">
             <tr>
@@ -200,25 +228,34 @@ function renderNewOrderAdminHtml(
   shippingAddress?: OrderEmailPayload["shippingAddress"]
 ): string {
   const itemsRows = items
-    .map(
-      (item) => `
+    .map((item) => {
+      const imgUrl = toAbsoluteUrl(item.image_url);
+      const imgHtml = imgUrl
+        ? `<img src="${imgUrl}" alt="${item.name}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; margin-right: 12px; flex-shrink: 0;" />`
+        : "";
+      return `
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-          <td style="padding: 10px 16px; color: #ffffff;">${item.name}</td>
+          <td style="padding: 10px 16px; color: #ffffff;">
+            <div style="display: flex; align-items: center;">
+              ${imgHtml}
+              <span>${item.name}</span>
+            </div>
+          </td>
           <td style="padding: 10px 8px; color: rgba(255,255,255,0.6); text-align: center;">${item.quantity}</td>
-          <td style="padding: 10px 16px; color: rgba(255,255,255,0.6); text-align: right;">${item.unit_price.toFixed(2)} \u20AC</td>
-          <td style="padding: 10px 16px; color: #ffffff; text-align: right; font-weight: 600;">${item.total.toFixed(2)} \u20AC</td>
-        </tr>`
-    )
+          <td style="padding: 10px 16px; color: rgba(255,255,255,0.6); text-align: right;">${item.unit_price.toFixed(2)} &euro;</td>
+          <td style="padding: 10px 16px; color: #ffffff; text-align: right; font-weight: 600;">${item.total.toFixed(2)} &euro;</td>
+        </tr>`;
+    })
     .join("");
 
   const addressHtml = shippingAddress
     ? `
-        <h2 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #0099FF;">Direcci\u00f3n de Env\u00edo</h2>
+        <h2 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #0099FF;">Direccion de Envio</h2>
         <div style="background-color: #111111; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
           <p style="margin: 0; font-size: 14px; color: #ffffff; line-height: 1.8;">
             ${shippingAddress.street}<br/>
             ${shippingAddress.city}, ${shippingAddress.province}<br/>
-            ${shippingAddress.postal_code} \u2014 ${shippingAddress.country}
+            ${shippingAddress.postal_code} - ${shippingAddress.country}
           </p>
         </div>`
     : "";
@@ -227,7 +264,7 @@ function renderNewOrderAdminHtml(
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0a0a0a; color: #ffffff; border-radius: 12px; overflow: hidden;">
       <div style="background-color: #AAFF00; padding: 24px 32px;">
         <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; color: #000000;">NUEVO PEDIDO</h1>
-        <p style="margin: 4px 0 0; font-size: 13px; color: rgba(0,0,0,0.6);">Notificaci\u00f3n de pedido recibido</p>
+        <p style="margin: 4px 0 0; font-size: 13px; color: rgba(0,0,0,0.6);">Notificacion de pedido recibido</p>
       </div>
       <div style="padding: 32px;">
         <p style="font-size: 16px; color: #ffffff; margin-bottom: 24px;">Se ha recibido un nuevo pedido en la tienda.</p>
@@ -247,7 +284,7 @@ function renderNewOrderAdminHtml(
               <td style="color: #0099FF; text-align: right;">${customerEmail}</td>
             </tr>
             <tr>
-              <td style="color: rgba(255,255,255,0.5); padding: 4px 0;">Tel\u00e9fono:</td>
+              <td style="color: rgba(255,255,255,0.5); padding: 4px 0;">Telefono:</td>
               <td style="color: #ffffff; text-align: right;">${customerPhone}</td>
             </tr>
           </table>
@@ -269,9 +306,9 @@ function renderNewOrderAdminHtml(
         </div>
         <div style="background-color: #111111; border-radius: 8px; padding: 20px; text-align: right;">
           <span style="font-size: 16px; color: rgba(255,255,255,0.6);">Total del pedido: </span>
-          <span style="font-size: 24px; font-weight: 800; color: #AAFF00;">${total.toFixed(2)} \u20AC</span>
+          <span style="font-size: 24px; font-weight: 800; color: #AAFF00;">${total.toFixed(2)} &euro;</span>
         </div>
-        <p style="font-size: 12px; color: rgba(255,255,255,0.3); text-align: center; margin-top: 24px;">Tienda Fitness Pro \u2014 Panel de Administraci\u00f3n</p>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.3); text-align: center; margin-top: 24px;">Tienda Fitness Pro - Panel de Administracion</p>
       </div>
     </div>`;
 }
@@ -281,13 +318,13 @@ function renderNewOrderAdminHtml(
 function renderStatusChangeHtml(payload: StatusEmailPayload): string {
   const sc = statusColor(payload.status);
   const label = statusLabel[payload.status] ?? payload.status;
-  const subject = statusSubject[payload.status] ?? "Actualizaci\u00f3n de pedido";
+  const subject = statusSubject[payload.status] ?? "Actualizacion de pedido";
   const introMap: Record<string, string> = {
     confirmed: "Tu pedido ha sido confirmado y pronto comenzaremos a prepararlo.",
-    preparing: "Estamos preparando tu pedido con mucho cuidado. En breve estar\u00e1 listo para el env\u00edo.",
-    processing: "Tu pedido est\u00e1 en proceso de preparaci\u00f3n.",
-    shipped: "\u00a1Tu pedido est\u00e1 en camino! A continuaci\u00f3n encontrar\u00e1s los datos de seguimiento.",
-    delivered: "\u00a1Tu pedido ha sido entregado! Esperamos que disfrutes tus productos.",
+    preparing: "Estamos preparando tu pedido con mucho cuidado. En breve estara listo para el envio.",
+    processing: "Tu pedido esta en proceso de preparacion.",
+    shipped: "Tu pedido esta en camino! A continuacion encontraras los datos de seguimiento.",
+    delivered: "Tu pedido ha sido entregado! Esperamos que disfrutes tus productos.",
     cancelled: "Tu pedido ha sido cancelado. Si crees que es un error, contacta con nosotros.",
   };
   const intro = introMap[payload.status] ?? "El estado de tu pedido ha sido actualizado.";
@@ -326,15 +363,15 @@ function renderStatusChangeHtml(payload: StatusEmailPayload): string {
 // ─── Public functions ───────────────────────────────────────────────────────
 
 /**
- * Env\u00eda el email de confirmaci\u00f3n de pedido al cliente.
- * Si falla, registra el error pero no lanza excepci\u00f3n.
+ * Envia el email de confirmacion de pedido al cliente.
+ * Si falla, registra el error pero no lanza excepcion.
  */
 export async function sendOrderConfirmationEmail(payload: OrderEmailPayload): Promise<void> {
-  console.log("[ORDER_EMAIL_CLIENT] Enviando confirmaci\u00f3n a:", payload.customerEmail);
+  console.log("[ORDER_EMAIL_CLIENT] Enviando confirmacion a:", payload.customerEmail);
   try {
     await sendEmail({
       to: payload.customerEmail,
-      subject: "Confirmaci\u00f3n de pedido - Tienda Fitness Pro",
+      subject: "Confirmacion de pedido - Tienda Fitness Pro",
       html: renderOrderConfirmationHtml(
         payload.customerName,
         payload.orderId,
@@ -350,16 +387,16 @@ export async function sendOrderConfirmationEmail(payload: OrderEmailPayload): Pr
 }
 
 /**
- * Env\u00eda el email de notificaci\u00f3n de nuevo pedido al admin.
- * Si falla, registra el error pero no lanza excepci\u00f3n.
+ * Envia el email de notificacion de nuevo pedido al admin.
+ * Si falla, registra el error pero no lanza excepcion.
  */
 export async function sendNewOrderAdminEmail(payload: OrderEmailPayload): Promise<void> {
-  console.log("[ORDER_EMAIL_ADMIN] Enviando notificaci\u00f3n admin para pedido:", payload.orderId);
+  console.log("[ORDER_EMAIL_ADMIN] Enviando notificacion admin para pedido:", payload.orderId);
   try {
     const adminEmail = process.env.EMAIL_ORDERS_TO ?? "pedidos@tiendafitnesspro.es";
     await sendEmail({
       to: adminEmail,
-      subject: `Nuevo pedido recibido \u2014 #${payload.orderId}`,
+      subject: `Nuevo pedido recibido - #${payload.orderId}`,
       html: renderNewOrderAdminHtml(
         payload.orderId,
         payload.customerName,
@@ -377,16 +414,16 @@ export async function sendNewOrderAdminEmail(payload: OrderEmailPayload): Promis
 }
 
 /**
- * Env\u00eda email al cliente cuando cambia el estado de su pedido.
- * Solo env\u00eda para estados que requieren notificaci\u00f3n.
+ * Envia email al cliente cuando cambia el estado de su pedido.
+ * Solo envia para estados que requieren notificacion.
  */
 export async function sendOrderStatusEmail(payload: StatusEmailPayload): Promise<boolean> {
-  // No enviar email para pending (ya se envi\u00f3 la confirmaci\u00f3n inicial)
+  // No enviar email para pending (ya se envio la confirmacion inicial)
   if (payload.status === "pending") return false;
 
   console.log("[ORDER_STATUS_EMAIL] Enviando:", payload.status, "a:", payload.customerEmail);
   try {
-    const subject = `${statusSubject[payload.status] ?? "Actualizaci\u00f3n de pedido"} - Tienda Fitness Pro`;
+    const subject = `${statusSubject[payload.status] ?? "Actualizacion de pedido"} - Tienda Fitness Pro`;
     await sendEmail({
       to: payload.customerEmail,
       subject,

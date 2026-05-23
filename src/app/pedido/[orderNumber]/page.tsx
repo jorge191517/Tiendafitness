@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Package, Truck, MapPin, CheckCircle2, Clock, AlertCircle, ExternalLink, Home } from "lucide-react";
+import { Package, Truck, MapPin, CheckCircle2, Clock, AlertCircle, ExternalLink, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -23,6 +23,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  user_id?: string;
   order_number: string | null;
   status: string;
   total: number;
@@ -73,29 +74,36 @@ export default function PedidoPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Try by order_number first, then by id
-      let query = supabase
+      // ─── Paso 1: Buscar el pedido por order_number o id (sin nested items) ───
+      let orderData: Record<string, unknown> | null = null;
+
+      // Intentar por order_number primero
+      const { data: byNumber } = await supabase
         .from("orders")
-        .select("id, order_number, status, total, customer_name, customer_email, shipping_address, shipping_company, tracking_number, tracking_url, created_at, order_items(id, product_name, product_slug, image_url, quantity, unit_price, total, color_name, size)")
+        .select("id, user_id, order_number, status, total, customer_name, customer_email, shipping_address, shipping_company, tracking_number, tracking_url, created_at")
         .eq("order_number", orderNumber)
         .maybeSingle();
 
-      let { data } = await query;
-
-      // If not found by order_number, try by id (for backwards compatibility)
-      if (!data) {
-        const result = await supabase
+      if (byNumber) {
+        orderData = byNumber;
+      } else {
+        // Fallback: buscar por id (compatibilidad hacia atrás)
+        const { data: byId } = await supabase
           .from("orders")
-          .select("id, order_number, status, total, customer_name, customer_email, shipping_address, shipping_company, tracking_number, tracking_url, created_at, order_items(id, product_name, product_slug, image_url, quantity, unit_price, total, color_name, size)")
+          .select("id, user_id, order_number, status, total, customer_name, customer_email, shipping_address, shipping_company, tracking_number, tracking_url, created_at")
           .eq("id", orderNumber)
           .maybeSingle();
-        data = result.data;
+        orderData = byId;
       }
 
-      // Security: if user is logged in, only show their own orders
-      // If guest (no user), allow viewing by order_number (but not list)
-      if (data && user && data.user_id !== user.id) {
-        // Check if user is admin - admins can view any order
+      if (!orderData) {
+        setOrder(null);
+        setLoading(false);
+        return;
+      }
+
+      // ─── Seguridad: solo el dueño o admin puede ver el pedido ────────────
+      if (user && orderData.user_id && orderData.user_id !== user.id) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("role")
@@ -108,7 +116,48 @@ export default function PedidoPage() {
         }
       }
 
-      setOrder(data as Order | null);
+      // ─── Paso 2: Obtener order_items por separado (evitar RLS en nested) ───
+      const orderId = orderData.id as string;
+      const { data: itemsData, error: itemsError } = await supabase
+        .from("order_items")
+        .select("id, product_name, product_slug, image_url, quantity, unit_price, total, color_name, size")
+        .eq("order_id", orderId);
+
+      if (itemsError) {
+        console.warn("[PEDIDO_PAGE] Error cargando order_items:", itemsError.message);
+      }
+
+      const orderItems: OrderItem[] = (itemsData ?? []).map((item) => ({
+        id: item.id,
+        product_name: item.product_name,
+        product_slug: item.product_slug,
+        image_url: item.image_url,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total: item.total,
+        color_name: item.color_name,
+        size: item.size,
+      }));
+
+      // ─── Paso 3: Combinar pedido + items ─────────────────────────────────
+      const combined: Order = {
+        id: orderId,
+        user_id: orderData.user_id as string | undefined,
+        order_number: orderData.order_number as string | null,
+        status: orderData.status as string,
+        total: orderData.total as number,
+        customer_name: orderData.customer_name as string | null,
+        customer_email: orderData.customer_email as string | null,
+        shipping_address: orderData.shipping_address as Record<string, string> | null,
+        shipping_company: orderData.shipping_company as string | null,
+        tracking_number: orderData.tracking_number as string | null,
+        tracking_url: orderData.tracking_url as string | null,
+        created_at: orderData.created_at as string,
+        order_items: orderItems,
+      };
+
+      console.log("[PEDIDO_PAGE] Pedido cargado:", combined.order_number, "con", orderItems.length, "items");
+      setOrder(combined);
     } catch (err) {
       console.error("[PEDIDO_PAGE] Error:", err);
     } finally {
@@ -258,7 +307,7 @@ export default function PedidoPage() {
                   <p className="text-white/70"><span className="text-white/40">Empresa:</span> {order.shipping_company}</p>
                 )}
                 {order.tracking_number && (
-                  <p className="text-white/70"><span className="text-white/40">Nº Seguimiento:</span> <span className="text-lime font-semibold">{order.tracking_number}</span></p>
+                  <p className="text-white/70"><span className="text-white/40">Seguimiento:</span> <span className="text-lime font-semibold">{order.tracking_number}</span></p>
                 )}
               </div>
               {order.tracking_url && (
@@ -324,12 +373,12 @@ export default function PedidoPage() {
                       {item.color_name && <span className="text-white/40 text-xs">{item.color_name}</span>}
                       {item.size && <span className="text-white/40 text-xs">Talla {item.size}</span>}
                     </div>
-                    <p className="text-white/40 text-xs mt-0.5">{item.quantity} × {Number(item.unit_price).toFixed(2)} €</p>
+                    <p className="text-white/40 text-xs mt-0.5">{item.quantity} x {Number(item.unit_price).toFixed(2)} euros</p>
                   </div>
 
                   {/* Subtotal */}
                   <div className="text-right flex-shrink-0">
-                    <p className="text-white font-bold">{Number(item.total).toFixed(2)} €</p>
+                    <p className="text-white font-bold">{Number(item.total).toFixed(2)} euros</p>
                   </div>
                 </div>
               ))}
@@ -337,22 +386,25 @@ export default function PedidoPage() {
               {/* Total */}
               <div className="flex items-center justify-between pt-3 border-t border-white/5">
                 <span className="text-white/50 font-medium">Total</span>
-                <span className="text-xl font-black text-white">{Number(order.total).toFixed(2)} €</span>
+                <span className="text-xl font-black text-white">{Number(order.total).toFixed(2)} euros</span>
               </div>
             </div>
           ) : (
-            <p className="text-white/30 text-sm">No hay productos asociados a este pedido.</p>
+            <div className="bg-white/[0.02] rounded-xl p-4 text-center">
+              <Package className="h-6 w-6 text-white/15 mx-auto mb-2" />
+              <p className="text-white/30 text-sm">Sin datos de productos (pedido antiguo)</p>
+            </div>
           )}
         </div>
 
         {/* Shipping address */}
         {order.shipping_address && (
           <div className="bg-mid-gray/50 rounded-2xl border border-white/5 p-6 mb-6">
-            <h2 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-3">Dirección de envío</h2>
+            <h2 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-3">Direccion de envio</h2>
             <p className="text-white/70 text-sm leading-relaxed">
               {order.shipping_address.street}<br />
               {order.shipping_address.city}, {order.shipping_address.province}<br />
-              {order.shipping_address.postal_code} — {order.shipping_address.country}
+              {order.shipping_address.postal_code} - {order.shipping_address.country}
             </p>
           </div>
         )}
@@ -360,11 +412,11 @@ export default function PedidoPage() {
         {/* Help */}
         <div className="text-center py-4">
           <p className="text-white/30 text-xs">
-            ¿Necesitas ayuda?{" "}
+            Necesitas ayuda?{" "}
             <a href="mailto:pedidos@tiendafitnesspro.es" className="text-electric hover:text-electric/80 transition-colors">
               pedidos@tiendafitnesspro.es
             </a>{" "}
-            · WhatsApp{" "}
+            - WhatsApp{" "}
             <span className="text-green-400">633 184 354</span>
           </p>
         </div>

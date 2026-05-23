@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Package, Eye, ArrowLeft, ShoppingBag, Home } from "lucide-react";
+import { Package, Eye, ShoppingBag, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -59,13 +59,64 @@ export default function MisPedidosPage() {
 
       setUser(authUser);
 
-      const { data } = await supabase
+      // ─── Paso 1: Obtener pedidos del usuario (sin nested order_items) ───
+      // RLS en order_items puede bloquear el nested select, así que
+      // consultamos orders primero y order_items por separado.
+      const { data: ordersData, error: ordersError } = await supabase
         .from("orders")
-        .select("id, order_number, status, total, created_at, order_items(id, product_name, image_url, quantity, unit_price, total, color_name, size)")
+        .select("id, order_number, status, total, created_at")
         .eq("user_id", authUser.id)
         .order("created_at", { ascending: false });
 
-      setOrders((data as Order[]) ?? []);
+      if (ordersError || !ordersData || ordersData.length === 0) {
+        console.log("[MIS_PEDIDOS] No se encontraron pedidos:", ordersError?.message ?? "0 resultados");
+        setOrders([]);
+        setLoading(false);
+        return;
+      }
+
+      // ─── Paso 2: Obtener order_items para todos los pedidos ─────────────
+      const orderIds = ordersData.map((o) => o.id);
+
+      const { data: itemsData, error: itemsError } = await supabase
+        .from("order_items")
+        .select("id, order_id, product_name, image_url, quantity, unit_price, total, color_name, size")
+        .in("order_id", orderIds);
+
+      if (itemsError) {
+        console.warn("[MIS_PEDIDOS] Error cargando order_items:", itemsError.message);
+        // Mostrar pedidos sin items en lugar de ocultarlos
+      }
+
+      // ─── Paso 3: Agrupar items por order_id ─────────────────────────────
+      const itemsByOrderId = new Map<string, OrderItem[]>();
+      for (const item of itemsData ?? []) {
+        const oid = item.order_id;
+        if (!itemsByOrderId.has(oid)) itemsByOrderId.set(oid, []);
+        itemsByOrderId.get(oid)!.push({
+          id: item.id,
+          product_name: item.product_name,
+          image_url: item.image_url,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total: item.total,
+          color_name: item.color_name,
+          size: item.size,
+        });
+      }
+
+      // ─── Paso 4: Combinar ───────────────────────────────────────────────
+      const combined: Order[] = ordersData.map((o) => ({
+        id: o.id,
+        order_number: o.order_number,
+        status: o.status,
+        total: o.total,
+        created_at: o.created_at,
+        order_items: itemsByOrderId.get(o.id) ?? [],
+      }));
+
+      console.log("[MIS_PEDIDOS] Pedidos cargados:", combined.length, "con items");
+      setOrders(combined);
       setLoading(false);
     }
     load();

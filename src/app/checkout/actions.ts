@@ -116,12 +116,13 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       size: string;
     }[] = [];
 
-    // Datos para emails (con nombres de producto)
+    // Datos para emails (con nombres de producto e imagen)
     const emailItems: {
       name: string;
       quantity: number;
       unit_price: number;
       total: number;
+      image_url: string | null;
     }[] = [];
 
     // Intentar obtener product_id de Supabase para FK (no bloqueante)
@@ -182,6 +183,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         quantity: item.quantity,
         unit_price: serverPrice,
         total: lineTotal,
+        image_url: imageUrl,
       });
     }
 
@@ -242,6 +244,15 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       if (itemsError) {
         console.error("[CHECKOUT] Error creando líneas de pedido:", itemsError);
         // El pedido principal ya se creó, no lanzamos error
+      } else {
+        for (const item of itemsWithOrderId) {
+          console.log(
+            `[CHECKOUT] Order item saved: slug=${item.product_slug}, ` +
+            `name=${item.product_name}, image_url=${item.image_url}, ` +
+            `color=${item.color_name}, size=${item.size}, ` +
+            `qty=${item.quantity}, price=${item.unit_price}, total=${item.total}`
+          );
+        }
       }
     }
 

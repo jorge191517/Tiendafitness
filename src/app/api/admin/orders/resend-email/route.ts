@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
         quantity: i.quantity as number,
         unit_price: Number(i.unit_price),
         total: Number(i.total ?? Number(i.unit_price) * (i.quantity as number)),
+        image_url: (i.image_url as string) ?? null,
       })),
       total: Number(order.total),
       shippingAddress: addr ? { street: addr.street ?? "", city: addr.city ?? "", province: addr.province ?? "", postal_code: addr.postal_code ?? "", country: addr.country ?? "" } : undefined,
