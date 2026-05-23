@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Package, Truck, Mail, RefreshCw, ChevronDown, ChevronUp, Eye, Search } from "lucide-react";
+import { ArrowLeft, Package, Truck, Mail, RefreshCw, ChevronDown, ChevronUp, Eye, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,7 +60,13 @@ export default function AdminPedidosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ orderId: string; type: "success" | "error"; msg: string } | null>(null);
   const [trackingForm, setTrackingForm] = useState<Record<string, { shipping_company: string; tracking_number: string; tracking_url: string }>>({});
+
+  const showFeedback = (orderId: string, type: "success" | "error", msg: string) => {
+    setFeedback({ orderId, type, msg });
+    setTimeout(() => setFeedback(null), 3000);
+  };
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -82,6 +88,9 @@ export default function AdminPedidosPage() {
   }, [fetchOrders]);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
+    const statusLabel = STATUS_OPTIONS.find((s) => s.value === newStatus)?.label ?? newStatus;
+    if (!confirm(`¿Confirmas cambiar el estado del pedido a "${statusLabel}"?`)) return;
+
     setUpdating(orderId);
     try {
       const res = await fetch("/api/admin/orders/update-status", {
@@ -94,11 +103,12 @@ export default function AdminPedidosPage() {
         setOrders((prev) =>
           prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
         );
+        showFeedback(orderId, "success", `Estado cambiado a ${statusLabel}`);
       } else {
-        alert(data.error ?? "Error al actualizar estado");
+        showFeedback(orderId, "error", data.error ?? "Error al actualizar estado");
       }
     } catch {
-      alert("Error de conexión");
+      showFeedback(orderId, "error", "Error de conexión");
     } finally {
       setUpdating(null);
     }
@@ -123,18 +133,20 @@ export default function AdminPedidosPage() {
               : o
           )
         );
-        alert("Seguimiento guardado correctamente");
+        showFeedback(orderId, "success", "Seguimiento guardado");
       } else {
-        alert(data.error ?? "Error al guardar seguimiento");
+        showFeedback(orderId, "error", data.error ?? "Error al guardar seguimiento");
       }
     } catch {
-      alert("Error de conexión");
+      showFeedback(orderId, "error", "Error de conexión");
     } finally {
       setUpdating(null);
     }
   };
 
   const handleResendEmail = async (orderId: string) => {
+    if (!confirm("¿Quieres reenviar los emails de este pedido?")) return;
+
     setUpdating(orderId);
     try {
       const res = await fetch("/api/admin/orders/resend-email", {
@@ -143,9 +155,37 @@ export default function AdminPedidosPage() {
         body: JSON.stringify({ orderId }),
       });
       const data = await res.json();
-      alert(data.success ? "Emails reenviados" : (data.error ?? "Error al reenviar"));
+      if (data.success) {
+        showFeedback(orderId, "success", "Emails reenviados");
+      } else {
+        showFeedback(orderId, "error", data.error ?? "Error al reenviar");
+      }
     } catch {
-      alert("Error de conexión");
+      showFeedback(orderId, "error", "Error de conexión");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string, orderRef: string) => {
+    if (!confirm(`¿Seguro que quieres eliminar el pedido #${orderRef}? Esta acción no se puede deshacer.`)) return;
+
+    setUpdating(orderId);
+    try {
+      const res = await fetch("/api/admin/orders/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders((prev) => prev.filter((o) => o.id !== orderId));
+        setExpandedOrderId(null);
+      } else {
+        showFeedback(orderId, "error", data.error ?? "Error al eliminar");
+      }
+    } catch {
+      showFeedback(orderId, "error", "Error de conexión");
     } finally {
       setUpdating(null);
     }
@@ -254,6 +294,7 @@ export default function AdminPedidosPage() {
               const statusStyle = getStatusStyle(order.status);
               const itemCount = order.order_items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
               const form = trackingForm[order.id];
+              const orderRef = order.order_number ?? order.id.substring(0, 8).toUpperCase();
 
               return (
                 <div key={order.id} className="bg-mid-gray/50 rounded-2xl border border-white/5 overflow-hidden">
@@ -265,7 +306,7 @@ export default function AdminPedidosPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-white font-bold text-sm">
-                          #{order.order_number ?? order.id.substring(0, 8).toUpperCase()}
+                          #{orderRef}
                         </span>
                         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${statusStyle.color}`}>
                           {statusStyle.label}
@@ -285,10 +326,17 @@ export default function AdminPedidosPage() {
                     )}
                   </button>
 
+                  {/* Feedback banner */}
+                  {feedback && feedback.orderId === order.id && (
+                    <div className={`px-6 py-2 text-xs font-medium ${feedback.type === "success" ? "bg-lime/10 text-lime" : "bg-red-500/10 text-red-400"}`}>
+                      {feedback.msg}
+                    </div>
+                  )}
+
                   {/* Expanded details */}
                   {isExpanded && (
                     <div className="border-t border-white/5 px-6 py-5 space-y-6">
-                      {/* Customer info */}
+                      {/* Customer info + Status change */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Datos del Cliente</h3>
@@ -328,7 +376,7 @@ export default function AdminPedidosPage() {
                               </button>
                             ))}
                           </div>
-                          <div className="mt-4">
+                          <div className="flex items-center gap-3 mt-4">
                             <Button
                               size="sm"
                               variant="outline"
@@ -339,24 +387,36 @@ export default function AdminPedidosPage() {
                               <Mail className="h-3 w-3 mr-1.5" />
                               Reenviar emails
                             </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={updating === order.id}
+                              onClick={() => handleDeleteOrder(order.id, orderRef)}
+                              className="border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 text-xs"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1.5" />
+                              Eliminar pedido
+                            </Button>
                           </div>
                         </div>
                       </div>
 
                       {/* Products */}
                       <div>
-                        <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Productos</h3>
+                        <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Productos ({itemCount})</h3>
                         {order.order_items && order.order_items.length > 0 ? (
                           <div className="space-y-2">
                             {order.order_items.map((item) => (
                               <div key={item.id} className="flex items-center gap-3 bg-white/[0.03] rounded-xl p-3">
-                                {item.image_url ? (
-                                  <img src={item.image_url} alt={item.product_name ?? ""} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                                ) : (
-                                  <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    <Package className="h-5 w-5 text-white/20" />
-                                  </div>
-                                )}
+                                <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
+                                  {item.image_url ? (
+                                    <img src={item.image_url} alt={item.product_name ?? ""} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Package className="h-5 w-5 text-white/20" />
+                                    </div>
+                                  )}
+                                </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-white text-sm font-medium truncate">{item.product_name ?? "Producto"}</p>
                                   <p className="text-white/40 text-xs">
@@ -373,7 +433,10 @@ export default function AdminPedidosPage() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-white/30 text-sm">No hay productos asociados a este pedido.</p>
+                          <div className="bg-white/[0.02] rounded-xl p-4 text-center">
+                            <Package className="h-6 w-6 text-white/15 mx-auto mb-2" />
+                            <p className="text-white/30 text-sm">Sin datos de productos (pedido antiguo)</p>
+                          </div>
                         )}
                       </div>
 

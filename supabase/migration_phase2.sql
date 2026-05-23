@@ -126,3 +126,37 @@ CREATE POLICY "Los clientes pueden confirmar entrega de sus pedidos"
     user_id = auth.uid()
     AND status = 'delivered'
   );
+
+-- ─── RLS: Admin puede eliminar pedidos ─────────────────────────────────────
+
+CREATE POLICY "Los admins pueden eliminar pedidos"
+  ON public.orders FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
+CREATE POLICY "Los admins pueden eliminar items de cualquier pedido"
+  ON public.order_items FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- ─── Backfill: Actualizar order_items existentes con datos de products ──────
+-- Para pedidos creados antes de la Fase 2 (sin product_name, image_url, etc.)
+
+UPDATE public.order_items oi
+SET
+  product_name = COALESCE(oi.product_name, p.name),
+  product_slug = COALESCE(oi.product_slug, p.slug),
+  image_url = COALESCE(oi.image_url, p.image_url)
+FROM public.products p
+WHERE oi.product_id = p.id
+  AND (oi.product_name IS NULL OR oi.image_url IS NULL);

@@ -19,7 +19,7 @@ export const accesoriosProducts: Product[] = [
       { id: 1041, colorName: "Gris", color: "#808080", image: "/images/products/ShakerGris.png", sizes: [], stock: "in_stock" },
       { id: 1042, colorName: "Negro", color: "#1A1A1A", image: "/images/products/ShakerNegro.png", sizes: [], stock: "in_stock" },
       { id: 1043, colorName: "Rosa", color: "#E8A0BF", image: "/images/products/ShakerRosa.png", sizes: [], stock: "in_stock" },
-      { id: 1044, colorName: "Transparente", color: "#D4E8E0", image: "/images/products/ShakerTrasparente.png", sizes: [], stock: "in_stock" },
+      { id: 1044, colorName: "Transparente", color: "#D4E8E0", image: "/images/products/ShakerTransparente.png", sizes: [], stock: "in_stock" },
     ],
   },
 ];

@@ -2,11 +2,21 @@
  * Server Actions para el checkout.
  *
  * ⛔ La creación de pedidos se hace en el servidor para:
- * - Validar precios contra la base de datos (evitar manipulación)
+ * - Validar precios contra el catálogo local (evitar manipulación)
  * - Usar el cliente Supabase con sesión autenticada
  * - Garantizar integridad de los datos
  *
  * NUNCA confiar en los precios enviados desde el cliente.
+ *
+ * Los productos se validan contra el catálogo local (ALL_PRODUCTS).
+ * La imagen se resuelve desde el producto local con prioridad:
+ *   1. Variante seleccionada (selectedVariant.image)
+ *   2. Imagen principal del producto (localProduct.image)
+ *   3. Imagen enviada desde el carrito (item.image)
+ *   4. null
+ *
+ * NO se depende de Supabase products.image_url porque los productos
+ * son locales y no tienen UUID/product_id en Supabase.
  *
  * Tras crear el pedido correctamente, se envían emails de notificación
  * tanto al cliente como al admin. Si el envío de email falla,
@@ -17,6 +27,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from "@/lib/email/send-order-email";
+import { allProducts } from "@/data/products";
+import type { Product, ProductVariant } from "@/data/types";
 
 export interface CheckoutItem {
   name: string;
@@ -50,15 +62,30 @@ export interface CheckoutResult {
   error?: string;
 }
 
+// ─── Mapa de productos locales por slug ──────────────────────────────────────
+
+const localProductMap = new Map<string, Product>();
+for (const p of allProducts) {
+  localProductMap.set(p.slug, p);
+}
+
+/**
+ * Busca la variante de un producto local que coincide con el colorName.
+ */
+function findVariant(product: Product, colorName: string): ProductVariant | undefined {
+  return product.variants.find((v) => v.colorName === colorName);
+}
+
 /**
  * Crea un pedido en Supabase.
  *
  * Flujo:
  * 1. Verifica que el usuario esté autenticado
- * 2. Valida los precios contra la base de datos (anti-manipulación)
- * 3. Crea el pedido en la tabla `orders`
- * 4. Crea las líneas de pedido en `order_items`
- * 5. Envía emails de confirmación (cliente + admin) — no bloqueante
+ * 2. Valida los productos contra el catálogo local (anti-manipulación)
+ * 3. Resuelve image_url desde producto local + variante seleccionada
+ * 4. Crea el pedido en la tabla `orders`
+ * 5. Crea las líneas de pedido en `order_items`
+ * 6. Envía emails de confirmación (cliente + admin) — no bloqueante
  */
 export async function createOrder(payload: CheckoutPayload): Promise<CheckoutResult> {
   try {
@@ -75,33 +102,16 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       return { success: false, error: "El carrito está vacío." };
     }
 
-    // 3. Buscar productos en la base de datos y validar precios
-    const slugs = payload.items.map((i) => i.slug);
-    const { data: dbProducts, error: dbError } = await supabase
-      .from("products")
-      .select("id, slug, price, active, stock_status, stock_quantity")
-      .in("slug", slugs);
-
-    if (dbError) {
-      return { success: false, error: "Error al verificar productos." };
-    }
-
-    // Mapeo slug → producto DB
-    const productMap = new Map<string, (typeof dbProducts)[0]>();
-    for (const p of dbProducts ?? []) {
-      productMap.set(p.slug, p);
-    }
-
-    // Validar cada item del carrito contra la DB
+    // 3. Validar productos contra el catálogo local y construir orderItems
     let serverTotal = 0;
     const orderItems: {
-      product_id: string;
+      product_id: string | null;
       product_slug: string;
       product_name: string;
       quantity: number;
       unit_price: number;
       total: number;
-      image_url: string;
+      image_url: string | null;
       color_name: string;
       size: string;
     }[] = [];
@@ -114,35 +124,55 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       total: number;
     }[] = [];
 
-    for (const item of payload.items) {
-      const dbProduct = productMap.get(item.slug);
+    // Intentar obtener product_id de Supabase para FK (no bloqueante)
+    const slugs = payload.items.map((i) => i.slug);
+    const { data: dbProducts } = await supabase
+      .from("products")
+      .select("id, slug")
+      .in("slug", slugs);
 
-      if (!dbProduct) {
+    const dbSlugToId = new Map<string, string>();
+    for (const p of dbProducts ?? []) {
+      dbSlugToId.set(p.slug, p.id);
+    }
+
+    for (const item of payload.items) {
+      // Validar producto por slug en catálogo local
+      const localProduct = localProductMap.get(item.slug);
+
+      if (!localProduct) {
         return { success: false, error: `Producto "${item.name}" no encontrado en el catálogo.` };
       }
 
-      if (!dbProduct.active) {
-        return { success: false, error: `Producto "${item.name}" no está disponible.` };
-      }
-
-      if (dbProduct.stock_status === "out_of_stock") {
-        return { success: false, error: `Producto "${item.name}" está agotado.` };
-      }
-
-      // ⛔ Usar el precio del SERVIDOR, no el del cliente (anti-manipulación)
-      const serverPrice = Number(dbProduct.price);
+      // ⛔ Usar el precio del catálogo local, no el del cliente (anti-manipulación)
+      const serverPrice = localProduct.price;
       const lineTotal = serverPrice * item.quantity;
 
       serverTotal += lineTotal;
 
+      // Buscar variante seleccionada por colorName
+      const selectedVariant = findVariant(localProduct, item.colorName);
+
+      // Resolver imagen: prioridad 1) variante, 2) producto local, 3) carrito, 4) null
+      const imageUrl = selectedVariant?.image || localProduct.image || item.image || null;
+
+      // product_id: usar el de Supabase si existe (para FK), sino null
+      const productId = dbSlugToId.get(item.slug) ?? null;
+
+      console.log(
+        `[CHECKOUT] Item: ${item.slug}, colorName: ${item.colorName}, ` +
+        `variant: ${selectedVariant?.colorName ?? "none"}, ` +
+        `image_url: ${imageUrl}`
+      );
+
       orderItems.push({
-        product_id: dbProduct.id,
+        product_id: productId,
         product_slug: item.slug,
         product_name: item.name,
         quantity: item.quantity,
         unit_price: serverPrice,
         total: lineTotal,
-        image_url: item.image,
+        image_url: imageUrl,
         color_name: item.colorName,
         size: item.selectedSize,
       });
@@ -186,7 +216,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       .single();
 
     if (orderError) {
-      console.error("Error creando pedido:", orderError);
+      console.error("[CHECKOUT] Error creando pedido:", orderError);
       return { success: false, error: "Error al crear el pedido. Inténtalo de nuevo." };
     }
 
@@ -195,12 +225,12 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       const itemsWithOrderId = orderItems.map((item) => ({
         order_id: orderData.id,
         product_id: item.product_id,
-        product_slug: item.product_slug,
-        product_name: item.product_name,
+        product_slug: item.product_slug || null,
+        product_name: item.product_name || null,
         quantity: item.quantity,
         unit_price: item.unit_price,
         total: item.total,
-        image_url: item.image_url,
+        image_url: item.image_url || null,
         color_name: item.color_name || null,
         size: item.size || null,
       }));
@@ -210,7 +240,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         .insert(itemsWithOrderId);
 
       if (itemsError) {
-        console.error("Error creando líneas de pedido:", itemsError);
+        console.error("[CHECKOUT] Error creando líneas de pedido:", itemsError);
         // El pedido principal ya se creó, no lanzamos error
       }
     }
@@ -233,13 +263,13 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         sendOrderConfirmationEmail(emailPayload),
         sendNewOrderAdminEmail(emailPayload),
       ]).catch((err) => {
-        console.error("[Checkout] Error en envío de emails de notificación:", err);
+        console.error("[CHECKOUT] Error en envío de emails de notificación:", err);
       });
     }
 
     return { success: true, orderId: orderData.id };
   } catch (err) {
-    console.error("Error inesperado en createOrder:", err);
+    console.error("[CHECKOUT] Error inesperado en createOrder:", err);
     return { success: false, error: "Error interno del servidor." };
   }
 }
