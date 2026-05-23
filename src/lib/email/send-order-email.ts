@@ -29,7 +29,7 @@ interface OrderEmailItem {
   name: string;
   quantity: number;
   unit_price: number;
-  total: number;
+  subtotal: number;
   image_url?: string | null;
 }
 
@@ -111,7 +111,7 @@ function renderItemRows(items: OrderEmailItem[]): string {
             </div>
           </td>
           <td style="padding: 10px 8px; color: rgba(255,255,255,0.6); text-align: center;">${item.quantity}</td>
-          <td style="padding: 10px 16px; color: #ffffff; text-align: right; font-weight: 600;">${item.total.toFixed(2)} &euro;</td>
+          <td style="padding: 10px 16px; color: #ffffff; text-align: right; font-weight: 600;">${item.subtotal.toFixed(2)} &euro;</td>
         </tr>`;
     })
     .join("");
@@ -243,7 +243,7 @@ function renderNewOrderAdminHtml(
           </td>
           <td style="padding: 10px 8px; color: rgba(255,255,255,0.6); text-align: center;">${item.quantity}</td>
           <td style="padding: 10px 16px; color: rgba(255,255,255,0.6); text-align: right;">${item.unit_price.toFixed(2)} &euro;</td>
-          <td style="padding: 10px 16px; color: #ffffff; text-align: right; font-weight: 600;">${item.total.toFixed(2)} &euro;</td>
+          <td style="padding: 10px 16px; color: #ffffff; text-align: right; font-weight: 600;">${item.subtotal.toFixed(2)} &euro;</td>
         </tr>`;
     })
     .join("");

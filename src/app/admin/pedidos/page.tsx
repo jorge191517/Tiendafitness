@@ -16,7 +16,7 @@ interface OrderItem {
   image_url: string | null;
   quantity: number;
   unit_price: number;
-  total: number;
+  subtotal: number;
   color_name: string | null;
   size: string | null;
 }
@@ -426,7 +426,7 @@ export default function AdminPedidosPage() {
                                   </p>
                                 </div>
                                 <div className="text-right flex-shrink-0">
-                                  <p className="text-white text-sm font-semibold">{Number(item.total).toFixed(2)} €</p>
+                                  <p className="text-white text-sm font-semibold">{Number(item.subtotal).toFixed(2)} €</p>
                                   <p className="text-white/40 text-xs">{item.quantity} × {Number(item.unit_price).toFixed(2)} €</p>
                                 </div>
                               </div>

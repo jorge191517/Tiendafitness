@@ -16,7 +16,7 @@ interface OrderItem {
   image_url: string | null;
   quantity: number;
   unit_price: number;
-  total: number;
+  subtotal: number;
   color_name: string | null;
   size: string | null;
 }
@@ -120,7 +120,7 @@ export default function PedidoPage() {
       const orderId = orderData.id as string;
       const { data: itemsData, error: itemsError } = await supabase
         .from("order_items")
-        .select("id, product_name, product_slug, image_url, quantity, unit_price, total, color_name, size")
+        .select("id, product_name, product_slug, image_url, quantity, unit_price, subtotal, color_name, size")
         .eq("order_id", orderId);
 
       if (itemsError) {
@@ -134,7 +134,7 @@ export default function PedidoPage() {
         image_url: item.image_url,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        total: item.total,
+        subtotal: item.subtotal,
         color_name: item.color_name,
         size: item.size,
       }));
@@ -378,7 +378,7 @@ export default function PedidoPage() {
 
                   {/* Subtotal */}
                   <div className="text-right flex-shrink-0">
-                    <p className="text-white font-bold">{Number(item.total).toFixed(2)} euros</p>
+                    <p className="text-white font-bold">{Number(item.subtotal).toFixed(2)} euros</p>
                   </div>
                 </div>
               ))}

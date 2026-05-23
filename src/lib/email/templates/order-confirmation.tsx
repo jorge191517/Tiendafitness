@@ -11,7 +11,8 @@ interface OrderItem {
   name: string;
   quantity: number;
   unit_price: number;
-  total: number;
+  subtotal: number;
+  image_url?: string | null;
 }
 
 interface OrderConfirmationProps {
@@ -95,7 +96,7 @@ export function OrderConfirmationEmail({
                 <tr key={i} style={{ borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
                   <td style={{ padding: "10px 16px", color: "#ffffff" }}>{item.name}</td>
                   <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.6)", textAlign: "center" }}>{item.quantity}</td>
-                  <td style={{ padding: "10px 16px", color: "#ffffff", textAlign: "right", fontWeight: 600 }}>{item.total.toFixed(2)} €</td>
+                  <td style={{ padding: "10px 16px", color: "#ffffff", textAlign: "right", fontWeight: 600 }}>{item.subtotal.toFixed(2)} €</td>
                 </tr>
               ))}
             </tbody>

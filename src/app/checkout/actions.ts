@@ -25,7 +25,7 @@
 
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from "@/lib/email/send-order-email";
 import { allProducts } from "@/data/products";
 import type { Product, ProductVariant } from "@/data/types";
@@ -38,6 +38,7 @@ export interface CheckoutItem {
   selectedSize: string;
   quantity: number;
   image: string;
+  variantId?: string;
 }
 
 export interface CheckoutPayload {
@@ -108,9 +109,11 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       product_id: string | null;
       product_slug: string;
       product_name: string;
+      variant_id: string | null;
       quantity: number;
       unit_price: number;
-      total: number;
+      subtotal: number;
+      image: string | null;
       image_url: string | null;
       color_name: string;
       size: string;
@@ -121,7 +124,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       name: string;
       quantity: number;
       unit_price: number;
-      total: number;
+      subtotal: number;
       image_url: string | null;
     }[] = [];
 
@@ -170,9 +173,11 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         product_id: productId,
         product_slug: item.slug,
         product_name: item.name,
+        variant_id: selectedVariant?.id ?? item.variantId ?? null,
         quantity: item.quantity,
         unit_price: serverPrice,
-        total: lineTotal,
+        subtotal: lineTotal,
+        image: imageUrl,
         image_url: imageUrl,
         color_name: item.colorName,
         size: item.selectedSize,
@@ -182,7 +187,7 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         name: `${item.name} (${item.colorName}${item.selectedSize ? `, Talla ${item.selectedSize}` : ""})`,
         quantity: item.quantity,
         unit_price: serverPrice,
-        total: lineTotal,
+        subtotal: lineTotal,
         image_url: imageUrl,
       });
     }
@@ -222,38 +227,45 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       return { success: false, error: "Error al crear el pedido. Inténtalo de nuevo." };
     }
 
-    // 6. Crear las líneas de pedido
+    // 6. Crear las líneas de pedido con adminClient (bypassea RLS)
     if (orderData?.id && orderItems.length > 0) {
+      const adminSupabase = await createAdminClient();
+
       const itemsWithOrderId = orderItems.map((item) => ({
         order_id: orderData.id,
         product_id: item.product_id,
         product_slug: item.product_slug || null,
         product_name: item.product_name || null,
+        variant_id: item.variant_id || null,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        total: item.total,
+        subtotal: item.subtotal,
+        image: item.image || null,
         image_url: item.image_url || null,
         color_name: item.color_name || null,
         size: item.size || null,
       }));
 
-      const { error: itemsError } = await supabase
+      console.log("[CHECKOUT] Insertando order_items:", JSON.stringify(itemsWithOrderId.map((i) => ({
+        slug: i.product_slug, name: i.product_name, qty: i.quantity,
+        unit_price: i.unit_price, subtotal: i.subtotal, image_url: i.image_url,
+      }))));
+
+      const { error: itemsError } = await adminSupabase
         .from("order_items")
         .insert(itemsWithOrderId);
 
       if (itemsError) {
-        console.error("[CHECKOUT] Error creando líneas de pedido:", itemsError);
-        // El pedido principal ya se creó, no lanzamos error
-      } else {
-        for (const item of itemsWithOrderId) {
-          console.log(
-            `[CHECKOUT] Order item saved: slug=${item.product_slug}, ` +
-            `name=${item.product_name}, image_url=${item.image_url}, ` +
-            `color=${item.color_name}, size=${item.size}, ` +
-            `qty=${item.quantity}, price=${item.unit_price}, total=${item.total}`
-          );
-        }
+        console.error("[CHECKOUT] Error insertando order_items:", itemsError);
+
+        // Borrar la order huérfana para no dejar pedidos sin items
+        await adminSupabase.from("orders").delete().eq("id", orderData.id);
+        console.error("[CHECKOUT] Order huérfana eliminada:", orderData.id);
+
+        return { success: false, error: "No se pudieron guardar los productos del pedido." };
       }
+
+      console.log("[CHECKOUT] Order items insertados:", itemsWithOrderId.length, "items para order", orderData.id);
     }
 
     // 7. Enviar emails de notificación (no bloqueante)
