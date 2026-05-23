@@ -14,7 +14,7 @@ export default async function AdminPage() {
   const stats = [
     { label: "Productos", count: productsRes.count ?? 0, icon: Package, href: "/admin/productos", color: "text-electric", bgHover: "hover:border-electric/30" },
     { label: "Categorías", count: categoriesRes.count ?? 0, icon: FolderOpen, href: "/admin/categorias", color: "text-lime", bgHover: "hover:border-lime/30" },
-    { label: "Pedidos", count: ordersRes.count ?? 0, icon: ShoppingCart, href: "/admin", color: "text-yellow-400", bgHover: "hover:border-yellow-400/30" },
+    { label: "Pedidos", count: ordersRes.count ?? 0, icon: ShoppingCart, href: "/admin/pedidos", color: "text-yellow-400", bgHover: "hover:border-yellow-400/30" },
   ];
 
   return (
@@ -65,7 +65,7 @@ export default async function AdminPage() {
             <TrendingUp className="h-5 w-5 text-electric" />
             Acciones Rápidas
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <Link
               href="/admin/productos"
               className="px-4 py-3 rounded-xl bg-white/5 hover:bg-electric/10 border border-white/10 hover:border-electric/30 text-white/70 hover:text-white transition-all duration-300 text-sm font-medium text-center"
@@ -77,6 +77,12 @@ export default async function AdminPage() {
               className="px-4 py-3 rounded-xl bg-white/5 hover:bg-lime/10 border border-white/10 hover:border-lime/30 text-white/70 hover:text-white transition-all duration-300 text-sm font-medium text-center"
             >
               Gestionar Categorías
+            </Link>
+            <Link
+              href="/admin/pedidos"
+              className="px-4 py-3 rounded-xl bg-white/5 hover:bg-yellow-400/10 border border-white/10 hover:border-yellow-400/30 text-white/70 hover:text-white transition-all duration-300 text-sm font-medium text-center"
+            >
+              Gestionar Pedidos
             </Link>
             <Link
               href="/admin/productos/new"

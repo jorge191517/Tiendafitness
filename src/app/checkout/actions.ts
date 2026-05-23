@@ -2,27 +2,20 @@
  * Server Actions para el checkout.
  *
  * ⛔ La creación de pedidos se hace en el servidor para:
- * - Validar precios contra el catálogo local (evitar manipulación)
- * - Usar el cliente admin Supabase para INSERT (bypassea RLS)
+ * - Validar precios contra la base de datos (evitar manipulación)
+ * - Usar el cliente Supabase con sesión autenticada
  * - Garantizar integridad de los datos
  *
  * NUNCA confiar en los precios enviados desde el cliente.
  *
- * Se permite checkout como invitado (sin cuenta).
- * Si el usuario está autenticado, se vincula user_id.
- * Si no, se usa customer_email como referencia.
- *
- * La validación de productos se hace contra ALL_PRODUCTS (catálogo local)
- * buscando SIEMPRE por slug. NO se usa id numérico ni UUID.
- *
- * Usa createAdminClient() para INSERT en orders y order_items
- * para evitar problemas de RLS que impedirían la escritura.
+ * Tras crear el pedido correctamente, se envían emails de notificación
+ * tanto al cliente como al admin. Si el envío de email falla,
+ * NO se interrumpe el flujo del pedido (se registra el error en servidor).
  */
 
 "use server";
 
-import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { ALL_PRODUCTS } from "@/data/products";
+import { createClient } from "@/lib/supabase/server";
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from "@/lib/email/send-order-email";
 
 export interface CheckoutItem {
@@ -33,7 +26,6 @@ export interface CheckoutItem {
   selectedSize: string;
   quantity: number;
   image: string;
-  variantId?: number;
 }
 
 export interface CheckoutPayload {
@@ -55,99 +47,104 @@ export interface CheckoutPayload {
 export interface CheckoutResult {
   success: boolean;
   orderId?: string;
-  orderNumber?: string;
   error?: string;
-}
-
-/**
- * Genera un número de pedido único: TFP-YYYYMMDD-XXXXX
- */
-function generateOrderNumber(): string {
-  const now = new Date();
-  const dateStr = now.getFullYear().toString() +
-    (now.getMonth() + 1).toString().padStart(2, "0") +
-    now.getDate().toString().padStart(2, "0");
-  const random = Math.floor(Math.random() * 99999).toString().padStart(5, "0");
-  return `TFP-${dateStr}-${random}`;
 }
 
 /**
  * Crea un pedido en Supabase.
  *
  * Flujo:
- * 1. Verifica que haya items en el carrito
- * 2. Identifica al usuario (autenticado o invitado) usando createClient()
- * 3. Valida los productos contra ALL_PRODUCTS por slug (anti-manipulación)
- * 4. Crea el pedido en la tabla `orders` con adminClient (bypassea RLS)
- * 5. Crea las líneas de pedido en `order_items` con adminClient
- * 6. Envía emails de confirmación (cliente + admin) — no bloqueante
+ * 1. Verifica que el usuario esté autenticado
+ * 2. Valida los precios contra la base de datos (anti-manipulación)
+ * 3. Crea el pedido en la tabla `orders`
+ * 4. Crea las líneas de pedido en `order_items`
+ * 5. Envía emails de confirmación (cliente + admin) — no bloqueante
  */
 export async function createOrder(payload: CheckoutPayload): Promise<CheckoutResult> {
   try {
-    console.log("[CHECKOUT] Iniciando creación de pedido...");
-    console.log("[CHECKOUT] Customer:", payload.customer.email, "| Items:", payload.items.length);
-
-    // 1. Identificar al usuario usando el cliente normal (lee sesión de cookies)
     const supabase = await createClient();
+
+    // 1. Verificar autenticación
     const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id ?? null;
-    console.log("[CHECKOUT] Usuario:", userId ? `autenticado (${userId.substring(0, 8)}...)` : "invitado");
+    if (!user) {
+      return { success: false, error: "Debes iniciar sesión para realizar un pedido." };
+    }
 
     // 2. Validar que hay items
     if (!payload.items || payload.items.length === 0) {
       return { success: false, error: "El carrito está vacío." };
     }
 
-    // 3. Validar cada item del carrito contra ALL_PRODUCTS por slug
+    // 3. Buscar productos en la base de datos y validar precios
+    const slugs = payload.items.map((i) => i.slug);
+    const { data: dbProducts, error: dbError } = await supabase
+      .from("products")
+      .select("id, slug, price, active, stock_status, stock_quantity")
+      .in("slug", slugs);
+
+    if (dbError) {
+      return { success: false, error: "Error al verificar productos." };
+    }
+
+    // Mapeo slug → producto DB
+    const productMap = new Map<string, (typeof dbProducts)[0]>();
+    for (const p of dbProducts ?? []) {
+      productMap.set(p.slug, p);
+    }
+
+    // Validar cada item del carrito contra la DB
     let serverTotal = 0;
     const orderItems: {
-      order_id: string;
-      product_id: string | null;
+      product_id: string;
       product_slug: string;
       product_name: string;
-      variant_id: string;
-      color_name: string;
-      size: string;
-      image_url: string;
       quantity: number;
       unit_price: number;
       total: number;
+      image_url: string;
+      color_name: string;
+      size: string;
     }[] = [];
 
+    // Datos para emails (con nombres de producto)
     const emailItems: {
       name: string;
       quantity: number;
       unit_price: number;
       total: number;
-      image?: string;
     }[] = [];
 
     for (const item of payload.items) {
-      // ⛔ Validar SIEMPRE por slug contra el catálogo local
-      const catalogProduct = ALL_PRODUCTS.find((p) => p.slug === item.slug);
+      const dbProduct = productMap.get(item.slug);
 
-      if (!catalogProduct) {
-        console.error("[CHECKOUT] Producto no encontrado en catálogo local:", item.slug);
+      if (!dbProduct) {
         return { success: false, error: `Producto "${item.name}" no encontrado en el catálogo.` };
       }
 
-      // ⛔ Usar el precio del SERVIDOR (catálogo local), no el del cliente (anti-manipulación)
-      const serverPrice = catalogProduct.price;
+      if (!dbProduct.active) {
+        return { success: false, error: `Producto "${item.name}" no está disponible.` };
+      }
+
+      if (dbProduct.stock_status === "out_of_stock") {
+        return { success: false, error: `Producto "${item.name}" está agotado.` };
+      }
+
+      // ⛔ Usar el precio del SERVIDOR, no el del cliente (anti-manipulación)
+      const serverPrice = Number(dbProduct.price);
       const lineTotal = serverPrice * item.quantity;
+
       serverTotal += lineTotal;
 
       orderItems.push({
-        order_id: "", // Se rellenará después del INSERT de orders
-        product_id: null, // No usamos UUID de Supabase para productos locales
+        product_id: dbProduct.id,
         product_slug: item.slug,
         product_name: item.name,
-        variant_id: item.variantId?.toString() ?? "0",
-        color_name: item.colorName ?? "",
-        size: item.selectedSize ?? "",
-        image_url: item.image ?? "",
         quantity: item.quantity,
         unit_price: serverPrice,
         total: lineTotal,
+        image_url: item.image,
+        color_name: item.colorName,
+        size: item.selectedSize,
       });
 
       emailItems.push({
@@ -155,21 +152,22 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         quantity: item.quantity,
         unit_price: serverPrice,
         total: lineTotal,
-        image: item.image,
       });
     }
 
     // 4. Generar order_number
-    const orderNumber = generateOrderNumber();
-    console.log("[CHECKOUT] Order number generado:", orderNumber);
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const rand = String(Math.floor(Math.random() * 100000)).padStart(5, "0");
+    const orderNumber = `TFP-${y}${m}${d}-${rand}`;
 
-    // 5. Usar adminClient para INSERT (bypassea RLS)
-    const adminClient = await createAdminClient();
-
-    const { data: orderData, error: orderError } = await adminClient
+    // 5. Crear el pedido
+    const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .insert({
-        user_id: userId,
+        user_id: user.id,
         order_number: orderNumber,
         status: "pending",
         total: serverTotal,
@@ -188,56 +186,41 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
       .single();
 
     if (orderError) {
-      console.error("[CHECKOUT] Error creando pedido:", orderError);
-      return { success: false, error: `Error al crear el pedido: ${orderError.message}` };
-    }
-
-    if (!orderData?.id) {
-      console.error("[CHECKOUT] No se obtuvo ID del pedido creado");
+      console.error("Error creando pedido:", orderError);
       return { success: false, error: "Error al crear el pedido. Inténtalo de nuevo." };
     }
 
-    const finalOrderNumber = orderData.order_number || orderNumber;
-    console.log("[CHECKOUT] Pedido creado:", { id: orderData.id, orderNumber: finalOrderNumber });
-
-    // 6. Crear las líneas de pedido con order_id real usando adminClient
-    const itemsWithOrderId = orderItems.map((item) => ({
-      ...item,
-      order_id: orderData.id,
-    }));
-
-    console.log("[CHECKOUT] Insertando", itemsWithOrderId.length, "order_items:", JSON.stringify(itemsWithOrderId.map(i => ({
-      product_slug: i.product_slug,
-      product_name: i.product_name,
-      quantity: i.quantity,
-      unit_price: i.unit_price,
-      total: i.total,
-      image_url: i.image_url ? "presente" : "vacía",
-    }))));
-
-    const { error: itemsError } = await adminClient
-      .from("order_items")
-      .insert(itemsWithOrderId);
-
-    if (itemsError) {
-      console.error("[CHECKOUT] Error creando order_items:", itemsError);
-      // El pedido principal ya se creó, no lanzamos error
-      // Pero registramos el error detalladamente para diagnóstico
-      console.error("[CHECKOUT] Detalle del error order_items:", JSON.stringify({
-        code: itemsError.code,
-        message: itemsError.message,
-        details: itemsError.details,
-        hint: itemsError.hint,
+    // 6. Crear las líneas de pedido
+    if (orderData?.id && orderItems.length > 0) {
+      const itemsWithOrderId = orderItems.map((item) => ({
+        order_id: orderData.id,
+        product_id: item.product_id,
+        product_slug: item.product_slug,
+        product_name: item.product_name,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total: item.total,
+        image_url: item.image_url,
+        color_name: item.color_name || null,
+        size: item.size || null,
       }));
-    } else {
-      console.log("[CHECKOUT] Order items creados correctamente:", itemsWithOrderId.length, "items");
+
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .insert(itemsWithOrderId);
+
+      if (itemsError) {
+        console.error("Error creando líneas de pedido:", itemsError);
+        // El pedido principal ya se creó, no lanzamos error
+      }
     }
 
-    // 7. Enviar emails de notificación (no bloquear el pedido si fallan)
-    console.log("[CHECKOUT] Enviando emails de notificación...");
-    try {
+    // 7. Enviar emails de notificación (no bloqueante)
+    if (orderData?.id) {
+      const emailOrderId = orderData.order_number ?? orderData.id.substring(0, 8).toUpperCase();
+
       const emailPayload = {
-        orderId: finalOrderNumber,
+        orderId: emailOrderId,
         customerName: payload.customer.name,
         customerEmail: payload.customer.email,
         customerPhone: payload.customer.phone,
@@ -246,29 +229,17 @@ export async function createOrder(payload: CheckoutPayload): Promise<CheckoutRes
         shippingAddress: payload.address,
       };
 
-      const [clientResult, adminResult] = await Promise.allSettled([
+      Promise.allSettled([
         sendOrderConfirmationEmail(emailPayload),
         sendNewOrderAdminEmail(emailPayload),
-      ]);
-
-      if (clientResult.status === "fulfilled") {
-        console.log("[ORDER_EMAIL_CLIENT] Enviado (confirmación checkout)");
-      } else {
-        console.error("[ORDER_EMAIL_CLIENT] Error (confirmación checkout):", clientResult.reason);
-      }
-
-      if (adminResult.status === "fulfilled") {
-        console.log("[ORDER_EMAIL_ADMIN] Enviado (notificación checkout)");
-      } else {
-        console.error("[ORDER_EMAIL_ADMIN] Error (notificación checkout):", adminResult.reason);
-      }
-    } catch (emailErr) {
-      console.error("[CHECKOUT] Error general en envío de emails:", emailErr);
+      ]).catch((err) => {
+        console.error("[Checkout] Error en envío de emails de notificación:", err);
+      });
     }
 
-    return { success: true, orderId: orderData.id, orderNumber: finalOrderNumber };
+    return { success: true, orderId: orderData.id };
   } catch (err) {
-    console.error("[CHECKOUT] Error inesperado en createOrder:", err);
+    console.error("Error inesperado en createOrder:", err);
     return { success: false, error: "Error interno del servidor." };
   }
 }
