@@ -183,8 +183,8 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Customer data */}
             <Card className="bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl">
-              <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><CreditCard className="h-5 w-5 text-electric" />Datos del Cliente</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><CreditCard className="h-5 w-5 text-electric" />Datos del Cliente</CardTitle></CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2 sm:col-span-2"><Label htmlFor="name" className="text-white/80 text-sm">Nombre completo *</Label><Input id="name" type="text" placeholder="Tu nombre" value={customer.name} onChange={(e) => setCustomer((p) => ({ ...p, name: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
                   <div className="space-y-2"><Label htmlFor="email" className="text-white/80 text-sm">Email *</Label><Input id="email" type="email" placeholder="tu@email.com" value={customer.email} onChange={(e) => setCustomer((p) => ({ ...p, email: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
@@ -195,8 +195,8 @@ export default function CheckoutPage() {
 
             {/* Shipping address */}
             <Card className="bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl">
-              <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><Truck className="h-5 w-5 text-electric" />Dirección de Envío</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><Truck className="h-5 w-5 text-electric" />Dirección de Envío</CardTitle></CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
                 <div className="space-y-2"><Label htmlFor="street" className="text-white/80 text-sm">Calle y número *</Label><Input id="street" type="text" placeholder="Calle Mayor 10, 3ºA" value={address.street} onChange={(e) => setAddress((p) => ({ ...p, street: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2"><Label htmlFor="city" className="text-white/80 text-sm">Ciudad *</Label><Input id="city" type="text" placeholder="Madrid" value={address.city} onChange={(e) => setAddress((p) => ({ ...p, city: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
@@ -211,8 +211,8 @@ export default function CheckoutPage() {
 
             {/* Mobile cart items */}
             <Card className="bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl lg:hidden">
-              <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><ShoppingCart className="h-5 w-5 text-electric" />Tu Carrito ({totalItems})</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><ShoppingCart className="h-5 w-5 text-electric" />Tu Carrito ({totalItems})</CardTitle></CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
                 {items.map((item) => (<CartItemRow key={item.cartKey} item={item} onUpdateQuantity={updateQuantity} onRemove={removeItem} />))}
               </CardContent>
             </Card>

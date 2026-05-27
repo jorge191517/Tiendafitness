@@ -207,6 +207,14 @@ export default function Header() {
                         Inicio
                       </a>
                       <a
+                        href="/mi-cuenta"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <User className="h-4 w-4" />
+                        Mi Cuenta
+                      </a>
+                      <a
                         href="/mis-pedidos"
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                         onClick={() => setShowUserMenu(false)}
@@ -295,6 +303,14 @@ export default function Header() {
                     >
                       <Home className="h-5 w-5" />
                       Inicio
+                    </a>
+                    <a
+                      href="/mi-cuenta"
+                      className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-300 font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <User className="h-5 w-5" />
+                      Mi Cuenta
                     </a>
                     <a
                       href="/mis-pedidos"

@@ -503,7 +503,7 @@ export default function MiCuentaPage() {
               ══════════════════════════════════════════════════ */}
           <motion.div variants={fadeInUp}>
             <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/30 transition-all duration-300">
-              <CardHeader className="pb-4">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-white text-lg">
                     <div className="w-8 h-8 bg-electric/10 rounded-lg flex items-center justify-center">
@@ -524,7 +524,7 @@ export default function MiCuentaPage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 {editingPersonal ? (
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -635,7 +635,7 @@ export default function MiCuentaPage() {
               ══════════════════════════════════════════════════ */}
           <motion.div variants={fadeInUp}>
             <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-[#00D4FF]/30 transition-all duration-300">
-              <CardHeader className="pb-4">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-white text-lg">
                     <div className="w-8 h-8 bg-[#00D4FF]/10 rounded-lg flex items-center justify-center">
@@ -656,7 +656,7 @@ export default function MiCuentaPage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 {editingAddress ? (
                   <div className="space-y-3">
                     <div className="space-y-2">
@@ -807,7 +807,7 @@ export default function MiCuentaPage() {
               ══════════════════════════════════════════════════ */}
           <motion.div variants={fadeInUp}>
             <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-lime/30 transition-all duration-300">
-              <CardHeader className="pb-4">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
                   <div className="w-8 h-8 bg-[#AAFF00]/10 rounded-lg flex items-center justify-center">
                     <Shield className="h-4 w-4 text-lime" />
@@ -815,7 +815,7 @@ export default function MiCuentaPage() {
                   Seguridad
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 {changingPassword ? (
                   <div className="space-y-3">
                     <div className="space-y-2">
@@ -942,7 +942,7 @@ export default function MiCuentaPage() {
               ══════════════════════════════════════════════════ */}
           <motion.div variants={fadeInUp}>
             <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/30 transition-all duration-300">
-              <CardHeader className="pb-4">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
                   <div className="w-8 h-8 bg-[#FFB800]/10 rounded-lg flex items-center justify-center">
                     <Package className="h-4 w-4 text-[#FFB800]" />
@@ -950,7 +950,7 @@ export default function MiCuentaPage() {
                   Estado de Pedidos
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 {orders.length === 0 ? (
                   <div className="text-center py-4">
                     <Package className="h-8 w-8 text-white/15 mx-auto mb-3" />
@@ -1020,7 +1020,7 @@ export default function MiCuentaPage() {
           className="mt-6"
         >
           <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/30 transition-all duration-300">
-            <CardHeader className="pb-4">
+            <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
                   <div className="w-8 h-8 bg-electric/10 rounded-lg flex items-center justify-center">
@@ -1043,7 +1043,7 @@ export default function MiCuentaPage() {
                 )}
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               {orders.length === 0 ? (
                 <div className="text-center py-8">
                   <Package className="h-12 w-12 text-white/10 mx-auto mb-4" />

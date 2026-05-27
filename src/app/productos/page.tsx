@@ -87,9 +87,9 @@ export default async function ProductosPage({ searchParams }: Props) {
       </section>
 
       {/* Category filter pills */}
-      <section className="pb-4">
+      <section className="pb-4 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex overflow-x-auto no-scrollbar gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 flex-nowrap md:flex-wrap">
             <a
               href="/productos"
               className={`px-4 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-300 ${
@@ -119,9 +119,9 @@ export default async function ProductosPage({ searchParams }: Props) {
 
       {/* Subcategory filter pills (only when a category is active and has subcategories) */}
       {activeCategory && subcategories.length > 0 && (
-        <section className="pb-8">
+        <section className="pb-8 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 flex-nowrap md:flex-wrap">
               <a
                 href={`/productos?categoria=${activeCategory}`}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all duration-300 ${

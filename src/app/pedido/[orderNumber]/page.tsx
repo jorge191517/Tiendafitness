@@ -256,41 +256,91 @@ export default function PedidoPage() {
             </div>
           ) : (
             <div className="relative">
-              {/* Progress bar */}
-              <div className="absolute top-5 left-5 right-5 h-0.5 bg-white/10 hidden sm:block">
-                <div
-                  className="h-full bg-lime transition-all duration-700"
-                  style={{ width: `${(currentIdx / (TIMELINE_STEPS.length - 1)) * 100}%` }}
-                />
+              {/* Vista de escritorio: Stepper horizontal */}
+              <div className="hidden sm:block relative">
+                {/* Barra de progreso horizontal */}
+                <div className="absolute top-5 left-5 right-5 h-0.5 bg-white/10">
+                  <div
+                    className="h-full bg-lime transition-all duration-700"
+                    style={{ width: `${(currentIdx / (TIMELINE_STEPS.length - 1)) * 100}%` }}
+                  />
+                </div>
+
+                {/* Pasos */}
+                <div className="flex justify-between relative">
+                  {TIMELINE_STEPS.map((step, idx) => {
+                    const isCompleted = idx <= currentIdx;
+                    const isCurrent = idx === currentIdx;
+                    const Icon = step.icon;
+
+                    return (
+                      <div key={step.key} className="flex flex-col items-center flex-1">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10 ${
+                            isCompleted
+                              ? isCurrent
+                                ? "bg-lime/20 border-lime text-lime scale-110 shadow-[0_0_15px_rgba(170,255,0,0.3)]"
+                                : "bg-lime/10 border-lime/50 text-lime"
+                              : "bg-white/5 border-white/10 text-white/20"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <span
+                          className={`text-xs mt-2 text-center font-medium ${
+                            isCompleted ? "text-white" : "text-white/30"
+                          }`}
+                        >
+                          {step.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Steps */}
-              <div className="flex justify-between relative">
+              {/* Vista móvil: Stepper vertical */}
+              <div className="sm:hidden space-y-6 relative pl-6">
+                {/* Barra de progreso vertical */}
+                <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-white/10">
+                  <div
+                    className="w-full bg-lime transition-all duration-700"
+                    style={{ height: `${(currentIdx / (TIMELINE_STEPS.length - 1)) * 100}%` }}
+                  />
+                </div>
+
                 {TIMELINE_STEPS.map((step, idx) => {
                   const isCompleted = idx <= currentIdx;
                   const isCurrent = idx === currentIdx;
                   const Icon = step.icon;
 
                   return (
-                    <div key={step.key} className="flex flex-col items-center flex-1">
+                    <div key={step.key} className="flex items-center gap-4 relative">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10 ${
+                        className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10 flex-shrink-0 ${
                           isCompleted
                             ? isCurrent
-                              ? "bg-lime/20 border-lime text-lime scale-110 shadow-[0_0_15px_rgba(170,255,0,0.3)]"
+                              ? "bg-lime/20 border-lime text-lime scale-105 shadow-[0_0_15px_rgba(170,255,0,0.3)]"
                               : "bg-lime/10 border-lime/50 text-lime"
                             : "bg-white/5 border-white/10 text-white/20"
                         }`}
                       >
                         <Icon className="h-4 w-4" />
                       </div>
-                      <span
-                        className={`text-[10px] sm:text-xs mt-2 text-center font-medium ${
-                          isCompleted ? "text-white" : "text-white/30"
-                        }`}
-                      >
-                        {step.label}
-                      </span>
+                      <div className="flex-1">
+                        <span
+                          className={`text-sm font-semibold block ${
+                            isCompleted ? "text-white" : "text-white/30"
+                          }`}
+                        >
+                          {step.label}
+                        </span>
+                        {isCurrent && (
+                          <span className="text-[10px] text-lime font-bold block uppercase tracking-wider mt-0.5">
+                            Estado actual
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
