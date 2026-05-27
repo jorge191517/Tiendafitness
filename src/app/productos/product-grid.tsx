@@ -49,9 +49,9 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
       whileHover={{ y: -8 }}
-      className="group relative rounded-2xl bg-mid-gray border border-white/5 hover:border-electric/30 transition-all duration-500 overflow-hidden block"
+      className="group relative rounded-2xl bg-[#1e293b] border border-white/[0.08] hover:border-electric/30 transition-all duration-500 overflow-hidden block"
     >
-      <div className="relative aspect-square overflow-hidden bg-dark-gray">
+      <div className="relative aspect-square overflow-hidden bg-[#111827]">
         <img
           key={displayImage}
           src={displayImage}

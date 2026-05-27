@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { seoConfig } from "@/config/seo";
 import CartSidebar from "@/components/layout/cart-sidebar";
-import MobileCartFloat from "@/components/layout/mobile-cart-float";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,13 +23,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0f172a] text-foreground`}
       >
         {children}
         <CartSidebar />
-        <MobileCartFloat />
         <Toaster />
       </body>
     </html>

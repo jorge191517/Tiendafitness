@@ -57,12 +57,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative w-full">
-      {/* Fondo decorativo — radial-gradient (no blur filter = no overflow) */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.05) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(170,255,0,0.05) 0%, transparent 50%)" }}
-      />
+    <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4 py-12 relative overflow-hidden">
+      {/* Fondo decorativo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-electric/5 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-lime/5 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-electric/3 rounded-full blur-[150px]" />
+      </div>
 
       <motion.div
         variants={fadeInUp}
@@ -71,7 +72,7 @@ export default function LoginPage() {
         className="w-full max-w-md relative z-10"
       >
         {/* Card glassmorphism */}
-        <div className="bg-mid-gray/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-[#1e293b]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
           {/* Logo / Brand */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 group">
@@ -181,7 +182,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-mid-gray/80 px-3 text-white/40">o</span>
+              <span className="bg-[#1e293b]/90 px-3 text-white/40">o</span>
             </div>
           </div>
 

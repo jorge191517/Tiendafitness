@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, Loader2, Zap, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+// Welcome email se envía vía API route (/api/auth/welcome-email), no mediante Server Action directo
 import { fadeInUp } from "@/lib/animations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,44 +81,30 @@ export default function RegisterPage() {
         return;
       }
 
-           // Registro exitoso
+      // Registro exitoso
       console.log("[REGISTER] Usuario creado:", email);
 
-      // Enviar email de bienvenida — SIEMPRE que data.user exista
-      // NO depende de data.session, solo de data.user
-      if (data.user) {
-        const userName =
-          data.user.user_metadata?.full_name || fullName || "atleta";
-        const userEmail = data.user.email || email;
-
-        console.log("[REGISTER] Solicitando email bienvenida a:", userEmail);
-
+      // Enviar email de bienvenida vía API route (fire-and-forget, no bloquea el registro)
+      if (data.user?.email) {
+        const welcomeName = data.user.user_metadata?.full_name || fullName;
+        const welcomeEmail = data.user.email;
+        console.log("[REGISTER] Solicitando email bienvenida para:", welcomeEmail);
         fetch("/api/auth/welcome-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userName, userEmail }),
+          body: JSON.stringify({ userName: welcomeName, userEmail: welcomeEmail }),
         })
           .then(async (res) => {
-            const json = await res.json().catch(() => null);
-            console.log(
-              "[REGISTER] Respuesta email bienvenida:",
-              res.status,
-              json
-            );
+            const result = await res.json();
+            console.log("[REGISTER] Respuesta email bienvenida:", result.ok ? "OK" : "FALLÓ", result);
           })
-          .catch((welcomeErr) => {
-            console.error(
-              "[REGISTER] Error solicitando email bienvenida:",
-              welcomeErr
-            );
+          .catch((err) => {
+            console.warn("[REGISTER] Error fetch email bienvenida:", err);
           });
-      } else {
-        console.warn(
-          "[REGISTER] data.user es null, no se puede enviar bienvenida"
-        );
       }
 
       // Siempre mostrar la pantalla de éxito, sin importar si hay sesión o no.
+      // El usuario pulsa los botones manualmente para navegar.
       setSuccess(true);
     } catch (err) {
       console.error("[REGISTER] Error inesperado:", err);
@@ -129,9 +116,8 @@ export default function RegisterPage() {
 
   // Pantalla de éxito después del registro
   if (success) {
-    
     return (
-      <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4 py-12 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-lime/5 rounded-full blur-[100px]" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-electric/5 rounded-full blur-[100px]" />
@@ -144,7 +130,7 @@ export default function RegisterPage() {
           animate="visible"
           className="w-full max-w-md relative z-10"
         >
-          <div className="bg-mid-gray/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
+          <div className="bg-[#1e293b]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
             {/* Icono de éxito */}
             <motion.div
               initial={{ scale: 0 }}
@@ -190,7 +176,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4 py-12 relative overflow-hidden">
       {/* Fondo decorativo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-electric/5 rounded-full blur-[100px]" />
@@ -205,7 +191,7 @@ export default function RegisterPage() {
         className="w-full max-w-md relative z-10"
       >
         {/* Card glassmorphism */}
-        <div className="bg-mid-gray/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-[#1e293b]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
           {/* Logo / Brand */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 group">
@@ -351,7 +337,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-mid-gray/80 px-3 text-white/40">o</span>
+              <span className="bg-[#1e293b]/90 px-3 text-white/40">o</span>
             </div>
           </div>
 

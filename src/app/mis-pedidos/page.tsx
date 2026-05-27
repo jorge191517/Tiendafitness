@@ -129,7 +129,7 @@ export default function MisPedidosPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-deep flex items-center justify-center">
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
         <div className="animate-spin h-8 w-8 border-2 border-electric border-t-transparent rounded-full" />
       </div>
     );
@@ -137,8 +137,8 @@ export default function MisPedidosPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-deep flex items-center justify-center px-4">
-        <div className="bg-mid-gray/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center max-w-md w-full">
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
+        <div className="bg-[#1e293b]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center max-w-md w-full">
           <Package className="h-12 w-12 text-white/20 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Inicia sesión</h2>
           <p className="text-white/50 text-sm mb-6">Necesitas iniciar sesión para ver tus pedidos.</p>
@@ -153,7 +153,7 @@ export default function MisPedidosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-deep">
+    <div className="min-h-screen bg-[#0f172a]">
       <div className="h-20" />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -173,7 +173,7 @@ export default function MisPedidosPage() {
 
         {/* Orders */}
         {orders.length === 0 ? (
-          <div className="bg-mid-gray/50 rounded-2xl border border-white/5 p-12 text-center">
+          <div className="bg-[#1e293b] rounded-2xl border border-white/[0.08] p-12 text-center">
             <ShoppingBag className="h-12 w-12 text-white/20 mx-auto mb-4" />
             <h3 className="text-white/60 font-semibold mb-2">Aún no tienes pedidos</h3>
             <p className="text-white/30 text-sm mb-6">Explora nuestro catálogo y realiza tu primera compra.</p>
@@ -195,7 +195,7 @@ export default function MisPedidosPage() {
                 <Link
                   key={order.id}
                   href={`/pedido/${orderRef}`}
-                  className="block bg-mid-gray/50 rounded-2xl border border-white/5 hover:border-white/10 transition-all duration-300 p-5"
+                  className="block bg-[#1e293b] rounded-2xl border border-white/[0.08] hover:border-white/10 transition-all duration-300 p-5"
                 >
                   <div className="flex items-center gap-4">
                     {/* Thumbnail */}

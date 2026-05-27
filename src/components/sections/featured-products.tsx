@@ -29,19 +29,13 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function FeaturedProductsClient({ products }: { products: Product[] }) {
-  const { slogans } = brandingConfig;
+  const slogans = brandingConfig?.slogans ?? {};
+  const productsSection = slogans?.products ?? {};
 
   return (
-    <section id="products" className="relative py-16 md:py-24 bg-deep w-full">
-      {/* Glow accents — radial-gradient (no blur filter = no overflow) */}
-      <div
-        className="absolute top-0 left-0 w-full h-[50%] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 30% 0%, rgba(0,153,255,0.03) 0%, transparent 60%)" }}
-      />
-      <div
-        className="absolute bottom-0 left-0 w-full h-[50%] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 70% 100%, rgba(170,255,0,0.03) 0%, transparent 60%)" }}
-      />
+    <section id="products" className="relative py-16 md:py-24 bg-[#0f172a]">
+      <div className="absolute top-0 left-1/4 w-72 h-72 bg-electric/3 rounded-full blur-[120px]" />
+      <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-lime/3 rounded-full blur-[120px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -52,13 +46,13 @@ export default function FeaturedProductsClient({ products }: { products: Product
           className="text-center mb-10 md:mb-16"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-electric/10 border border-electric/30 text-electric text-xs md:text-sm font-semibold tracking-wider uppercase mb-4">
-            {slogans.products.eyebrow}
+            {productsSection?.eyebrow ?? ''}
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight">
             Lo Mejor <span className="text-electric">de</span> la Semana
           </h2>
           <p className="mt-3 text-white/40 max-w-md mx-auto text-sm md:text-base">
-            {slogans.products.description}
+            {productsSection?.description ?? ''}
           </p>
         </motion.div>
 
@@ -85,9 +79,9 @@ function FeaturedProductCard({ product, index }: { product: Product; index: numb
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
       whileHover={{ y: -8 }}
-      className="group relative rounded-2xl bg-mid-gray border border-white/5 hover:border-electric/30 transition-all duration-500 overflow-hidden block min-w-0"
+      className="group relative rounded-2xl bg-[#1e293b] border border-white/[0.08] hover:border-electric/30 transition-all duration-500 overflow-hidden block shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-electric/5"
     >
-      <div className="relative aspect-square overflow-hidden bg-dark-gray">
+      <div className="relative aspect-square overflow-hidden bg-[#111827]">
         <img key={displayImage} src={displayImage} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
         {product.badge && (
           <span className={`absolute top-2 left-2 md:top-3 md:left-3 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider ${getBadgeColor(product.badge)}`}>
@@ -97,8 +91,8 @@ function FeaturedProductCard({ product, index }: { product: Product; index: numb
       </div>
 
       <div className="p-3 md:p-4">
-        <p className="text-[10px] md:text-xs text-electric/60 font-semibold uppercase tracking-wider mb-1">{product.category}</p>
-        <h3 className="text-xs md:text-sm font-bold text-white/90 group-hover:text-white transition-colors line-clamp-2 mb-2 leading-tight">{product.name}</h3>
+        <p className="text-[10px] md:text-xs text-electric/70 font-semibold uppercase tracking-wider mb-1">{product.category}</p>
+        <h3 className="text-xs md:text-sm font-bold text-white group-hover:text-electric transition-colors line-clamp-2 mb-2 leading-tight">{product.name}</h3>
         <StarRating rating={product.rating} />
         <div className="flex items-center gap-2 mt-2">
           <span className="text-sm md:text-lg font-black text-white">{product.price.toFixed(2)} €</span>

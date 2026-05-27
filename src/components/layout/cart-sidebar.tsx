@@ -31,7 +31,7 @@ export default function CartSidebar() {
     <Sheet open={cartSidebarOpen} onOpenChange={setCartSidebarOpen}>
       <SheetContent
         side="right"
-        className="bg-dark-gray border-white/5 w-full sm:max-w-md flex flex-col"
+        className="bg-[#111827] border-white/[0.08] w-full sm:max-w-md flex flex-col"
       >
         {/* Cabecera */}
         <SheetHeader className="pb-0">
@@ -73,10 +73,10 @@ export default function CartSidebar() {
               {items.map((item) => (
                 <div
                   key={item.cartKey}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-mid-gray border border-white/5"
+                  className="flex items-start gap-3 p-3 rounded-xl bg-[#1e293b] border border-white/[0.08]"
                 >
                   {/* Imagen */}
-                  <div className="w-14 h-14 rounded-lg bg-dark-gray overflow-hidden shrink-0">
+                  <div className="w-14 h-14 rounded-lg bg-[#111827] overflow-hidden shrink-0">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -161,7 +161,7 @@ export default function CartSidebar() {
             </div>
 
             {/* Pie: subtotal y acciones */}
-            <div className="border-t border-white/5 px-4 pt-4 pb-2 space-y-4">
+            <div className="border-t border-white/[0.08] px-4 pt-4 pb-2 space-y-4">
               <Separator className="bg-white/5" />
 
               <div className="flex items-center justify-between">
@@ -181,7 +181,7 @@ export default function CartSidebar() {
                   onClick={() => setCartSidebarOpen(false)}
                   className="w-full bg-electric hover:bg-electric/90 text-white font-bold py-5 rounded-xl shadow-[0_0_20px_rgba(0,153,255,0.3)] uppercase tracking-wider"
                 >
-                  <Link href="/checkout">Finalizar Compra</Link>
+                  <Link href="/checkout">Ver Carrito</Link>
                 </Button>
                 <Button
                   asChild

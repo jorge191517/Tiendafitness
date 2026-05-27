@@ -55,12 +55,11 @@ export default function ForgotPasswordPage() {
   // Pantalla de éxito
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative w-full">
-        {/* Fondo decorativo — radial-gradient */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 70% 30%, rgba(0,153,255,0.04) 0%, transparent 50%), radial-gradient(ellipse at 30% 70%, rgba(170,255,0,0.04) 0%, transparent 50%)" }}
-        />
+      <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4 py-12 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-electric/5 rounded-full blur-[100px]" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-lime/5 rounded-full blur-[100px]" />
+        </div>
 
         <motion.div
           variants={fadeInUp}
@@ -68,7 +67,7 @@ export default function ForgotPasswordPage() {
           animate="visible"
           className="w-full max-w-md relative z-10"
         >
-          <div className="bg-mid-gray/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
+          <div className="bg-[#1e293b]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
             <div className="w-16 h-16 bg-electric/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="h-8 w-8 text-electric" />
             </div>
@@ -93,12 +92,13 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-deep px-4 py-12 relative w-full">
-      {/* Fondo decorativo — radial-gradient */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 30% 30%, rgba(0,153,255,0.04) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(170,255,0,0.04) 0%, transparent 50%)" }}
-      />
+    <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4 py-12 relative overflow-hidden">
+      {/* Fondo decorativo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-electric/5 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-lime/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/3 right-1/2 w-[500px] h-[500px] bg-electric/3 rounded-full blur-[150px]" />
+      </div>
 
       <motion.div
         variants={fadeInUp}
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
         className="w-full max-w-md relative z-10"
       >
         {/* Card glassmorphism */}
-        <div className="bg-mid-gray/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-[#1e293b]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
           {/* Logo / Brand */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 group">

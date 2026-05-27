@@ -19,7 +19,7 @@ export default async function ProductosPage() {
   const productList = (products as ProductWithCategory[] | null) ?? [];
 
   return (
-    <div className="min-h-screen bg-deep">
+    <div className="min-h-screen bg-gradient-to-b from-[#0d1117] via-[#111827] to-[#151d2e]">
       <div className="h-20" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -27,7 +27,7 @@ export default async function ProductosPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/admin"
-              className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all duration-300"
+              className="w-10 h-10 rounded-xl bg-white/8 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all duration-300"
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
@@ -35,7 +35,7 @@ export default async function ProductosPage() {
               <h1 className="text-2xl font-black text-white uppercase tracking-tight">
                 Productos
               </h1>
-              <p className="text-white/50 mt-0.5 text-sm">
+              <p className="text-white/60 mt-0.5 text-sm">
                 {productList.length} producto{productList.length !== 1 ? "s" : ""} registrado{productList.length !== 1 ? "s" : ""}
               </p>
             </div>

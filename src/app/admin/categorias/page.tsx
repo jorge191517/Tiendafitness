@@ -196,7 +196,7 @@ export default function CategoriasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-deep">
+    <div className="min-h-screen bg-[#0f172a]">
       <div className="h-20" />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -235,7 +235,7 @@ export default function CategoriasPage() {
 
         {/* New Category Form */}
         {showNewForm && (
-          <Card className="bg-mid-gray border-electric/20 mb-6">
+          <Card className="bg-[#1e293b] border-electric/20 mb-6">
             <CardHeader>
               <CardTitle className="text-white text-base flex items-center gap-2">
                 <Plus className="h-4 w-4 text-electric" />
@@ -250,7 +250,7 @@ export default function CategoriasPage() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="Nombre de la categoría"
-                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
                   />
                   {newName && (
                     <p className="text-white/30 text-xs">
@@ -264,7 +264,7 @@ export default function CategoriasPage() {
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
                     placeholder="Descripción opcional"
-                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
                   />
                 </div>
               </div>
@@ -306,7 +306,7 @@ export default function CategoriasPage() {
 
         {/* Empty State */}
         {!loading && categories.length === 0 && (
-          <div className="rounded-2xl bg-mid-gray border border-white/5 p-12 text-center">
+          <div className="rounded-2xl bg-[#1e293b] border border-white/[0.08] p-12 text-center">
             <FolderOpen className="h-12 w-12 text-white/10 mx-auto mb-4" />
             <p className="text-white/50 text-lg">No hay categorías registradas</p>
             <p className="text-white/30 text-sm mt-2">
@@ -328,7 +328,7 @@ export default function CategoriasPage() {
             {categories.map((cat) => (
               <Card
                 key={cat.id}
-                className={`bg-mid-gray border-white/5 transition-all duration-300 ${
+                className={`bg-[#1e293b] border-white/[0.08] transition-all duration-300 ${
                   !cat.active ? "opacity-50" : ""
                 }`}
               >
@@ -340,7 +340,7 @@ export default function CategoriasPage() {
                       <Input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="bg-white/8 border-white/18 text-white text-sm focus:border-electric focus:ring-electric/30"
+                        className="bg-white/5 border-white/10 text-white text-sm focus:border-electric focus:ring-electric/30"
                       />
                       {editName && (
                         <p className="text-white/30 text-xs">
@@ -354,7 +354,7 @@ export default function CategoriasPage() {
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
                         rows={2}
-                        className="bg-white/8 border-white/18 text-white text-sm focus:border-electric focus:ring-electric/30 resize-none"
+                        className="bg-white/5 border-white/10 text-white text-sm focus:border-electric focus:ring-electric/30 resize-none"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -457,7 +457,7 @@ export default function CategoriasPage() {
           open={deleteId !== null}
           onOpenChange={(open) => !open && setDeleteId(null)}
         >
-          <DialogContent className="bg-mid-gray border-white/15 text-white">
+          <DialogContent className="bg-[#1e293b] border-white/10 text-white">
             <DialogHeader>
               <DialogTitle className="text-white">Eliminar categoría</DialogTitle>
               <DialogDescription className="text-white/50">

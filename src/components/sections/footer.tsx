@@ -31,7 +31,7 @@ export default function Footer() {
   };
 
   return (
-    <footer id="contact" className="relative bg-[#030303] border-t border-white/5">
+    <footer id="contact" className="relative bg-[#0a0f1a] border-t border-white/[0.06]">
       {/* Electric blue glow line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-electric/50 to-transparent" />
 
@@ -56,9 +56,9 @@ export default function Footer() {
                 </span>
               </div>
             </div>
-            <p className="text-white/40 text-sm leading-relaxed mb-4 max-w-xs">
+            <p className="text-white/50 text-sm leading-relaxed mb-4 max-w-xs">
               Tu destino premium para equipamiento deportivo, ropa y
-              suplementos. Eleva tu rendimiento con productos seleccionados.
+              suplementos. Eleva tu rendimiento con las mejores marcas.
             </p>
             <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-lime/5 border border-lime/20">
               <Globe className="h-4 w-4 text-lime shrink-0" />
@@ -71,7 +71,7 @@ export default function Footer() {
                   <a
                     key={social.name}
                     href={social.href}
-                    className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-electric hover:border-electric/40 hover:bg-electric/10 hover:shadow-[0_0_15px_rgba(0,153,255,0.2)] transition-all duration-300"
+                    className="w-9 h-9 rounded-lg bg-[#1e293b] border border-white/10 flex items-center justify-center text-white/40 hover:text-electric hover:border-electric/40 hover:bg-electric/10 hover:shadow-[0_0_15px_rgba(0,153,255,0.2)] transition-all duration-300"
                     aria-label={social.name}
                   >
                     <Icon className="h-4 w-4" />
@@ -97,7 +97,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-white/40 hover:text-white text-sm transition-colors duration-300 hover:pl-1"
+                    className="text-white/50 hover:text-white text-sm transition-colors duration-300 hover:pl-1"
                   >
                     {link.label}
                   </a>
@@ -122,7 +122,7 @@ export default function Footer() {
                 <li key={cat.slug}>
                   <a
                     href={`/productos?categoria=${cat.slug}`}
-                    className="text-white/40 hover:text-white text-sm transition-colors duration-300 hover:pl-1"
+                    className="text-white/50 hover:text-white text-sm transition-colors duration-300 hover:pl-1"
                   >
                     {cat.name}
                   </a>
@@ -187,7 +187,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="py-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="py-6 border-t border-white/[0.08] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/30 text-xs md:text-sm text-center md:text-left">
             &copy; {new Date().getFullYear()} {siteConfig.name}. Todos los derechos
             reservados.
@@ -201,7 +201,7 @@ export default function Footer() {
           </div>
           <button
             onClick={scrollToTop}
-            className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-electric hover:border-electric/40 hover:bg-electric/10 hover:shadow-[0_0_15px_rgba(0,153,255,0.2)] transition-all duration-300"
+            className="w-9 h-9 rounded-full bg-[#1e293b] border border-white/10 flex items-center justify-center text-white/40 hover:text-electric hover:border-electric/40 hover:bg-electric/10 hover:shadow-[0_0_15px_rgba(0,153,255,0.2)] transition-all duration-300"
             aria-label="Scroll to top"
           >
             <ArrowUp className="h-4 w-4" />

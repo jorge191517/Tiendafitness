@@ -7,30 +7,28 @@ import { brandingConfig } from "@/config/branding";
 import { fadeInUp, slideLeft } from "@/lib/animations";
 
 export default function PromoBanner() {
-  const { slogans, cta } = brandingConfig;
+  const slogans = brandingConfig?.slogans ?? {};
+  const cta = brandingConfig?.cta ?? {};
+  const promo = slogans?.promo ?? {};
+  const promoHeadline = promo?.headline ?? {};
 
   return (
-    <section id="offers" className="relative py-16 md:py-24 bg-deep w-full">
+    <section id="offers" className="relative py-16 md:py-24 bg-[#111827] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
-          className="relative rounded-3xl overflow-hidden min-h-[300px] md:min-h-[400px] flex items-center w-full"
+          className="relative rounded-3xl overflow-hidden min-h-[300px] md:min-h-[400px] flex items-center"
         >
           {/* Background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#002b59] via-[#003c7d] to-[#002b59]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#001a33] via-[#002244] to-[#001a33]" />
 
-          {/* Neon glow effects — radial-gradient (no blur filter = no overflow) */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at 25% 0%, rgba(0,153,255,0.12) 0%, transparent 50%)" }}
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at 75% 100%, rgba(170,255,0,0.12) 0%, transparent 50%)" }}
-          />
+          {/* Neon glow effects */}
+          <div className="absolute top-0 left-1/4 w-64 h-64 bg-electric/10 rounded-full blur-[100px]" />
+          <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-lime/8 rounded-full blur-[80px]" />
+          <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-electric/15 rounded-full blur-[60px]" />
 
           {/* Grid pattern overlay */}
           <div
@@ -59,7 +57,7 @@ export default function PromoBanner() {
           </div>
 
           {/* Border glow */}
-          <div className="absolute inset-0 rounded-3xl border border-electric/25 neon-border" />
+          <div className="absolute inset-0 rounded-3xl border border-electric/20 neon-border" />
 
           {/* Content */}
           <div className="relative z-10 px-6 md:px-12 lg:px-16 py-10 md:py-16 max-w-2xl">
@@ -73,7 +71,7 @@ export default function PromoBanner() {
             >
               <Zap className="h-5 w-5 md:h-6 md:w-6 text-lime fill-lime" />
               <span className="text-lime font-bold text-xs md:text-sm uppercase tracking-widest">
-                {slogans.promo.eyebrow}
+                {promo?.eyebrow ?? ''}
               </span>
             </motion.div>
 
@@ -85,10 +83,10 @@ export default function PromoBanner() {
               custom={0.3}
               className="text-3xl md:text-4xl lg:text-6xl font-black text-white uppercase leading-tight mb-4 md:mb-6"
             >
-              {slogans.promo.headline.line1}
+              {promoHeadline?.line1 ?? ''}
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-electric to-lime">
-                {slogans.promo.headline.line2}
+                {promoHeadline?.line2 ?? ''}
               </span>
             </motion.h2>
 
@@ -98,9 +96,9 @@ export default function PromoBanner() {
               whileInView="visible"
               viewport={{ once: true }}
               custom={0.4}
-              className="text-white/75 text-sm md:text-lg mb-6 md:mb-8 max-w-md"
+              className="text-white/50 text-sm md:text-lg mb-6 md:mb-8 max-w-md"
             >
-              {slogans.promo.description}
+              {promo?.description ?? ''}
             </motion.p>
 
             <motion.div
@@ -115,7 +113,7 @@ export default function PromoBanner() {
                 className="bg-gradient-to-r from-electric to-electric/80 hover:from-electric/90 hover:to-electric/70 text-white font-bold px-6 md:px-8 py-5 md:py-6 text-sm md:text-base rounded-xl shadow-[0_0_30px_rgba(0,153,255,0.4)] hover:shadow-[0_0_50px_rgba(0,153,255,0.6)] transition-all duration-300 uppercase tracking-wider group"
               >
                 <a href="#products">
-                  {cta.shopNow}
+                  {cta?.shopNow ?? 'Comprar Ahora'}
                   <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </a>
               </Button>

@@ -18,7 +18,7 @@ export default async function AdminPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-deep">
+    <div className="min-h-screen bg-[#0f172a]">
       <div className="h-20" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -44,7 +44,7 @@ export default async function AdminPage() {
             <Link
               key={stat.label}
               href={stat.href}
-              className={`group rounded-2xl bg-mid-gray border border-white/5 ${stat.bgHover} transition-all duration-300 p-6 hover:scale-[1.02]`}
+              className={`group rounded-2xl bg-[#1e293b] border border-white/[0.08] ${stat.bgHover} transition-all duration-300 p-6 hover:scale-[1.02]`}
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
@@ -60,7 +60,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="rounded-2xl bg-mid-gray border border-white/5 p-6 mb-8">
+        <div className="rounded-2xl bg-[#1e293b] border border-white/[0.08] p-6 mb-8">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-electric" />
             Acciones Rápidas
@@ -101,7 +101,7 @@ export default async function AdminPage() {
 
         {/* Info Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl bg-mid-gray border border-white/5 p-6">
+          <div className="rounded-2xl bg-[#1e293b] border border-white/[0.08] p-6">
             <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-lime" />
               Resumen de Inventario
@@ -112,7 +112,7 @@ export default async function AdminPage() {
               de forma sencilla.
             </p>
           </div>
-          <div className="rounded-2xl bg-mid-gray border border-white/5 p-6">
+          <div className="rounded-2xl bg-[#1e293b] border border-white/[0.08] p-6">
             <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
               <Users className="h-5 w-5 text-yellow-400" />
               Ayuda

@@ -76,20 +76,9 @@ export default function ContactoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-deep">
+    <div className="min-h-screen bg-[#0f172a]">
       {/* Header spacer */}
       <div className="h-20" />
-
-      {/* Breadcrumb */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <nav className="flex items-center gap-2 text-sm text-white/30">
-          <a href="/" className="hover:text-white/60 transition-colors">
-            Inicio
-          </a>
-          <span>/</span>
-          <span className="text-white/60">Contacto</span>
-        </nav>
-      </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         {/* Page header */}
@@ -117,7 +106,7 @@ export default function ContactoPage() {
             className="lg:col-span-2 space-y-4"
           >
             {/* WhatsApp */}
-            <Card className="bg-mid-gray border-white/5 hover:border-green-500/30 transition-colors duration-300">
+            <Card className="bg-[#1e293b] border-white/[0.08] hover:border-green-500/30 transition-colors duration-300">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-[#25D366]/10 flex items-center justify-center shrink-0">
@@ -139,7 +128,7 @@ export default function ContactoPage() {
             </Card>
 
             {/* Email */}
-            <Card className="bg-mid-gray border-white/5 hover:border-electric/30 transition-colors duration-300">
+            <Card className="bg-[#1e293b] border-white/[0.08] hover:border-electric/30 transition-colors duration-300">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-electric/10 flex items-center justify-center shrink-0">
@@ -169,7 +158,7 @@ export default function ContactoPage() {
             </Card>
 
             {/* Phone */}
-            <Card className="bg-mid-gray border-white/5 hover:border-electric/30 transition-colors duration-300">
+            <Card className="bg-[#1e293b] border-white/[0.08] hover:border-electric/30 transition-colors duration-300">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-electric/10 flex items-center justify-center shrink-0">
@@ -198,7 +187,7 @@ export default function ContactoPage() {
             animate="visible"
             className="lg:col-span-3"
           >
-            <Card className="bg-mid-gray border-white/5">
+            <Card className="bg-[#1e293b] border-white/[0.08]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
                   <Send className="h-5 w-5 text-electric" />
@@ -247,7 +236,7 @@ export default function ContactoPage() {
                         placeholder="Tu nombre"
                         value={nombre}
                         onChange={(e) => setNombre(e.target.value)}
-                        className={`bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20 ${
+                        className={`bg-[#111827] border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20 ${
                           getFieldError("nombre") ? "border-red-500" : ""
                         }`}
                       />
@@ -268,7 +257,7 @@ export default function ContactoPage() {
                           placeholder="tu@email.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className={`bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20 ${
+                          className={`bg-[#111827] border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20 ${
                             getFieldError("email") ? "border-red-500" : ""
                           }`}
                         />
@@ -289,7 +278,7 @@ export default function ContactoPage() {
                           placeholder="633 000 000"
                           value={telefono}
                           onChange={(e) => setTelefono(e.target.value)}
-                          className={`bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20 ${
+                          className={`bg-[#111827] border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20 ${
                             getFieldError("telefono") ? "border-red-500" : ""
                           }`}
                         />
@@ -310,7 +299,7 @@ export default function ContactoPage() {
                         rows={5}
                         value={mensaje}
                         onChange={(e) => setMensaje(e.target.value)}
-                        className={`bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20 resize-none ${
+                        className={`bg-[#111827] border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20 resize-none ${
                           getFieldError("mensaje") ? "border-red-500" : ""
                         }`}
                       />
