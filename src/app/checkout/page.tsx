@@ -106,8 +106,8 @@ export default function CheckoutPage() {
 
   if (step === "success") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120] flex items-center justify-center px-4">
-        <Card className="w-full max-w-lg bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.1)]">
+      <div className="min-h-screen bg-gradient-to-b from-[#0b0e17] via-[#121826] to-[#182033] flex items-center justify-center px-4">
+        <Card className="w-full max-w-lg bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.15)]">
           <CardContent className="p-8 text-center">
             <div className="w-20 h-20 bg-electric/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="h-10 w-10 text-electric" />
@@ -136,8 +136,8 @@ export default function CheckoutPage() {
 
   if (items.length === 0 && step !== "success") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120] flex items-center justify-center px-4">
-        <Card className="w-full max-w-lg bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl">
+      <div className="min-h-screen bg-gradient-to-b from-[#0b0e17] via-[#121826] to-[#182033] flex items-center justify-center px-4">
+        <Card className="w-full max-w-lg bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl">
           <CardContent className="p-8 text-center">
             <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingCart className="h-10 w-10 text-white/30" />
@@ -152,7 +152,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120]">
+    <div className="min-h-screen bg-gradient-to-b from-[#0b0e17] via-[#121826] to-[#182033]">
       <div className="h-20" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="flex items-center gap-4 mb-8">
@@ -182,35 +182,35 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-6">
             {/* Customer data */}
-            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl">
+            <Card className="bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl">
               <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><CreditCard className="h-5 w-5 text-electric" />Datos del Cliente</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2 sm:col-span-2"><Label htmlFor="name" className="text-white/70 text-sm">Nombre completo *</Label><Input id="name" type="text" placeholder="Tu nombre" value={customer.name} onChange={(e) => setCustomer((p) => ({ ...p, name: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
-                  <div className="space-y-2"><Label htmlFor="email" className="text-white/70 text-sm">Email *</Label><Input id="email" type="email" placeholder="tu@email.com" value={customer.email} onChange={(e) => setCustomer((p) => ({ ...p, email: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
-                  <div className="space-y-2"><Label htmlFor="phone" className="text-white/70 text-sm">Teléfono *</Label><Input id="phone" type="tel" placeholder="+34 600 000 000" value={customer.phone} onChange={(e) => setCustomer((p) => ({ ...p, phone: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
+                  <div className="space-y-2 sm:col-span-2"><Label htmlFor="name" className="text-white/80 text-sm">Nombre completo *</Label><Input id="name" type="text" placeholder="Tu nombre" value={customer.name} onChange={(e) => setCustomer((p) => ({ ...p, name: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
+                  <div className="space-y-2"><Label htmlFor="email" className="text-white/80 text-sm">Email *</Label><Input id="email" type="email" placeholder="tu@email.com" value={customer.email} onChange={(e) => setCustomer((p) => ({ ...p, email: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
+                  <div className="space-y-2"><Label htmlFor="phone" className="text-white/80 text-sm">Teléfono *</Label><Input id="phone" type="tel" placeholder="+34 600 000 000" value={customer.phone} onChange={(e) => setCustomer((p) => ({ ...p, phone: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Shipping address */}
-            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl">
+            <Card className="bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl">
               <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><Truck className="h-5 w-5 text-electric" />Dirección de Envío</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2"><Label htmlFor="street" className="text-white/70 text-sm">Calle y número *</Label><Input id="street" type="text" placeholder="Calle Mayor 10, 3ºA" value={address.street} onChange={(e) => setAddress((p) => ({ ...p, street: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
+                <div className="space-y-2"><Label htmlFor="street" className="text-white/80 text-sm">Calle y número *</Label><Input id="street" type="text" placeholder="Calle Mayor 10, 3ºA" value={address.street} onChange={(e) => setAddress((p) => ({ ...p, street: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label htmlFor="city" className="text-white/70 text-sm">Ciudad *</Label><Input id="city" type="text" placeholder="Madrid" value={address.city} onChange={(e) => setAddress((p) => ({ ...p, city: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
-                  <div className="space-y-2"><Label htmlFor="province" className="text-white/70 text-sm">Provincia *</Label><Input id="province" type="text" placeholder="Madrid" value={address.province} onChange={(e) => setAddress((p) => ({ ...p, province: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
+                  <div className="space-y-2"><Label htmlFor="city" className="text-white/80 text-sm">Ciudad *</Label><Input id="city" type="text" placeholder="Madrid" value={address.city} onChange={(e) => setAddress((p) => ({ ...p, city: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
+                  <div className="space-y-2"><Label htmlFor="province" className="text-white/80 text-sm">Provincia *</Label><Input id="province" type="text" placeholder="Madrid" value={address.province} onChange={(e) => setAddress((p) => ({ ...p, province: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label htmlFor="postal_code" className="text-white/70 text-sm">Código Postal *</Label><Input id="postal_code" type="text" placeholder="28001" value={address.postal_code} onChange={(e) => setAddress((p) => ({ ...p, postal_code: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
-                  <div className="space-y-2"><Label htmlFor="country" className="text-white/70 text-sm">País *</Label><Input id="country" type="text" placeholder="España" value={address.country} onChange={(e) => setAddress((p) => ({ ...p, country: e.target.value }))} className="bg-dark-gray border-white/10 text-white placeholder:text-white/30 focus:border-electric focus:ring-electric/20" /></div>
+                  <div className="space-y-2"><Label htmlFor="postal_code" className="text-white/80 text-sm">Código Postal *</Label><Input id="postal_code" type="text" placeholder="28001" value={address.postal_code} onChange={(e) => setAddress((p) => ({ ...p, postal_code: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
+                  <div className="space-y-2"><Label htmlFor="country" className="text-white/80 text-sm">País *</Label><Input id="country" type="text" placeholder="España" value={address.country} onChange={(e) => setAddress((p) => ({ ...p, country: e.target.value }))} className="bg-dark-gray border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30" /></div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Mobile cart items */}
-            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl lg:hidden">
+            <Card className="bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl lg:hidden">
               <CardHeader className="pb-4"><CardTitle className="flex items-center gap-2 text-white text-lg"><ShoppingCart className="h-5 w-5 text-electric" />Tu Carrito ({totalItems})</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {items.map((item) => (<CartItemRow key={item.cartKey} item={item} onUpdateQuantity={updateQuantity} onRemove={removeItem} />))}
@@ -220,7 +220,7 @@ export default function CheckoutPage() {
 
           {/* Summary */}
           <div className="space-y-6">
-            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border-white/10 rounded-2xl sticky top-24">
+            <Card className="bg-[#181c26]/90 backdrop-blur-xl border-white/15 rounded-2xl sticky top-24">
               <CardHeader className="pb-4"><CardTitle className="text-white text-lg">Resumen del Pedido</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="hidden lg:block space-y-3 max-h-72 overflow-y-auto pr-1">

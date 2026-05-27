@@ -167,7 +167,7 @@ export default function NuevoProductoPage() {
                   <Input
                     {...register("name")}
                     placeholder="Nombre del producto"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
                   />
                   {errors.name && (
                     <p className="text-red-400 text-xs">{errors.name.message}</p>
@@ -178,7 +178,7 @@ export default function NuevoProductoPage() {
                   <Input
                     {...register("slug")}
                     placeholder="slug-del-producto"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
                   />
                   {errors.slug && (
                     <p className="text-red-400 text-xs">{errors.slug.message}</p>
@@ -193,10 +193,10 @@ export default function NuevoProductoPage() {
                     setValue("category_id", val === "__none__" ? "" : val)
                   }
                 >
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white w-full">
+                  <SelectTrigger className="bg-white/8 border-white/18 text-white w-full">
                     <SelectValue placeholder="Seleccionar categoría" />
                   </SelectTrigger>
-                  <SelectContent className="bg-mid-gray border-white/10">
+                  <SelectContent className="bg-mid-gray border-white/15">
                     {categories.map((cat) => (
                       <SelectItem
                         key={cat.id}
@@ -216,7 +216,7 @@ export default function NuevoProductoPage() {
                   {...register("description")}
                   placeholder="Descripción del producto..."
                   rows={4}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30 resize-none"
+                  className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30 resize-none"
                 />
               </div>
 
@@ -232,7 +232,7 @@ export default function NuevoProductoPage() {
                 <Input
                   {...register("image_url")}
                   placeholder="https://ejemplo.com/imagen.jpg"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
+                  className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
                 />
               </div>
             </CardContent>
@@ -255,7 +255,7 @@ export default function NuevoProductoPage() {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
                   />
                   {errors.price && (
                     <p className="text-red-400 text-xs">{errors.price.message}</p>
@@ -269,7 +269,7 @@ export default function NuevoProductoPage() {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
                   />
                 </div>
               </div>
@@ -292,7 +292,7 @@ export default function NuevoProductoPage() {
                     type="number"
                     min="0"
                     placeholder="0"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
                   />
                 </div>
                 <div className="space-y-2">
@@ -303,10 +303,10 @@ export default function NuevoProductoPage() {
                       setValue("stock_status", val as "in_stock" | "low_stock" | "out_of_stock")
                     }
                   >
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white w-full">
+                    <SelectTrigger className="bg-white/8 border-white/18 text-white w-full">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-mid-gray border-white/10">
+                    <SelectContent className="bg-mid-gray border-white/15">
                       <SelectItem value="in_stock" className="text-white/70 focus:text-white focus:bg-white/10">
                         En stock
                       </SelectItem>
@@ -328,10 +328,10 @@ export default function NuevoProductoPage() {
                     setValue("badge", val === "__none__" ? "" : val)
                   }
                 >
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white w-full">
+                  <SelectTrigger className="bg-white/8 border-white/18 text-white w-full">
                     <SelectValue placeholder="Sin etiqueta" />
                   </SelectTrigger>
-                  <SelectContent className="bg-mid-gray border-white/10">
+                  <SelectContent className="bg-mid-gray border-white/15">
                     <SelectItem value="OFERTA" className="text-white/70 focus:text-white focus:bg-white/10">
                       OFERTA
                     </SelectItem>

@@ -250,7 +250,7 @@ export default function CategoriasPage() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="Nombre de la categoría"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
                   />
                   {newName && (
                     <p className="text-white/30 text-xs">
@@ -264,7 +264,7 @@ export default function CategoriasPage() {
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
                     placeholder="Descripción opcional"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-electric focus:ring-electric/30"
+                    className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus:border-electric focus:ring-electric/30"
                   />
                 </div>
               </div>
@@ -340,7 +340,7 @@ export default function CategoriasPage() {
                       <Input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white text-sm focus:border-electric focus:ring-electric/30"
+                        className="bg-white/8 border-white/18 text-white text-sm focus:border-electric focus:ring-electric/30"
                       />
                       {editName && (
                         <p className="text-white/30 text-xs">
@@ -354,7 +354,7 @@ export default function CategoriasPage() {
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
                         rows={2}
-                        className="bg-white/5 border-white/10 text-white text-sm focus:border-electric focus:ring-electric/30 resize-none"
+                        className="bg-white/8 border-white/18 text-white text-sm focus:border-electric focus:ring-electric/30 resize-none"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -457,7 +457,7 @@ export default function CategoriasPage() {
           open={deleteId !== null}
           onOpenChange={(open) => !open && setDeleteId(null)}
         >
-          <DialogContent className="bg-mid-gray border-white/10 text-white">
+          <DialogContent className="bg-mid-gray border-white/15 text-white">
             <DialogHeader>
               <DialogTitle className="text-white">Eliminar categoría</DialogTitle>
               <DialogDescription className="text-white/50">

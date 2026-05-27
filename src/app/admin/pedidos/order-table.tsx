@@ -246,7 +246,7 @@ export default function OrderTable({ orders, statusLabels }: OrderTableProps) {
                         placeholder="Correos, Seur, MRW..."
                         defaultValue={order.shipping_company || ""}
                         onChange={(e) => setShippingCompany(e.target.value)}
-                        className="bg-dark-gray border-white/10 text-white text-sm placeholder:text-white/20"
+                        className="bg-dark-gray border-white/18 text-white text-sm placeholder:text-white/45 focus-visible:border-electric focus-visible:ring-electric/30"
                       />
                     </div>
                     <div className="space-y-1">
@@ -255,7 +255,7 @@ export default function OrderTable({ orders, statusLabels }: OrderTableProps) {
                         placeholder="1234567890"
                         defaultValue={order.tracking_number || ""}
                         onChange={(e) => setTrackingNumber(e.target.value)}
-                        className="bg-dark-gray border-white/10 text-white text-sm placeholder:text-white/20"
+                        className="bg-dark-gray border-white/18 text-white text-sm placeholder:text-white/45 focus-visible:border-electric focus-visible:ring-electric/30"
                       />
                     </div>
                     <div className="space-y-1">
@@ -264,7 +264,7 @@ export default function OrderTable({ orders, statusLabels }: OrderTableProps) {
                         placeholder="https://..."
                         defaultValue={order.tracking_url || ""}
                         onChange={(e) => setTrackingUrl(e.target.value)}
-                        className="bg-dark-gray border-white/10 text-white text-sm placeholder:text-white/20"
+                        className="bg-dark-gray border-white/18 text-white text-sm placeholder:text-white/45 focus-visible:border-electric focus-visible:ring-electric/30"
                       />
                     </div>
                   </div>

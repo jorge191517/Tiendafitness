@@ -20,16 +20,16 @@ export default function PromoBanner() {
           className="relative rounded-3xl overflow-hidden min-h-[300px] md:min-h-[400px] flex items-center w-full"
         >
           {/* Background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#001a33] via-[#002244] to-[#001a33]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#002b59] via-[#003c7d] to-[#002b59]" />
 
           {/* Neon glow effects — radial-gradient (no blur filter = no overflow) */}
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at 25% 0%, rgba(0,153,255,0.1) 0%, transparent 50%)" }}
+            style={{ background: "radial-gradient(ellipse at 25% 0%, rgba(0,153,255,0.12) 0%, transparent 50%)" }}
           />
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at 75% 100%, rgba(170,255,0,0.08) 0%, transparent 50%)" }}
+            style={{ background: "radial-gradient(ellipse at 75% 100%, rgba(170,255,0,0.12) 0%, transparent 50%)" }}
           />
 
           {/* Grid pattern overlay */}
@@ -59,7 +59,7 @@ export default function PromoBanner() {
           </div>
 
           {/* Border glow */}
-          <div className="absolute inset-0 rounded-3xl border border-electric/20 neon-border" />
+          <div className="absolute inset-0 rounded-3xl border border-electric/25 neon-border" />
 
           {/* Content */}
           <div className="relative z-10 px-6 md:px-12 lg:px-16 py-10 md:py-16 max-w-2xl">
@@ -98,7 +98,7 @@ export default function PromoBanner() {
               whileInView="visible"
               viewport={{ once: true }}
               custom={0.4}
-              className="text-white/50 text-sm md:text-lg mb-6 md:mb-8 max-w-md"
+              className="text-white/75 text-sm md:text-lg mb-6 md:mb-8 max-w-md"
             >
               {slogans.promo.description}
             </motion.p>

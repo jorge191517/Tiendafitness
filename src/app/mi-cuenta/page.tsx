@@ -383,7 +383,7 @@ export default function MiCuentaPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120]">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0b0e17] via-[#121826] to-[#182033]">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 text-electric animate-spin" />
           <p className="text-white/50 text-sm">Cargando tu cuenta...</p>
@@ -396,14 +396,14 @@ export default function MiCuentaPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120] px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0b0e17] via-[#121826] to-[#182033] px-4">
         <motion.div
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
           className="w-full max-w-md text-center"
         >
-          <div className="bg-[#0b1120]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-[0_0_30px_rgba(0,153,255,0.05)]">
+          <div className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl p-8 shadow-[0_0_30px_rgba(0,153,255,0.08)]">
             <div className="w-20 h-20 bg-electric/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <User className="h-10 w-10 text-electric" />
             </div>
@@ -441,7 +441,7 @@ export default function MiCuentaPage() {
   // ─── Main page ──────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#050816] via-[#081224] to-[#0b1120]">
+    <div className="min-h-screen bg-gradient-to-b from-[#0b0e17] via-[#121826] to-[#182033]">
       {/* Spacer for fixed header */}
       <div className="h-20" />
 
@@ -502,7 +502,7 @@ export default function MiCuentaPage() {
               DATOS PERSONALES
               ══════════════════════════════════════════════════ */}
           <motion.div variants={fadeInUp}>
-            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/20 transition-all duration-300">
+            <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/30 transition-all duration-300">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-white text-lg">
@@ -528,7 +528,7 @@ export default function MiCuentaPage() {
                 {editingPersonal ? (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-white/70 text-sm">
+                      <Label className="text-white/80 text-sm">
                         Nombre completo
                       </Label>
                       <div className="relative">
@@ -542,12 +542,12 @@ export default function MiCuentaPage() {
                             }))
                           }
                           placeholder="Tu nombre"
-                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-electric focus-visible:ring-electric/30 h-10"
+                          className="pl-10 bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-electric focus-visible:ring-electric/40 h-10"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-white/70 text-sm">Teléfono</Label>
+                      <Label className="text-white/80 text-sm">Teléfono</Label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
                         <Input
@@ -560,7 +560,7 @@ export default function MiCuentaPage() {
                           }
                           placeholder="+34 600 000 000"
                           type="tel"
-                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-electric focus-visible:ring-electric/30 h-10"
+                          className="pl-10 bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-electric focus-visible:ring-electric/40 h-10"
                         />
                       </div>
                     </div>
@@ -634,7 +634,7 @@ export default function MiCuentaPage() {
               DIRECCIÓN DE ENVÍO
               ══════════════════════════════════════════════════ */}
           <motion.div variants={fadeInUp}>
-            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/20 transition-all duration-300">
+            <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-[#00D4FF]/30 transition-all duration-300">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-white text-lg">
@@ -660,7 +660,7 @@ export default function MiCuentaPage() {
                 {editingAddress ? (
                   <div className="space-y-3">
                     <div className="space-y-2">
-                      <Label className="text-white/70 text-sm">
+                      <Label className="text-white/80 text-sm">
                         Calle y número
                       </Label>
                       <Input
@@ -672,12 +672,12 @@ export default function MiCuentaPage() {
                           }))
                         }
                         placeholder="Calle Mayor 10, 3ºA"
-                        className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
+                        className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label className="text-white/70 text-sm">Ciudad</Label>
+                        <Label className="text-white/80 text-sm">Ciudad</Label>
                         <Input
                           value={addressForm.city}
                           onChange={(e) =>
@@ -687,11 +687,11 @@ export default function MiCuentaPage() {
                             }))
                           }
                           placeholder="Madrid"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
+                          className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-white/70 text-sm">
+                        <Label className="text-white/80 text-sm">
                           Provincia
                         </Label>
                         <Input
@@ -703,13 +703,13 @@ export default function MiCuentaPage() {
                             }))
                           }
                           placeholder="Madrid"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
+                          className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label className="text-white/70 text-sm">
+                        <Label className="text-white/80 text-sm">
                           Código Postal
                         </Label>
                         <Input
@@ -721,11 +721,11 @@ export default function MiCuentaPage() {
                             }))
                           }
                           placeholder="28001"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
+                          className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-white/70 text-sm">País</Label>
+                        <Label className="text-white/80 text-sm">País</Label>
                         <Input
                           value={addressForm.country}
                           onChange={(e) =>
@@ -735,7 +735,7 @@ export default function MiCuentaPage() {
                             }))
                           }
                           placeholder="España"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
+                          className="bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-[#00D4FF] focus-visible:ring-[#00D4FF]/30 h-10"
                         />
                       </div>
                     </div>
@@ -743,7 +743,7 @@ export default function MiCuentaPage() {
                       <Button
                         onClick={saveAddress}
                         disabled={saving}
-                        className="bg-[#00D4FF] hover:bg-[#00D4FF]/90 text-[#050816] font-semibold h-9 rounded-lg shadow-[0_0_20px_rgba(0,212,255,0.3)] transition-all duration-300"
+                        className="bg-[#00D4FF] hover:bg-[#00D4FF]/90 text-[#0d0f14] font-semibold h-9 rounded-lg shadow-[0_0_20px_rgba(0,212,255,0.3)] transition-all duration-300"
                       >
                         {saving ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -806,7 +806,7 @@ export default function MiCuentaPage() {
               SEGURIDAD
               ══════════════════════════════════════════════════ */}
           <motion.div variants={fadeInUp}>
-            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/20 transition-all duration-300">
+            <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-lime/30 transition-all duration-300">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
                   <div className="w-8 h-8 bg-[#AAFF00]/10 rounded-lg flex items-center justify-center">
@@ -819,7 +819,7 @@ export default function MiCuentaPage() {
                 {changingPassword ? (
                   <div className="space-y-3">
                     <div className="space-y-2">
-                      <Label className="text-white/70 text-sm">
+                      <Label className="text-white/80 text-sm">
                         Nueva contraseña
                       </Label>
                       <div className="relative">
@@ -834,7 +834,7 @@ export default function MiCuentaPage() {
                           }
                           type={showNewPassword ? "text" : "password"}
                           placeholder="Mínimo 6 caracteres"
-                          className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-lime focus-visible:ring-lime/30 h-10"
+                          className="pl-10 pr-10 bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-lime focus-visible:ring-lime/30 h-10"
                         />
                         <button
                           type="button"
@@ -850,7 +850,7 @@ export default function MiCuentaPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-white/70 text-sm">
+                      <Label className="text-white/80 text-sm">
                         Confirmar contraseña
                       </Label>
                       <div className="relative">
@@ -865,7 +865,7 @@ export default function MiCuentaPage() {
                           }
                           type={showCurrentPassword ? "text" : "password"}
                           placeholder="Repite la contraseña"
-                          className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:border-lime focus-visible:ring-lime/30 h-10"
+                          className="pl-10 pr-10 bg-white/8 border-white/18 text-white placeholder:text-white/45 focus-visible:border-lime focus-visible:ring-lime/30 h-10"
                         />
                         <button
                           type="button"
@@ -886,7 +886,7 @@ export default function MiCuentaPage() {
                       <Button
                         onClick={changePassword}
                         disabled={saving}
-                        className="bg-lime hover:bg-lime/90 text-[#050816] font-semibold h-9 rounded-lg shadow-[0_0_20px_rgba(170,255,0,0.3)] transition-all duration-300"
+                        className="bg-lime hover:bg-lime/90 text-[#0d0f14] font-semibold h-9 rounded-lg shadow-[0_0_20px_rgba(170,255,0,0.3)] transition-all duration-300"
                       >
                         {saving ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -917,7 +917,7 @@ export default function MiCuentaPage() {
                     <Button
                       variant="outline"
                       onClick={() => setChangingPassword(true)}
-                      className="w-full justify-start bg-white/5 border-white/10 text-white/80 hover:bg-lime/10 hover:text-lime hover:border-lime/30 h-10 rounded-lg transition-all duration-300"
+                      className="w-full justify-start bg-white/8 border-white/18 text-white/80 hover:bg-lime/10 hover:text-lime hover:border-lime/30 h-10 rounded-lg transition-all duration-300"
                     >
                       <Lock className="h-4 w-4 mr-2" />
                       Cambiar Contraseña
@@ -926,7 +926,7 @@ export default function MiCuentaPage() {
                     <Button
                       variant="outline"
                       onClick={handleSignOut}
-                      className="w-full justify-start bg-white/5 border-white/10 text-white/80 hover:bg-[#FF4444]/10 hover:text-[#FF4444] hover:border-[#FF4444]/30 h-10 rounded-lg transition-all duration-300"
+                      className="w-full justify-start bg-white/8 border-white/18 text-white/80 hover:bg-[#FF4444]/10 hover:text-[#FF4444] hover:border-[#FF4444]/30 h-10 rounded-lg transition-all duration-300"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Cerrar Sesión
@@ -941,7 +941,7 @@ export default function MiCuentaPage() {
               ESTADO DE PEDIDOS RECIENTES
               ══════════════════════════════════════════════════ */}
           <motion.div variants={fadeInUp}>
-            <Card className="bg-[#0b1120]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/20 transition-all duration-300">
+            <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/30 transition-all duration-300">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
                   <div className="w-8 h-8 bg-[#FFB800]/10 rounded-lg flex items-center justify-center">
@@ -1019,7 +1019,7 @@ export default function MiCuentaPage() {
           transition={{ delay: 0.4 }}
           className="mt-6"
         >
-          <Card className="bg-[#0b1120]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/20 transition-all duration-300">
+          <Card className="bg-[#181c26]/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-[0_0_30px_rgba(0,153,255,0.05)] hover:border-electric/30 transition-all duration-300">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-white text-lg">
@@ -1056,7 +1056,7 @@ export default function MiCuentaPage() {
                   <Button
                     asChild
                     variant="outline"
-                    className="bg-white/5 border-white/10 text-white/70 hover:bg-electric/10 hover:text-electric hover:border-electric/30 rounded-lg transition-all duration-300"
+                    className="bg-white/8 border-white/18 text-white/70 hover:bg-electric/10 hover:text-electric hover:border-electric/30 rounded-lg transition-all duration-300"
                   >
                     <Link href="/productos">
                       Explorar Productos

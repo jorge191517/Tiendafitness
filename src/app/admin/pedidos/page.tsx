@@ -246,7 +246,7 @@ export default function AdminPedidosPage() {
           <Button
             onClick={fetchOrders}
             variant="outline"
-            className="border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+            className="border-white/18 text-white/70 hover:text-white hover:bg-white/8"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
@@ -261,13 +261,13 @@ export default function AdminPedidosPage() {
               placeholder="Buscar por número, nombre o email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              className="pl-10 bg-white/8 border-white/18 text-white placeholder:text-white/45"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-mid-gray border border-white/10 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-electric"
+            className="bg-mid-gray border border-white/18 text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-electric"
           >
             <option value="all">Todos los estados</option>
             {STATUS_OPTIONS.map((s) => (
@@ -369,7 +369,7 @@ export default function AdminPedidosPage() {
                                 className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
                                   order.status === s.value
                                     ? s.color
-                                    : "bg-white/5 text-white/40 border-white/10 hover:text-white/70 hover:border-white/20"
+                                    : "bg-white/8 text-white/40 border-white/18 hover:text-white/70 hover:border-white/25"
                                 } disabled:opacity-50`}
                               >
                                 {s.label}
@@ -382,7 +382,7 @@ export default function AdminPedidosPage() {
                               variant="outline"
                               disabled={updating === order.id}
                               onClick={() => handleResendEmail(order.id)}
-                              className="border-white/10 text-white/50 hover:text-white hover:bg-white/5 text-xs"
+                              className="border-white/18 text-white/50 hover:text-white hover:bg-white/8 text-xs"
                             >
                               <Mail className="h-3 w-3 mr-1.5" />
                               Reenviar emails
@@ -459,7 +459,7 @@ export default function AdminPedidosPage() {
                                   }))
                                 }
                                 placeholder="Correos, Seur..."
-                                className="bg-white/5 border-white/10 text-white text-sm placeholder:text-white/20 h-9"
+                                className="bg-white/8 border-white/18 text-white text-sm placeholder:text-white/45 h-9 focus-visible:border-electric focus-visible:ring-electric/30"
                               />
                             </div>
                             <div>
@@ -473,7 +473,7 @@ export default function AdminPedidosPage() {
                                   }))
                                 }
                                 placeholder="1234567890"
-                                className="bg-white/5 border-white/10 text-white text-sm placeholder:text-white/20 h-9"
+                                className="bg-white/8 border-white/18 text-white text-sm placeholder:text-white/45 h-9 focus-visible:border-electric focus-visible:ring-electric/30"
                               />
                             </div>
                             <div>
@@ -487,7 +487,7 @@ export default function AdminPedidosPage() {
                                   }))
                                 }
                                 placeholder="https://..."
-                                className="bg-white/5 border-white/10 text-white text-sm placeholder:text-white/20 h-9"
+                                className="bg-white/8 border-white/18 text-white text-sm placeholder:text-white/45 h-9 focus-visible:border-electric focus-visible:ring-electric/30"
                               />
                             </div>
                           </div>
