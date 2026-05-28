@@ -195,41 +195,39 @@ export default function MisPedidosPage() {
                 <Link
                   key={order.id}
                   href={`/pedido/${orderRef}`}
-                  className="block bg-[#1e293b] rounded-2xl border border-white/[0.08] hover:border-white/10 transition-all duration-300 p-5"
+                  className="block bg-[#1e293b] rounded-2xl border border-white/[0.08] hover:border-white/10 transition-all duration-300 p-4 sm:p-5"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start gap-3 sm:gap-4">
                     {/* Thumbnail */}
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
                       {firstImage ? (
                         <img src={firstImage} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Package className="h-6 w-6 text-white/20" />
+                          <Package className="h-5 w-5 sm:h-6 sm:w-6 text-white/20" />
                         </div>
                       )}
                     </div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-white font-bold text-sm">#{orderRef}</span>
-                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${statusStyle.color}`}>
+                        <span className={`text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full border ${statusStyle.color}`}>
                           {statusStyle.label}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 mt-1 text-white/40 text-xs">
+                      <div className="flex items-center gap-2 mt-1 text-white/40 text-xs">
                         <span>{itemCount} artícul{itemCount !== 1 ? "os" : "o"}</span>
                         <span>·</span>
                         <span>{formatDate(order.created_at)}</span>
                       </div>
-                    </div>
-
-                    {/* Total + CTA */}
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-white font-bold">{Number(order.total).toFixed(2)} €</p>
-                      <div className="flex items-center gap-1 mt-1 text-electric text-xs font-medium">
-                        <Eye className="h-3 w-3" />
-                        Ver detalle
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-white font-bold text-sm sm:text-base">{Number(order.total).toFixed(2)} €</span>
+                        <div className="flex items-center gap-1 text-electric text-xs font-medium">
+                          <Eye className="h-3 w-3" />
+                          Ver detalle
+                        </div>
                       </div>
                     </div>
                   </div>

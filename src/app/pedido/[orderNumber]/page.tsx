@@ -243,8 +243,8 @@ export default function PedidoPage() {
         </div>
 
         {/* Timeline */}
-        <div className="bg-[#1e293b] rounded-2xl border border-white/[0.08] p-6 mb-6">
-          <h2 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-5">Estado del pedido</h2>
+        <div className="bg-[#1e293b] rounded-2xl border border-white/[0.08] p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-xs sm:text-sm font-bold text-white/40 uppercase tracking-wider mb-4 sm:mb-5">Estado del pedido</h2>
 
           {isCancelled ? (
             <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl p-4">
@@ -272,9 +272,9 @@ export default function PedidoPage() {
                   const Icon = step.icon;
 
                   return (
-                    <div key={step.key} className="flex flex-col items-center flex-1">
+                    <div key={step.key} className="flex flex-col items-center flex-1 min-w-0">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10 ${
+                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 z-10 ${
                           isCompleted
                             ? isCurrent
                               ? "bg-lime/20 border-lime text-lime scale-110 shadow-[0_0_15px_rgba(170,255,0,0.3)]"
@@ -282,10 +282,10 @@ export default function PedidoPage() {
                             : "bg-white/5 border-white/10 text-white/20"
                         }`}
                       >
-                        <Icon className="h-4 w-4" />
+                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </div>
                       <span
-                        className={`text-[10px] sm:text-xs mt-2 text-center font-medium ${
+                        className={`text-[9px] sm:text-xs mt-1.5 sm:mt-2 text-center font-medium leading-tight ${
                           isCompleted ? "text-white" : "text-white/30"
                         }`}
                       >
@@ -349,14 +349,14 @@ export default function PedidoPage() {
         </div>
 
         {/* Products */}
-        <div className="bg-[#1e293b] rounded-2xl border border-white/[0.08] p-6 mb-6">
-          <h2 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">Productos</h2>
+        <div className="bg-[#1e293b] rounded-2xl border border-white/[0.08] p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-xs sm:text-sm font-bold text-white/40 uppercase tracking-wider mb-3 sm:mb-4">Productos</h2>
           {order.order_items && order.order_items.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {order.order_items.map((item) => (
-                <div key={item.id} className="flex items-center gap-4 bg-white/[0.03] rounded-xl p-4">
+                <div key={item.id} className="flex items-center gap-3 sm:gap-4 bg-white/[0.03] rounded-xl p-3 sm:p-4">
                   {/* Image */}
-                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
                     {item.image_url ? (
                       <img src={item.image_url} alt={item.product_name ?? ""} className="w-full h-full object-cover" />
                     ) : (
@@ -399,7 +399,7 @@ export default function PedidoPage() {
 
         {/* Shipping address */}
         {order.shipping_address && (
-          <div className="bg-[#1e293b] rounded-2xl border border-white/[0.08] p-6 mb-6">
+          <div className="bg-[#1e293b] rounded-2xl border border-white/[0.08] p-4 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-3">Direccion de envio</h2>
             <p className="text-white/70 text-sm leading-relaxed">
               {order.shipping_address.street}<br />

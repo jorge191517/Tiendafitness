@@ -12,8 +12,8 @@ export interface NavLink {
 export const navigationLinks: NavLink[] = [
   { label: "Inicio", href: "/" },
   { label: "Productos", href: "/productos" },
-  { label: "Categorías", href: "/productos" },
-  { label: "Ofertas", href: "/productos" },
+  { label: "Categorías", href: "/#categories" },
+  { label: "Ofertas", href: "/#offers" },
   { label: "Contacto", href: "/contacto" },
 ];
 
@@ -21,8 +21,8 @@ export const navigationLinks: NavLink[] = [
 export const footerNavigationLinks: NavLink[] = [
   { label: "Inicio", href: "/" },
   { label: "Productos", href: "/productos" },
-  { label: "Categorías", href: "/productos" },
-  { label: "Ofertas", href: "/productos" },
+  { label: "Mi Cuenta", href: "/mi-cuenta" },
+  { label: "Mis Pedidos", href: "/mis-pedidos" },
   { label: "Contacto", href: "/contacto" },
 ];
 

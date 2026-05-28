@@ -28,12 +28,12 @@ export default async function ProductosPage({ searchParams }: Props) {
       <div className="h-20" />
 
       {/* Page header */}
-      <section className="py-12 md:py-20">
+      <section className="py-6 sm:py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-white uppercase tracking-tight mb-2 sm:mb-4">
             Nuestros <span className="text-electric">Productos</span>
           </h1>
-          <p className="text-white/50 max-w-xl text-sm md:text-base">
+          <p className="text-white/50 max-w-xl text-xs sm:text-sm md:text-base">
             Explora nuestro catálogo completo. Equipamiento deportivo de alta calidad para cada disciplina y nivel.
           </p>
         </div>

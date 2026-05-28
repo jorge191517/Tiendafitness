@@ -44,7 +44,7 @@ export const brandingConfig = {
     features: [
       { label: "Calidad Garantizada" },
       { label: "Envío Rápido" },
-      { label: "Precios Competitivos" },
+      { label: "Equipamiento Pro" },
       { label: "Soporte Personalizado" },
     ],
   },
